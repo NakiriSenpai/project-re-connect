@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
   BarChart3,
@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { CATEGORY_LABELS, EXAM_DIFFICULTY_LABELS } from "@/features/exam/exam.constants";
 import { useAvailableExams, useMyResults, useMyAttempts, useStartAttempt } from "@/hooks/attempt";
+import { useExamCategories } from "@/hooks/exam/use-exam-category";
 import { cn } from "@/lib/utils";
 import type { ExamRow } from "@/types/exam";
 import motivationArt from "@/assets/exam-motivation.png";
@@ -41,9 +42,10 @@ const DIFFICULTY_STYLE: Record<string, string> = {
   sulit: "border-rose-500/40 bg-rose-500/10 text-rose-400",
 };
 
-function categoryLabel(category: string) {
+function fallbackLabel(category: string) {
   return CATEGORY_LABELS[category] ?? category.charAt(0).toUpperCase() + category.slice(1);
 }
+
 
 function ExamIcon({ exam }: { exam: ExamRow }) {
   const category = exam.category.toLowerCase();
@@ -112,6 +114,12 @@ export function ExamCatalog() {
   const [page, setPage] = useState(1);
 
   const examList = useMemo(() => exams ?? [], [exams]);
+  const { data: categoryRows } = useExamCategories();
+  const categoryLabel = useCallback(
+    (slug: string) =>
+      (categoryRows ?? []).find((item) => item.slug === slug)?.label ?? fallbackLabel(slug),
+    [categoryRows],
+  );
 
   const activeByExam = useMemo(
     () =>
@@ -130,10 +138,18 @@ export function ExamCatalog() {
 
   const stats = useMemo(() => {
     const rows = results ?? [];
+    const examById = new Map(examList.map((exam) => [exam.id, exam]));
     const firstByExam = new Map<string, number>();
     const passedSets = new Set<string>();
+    const scoreTrend: { label: string; score: number }[] = [];
     for (const row of rows) {
-      if (!firstByExam.has(row.exam_id)) firstByExam.set(row.exam_id, row.score);
+      if (!firstByExam.has(row.exam_id)) {
+        firstByExam.set(row.exam_id, row.score);
+        scoreTrend.push({
+          label: `#${scoreTrend.length + 1}`,
+          score: Math.round(row.score),
+        });
+      }
       if (row.passed) passedSets.add(row.exam_id);
     }
     const firstScores = [...firstByExam.values()];
@@ -141,21 +157,54 @@ export function ExamCatalog() {
       firstScores.length === 0
         ? null
         : Math.round((firstScores.reduce((a, b) => a + b, 0) / firstScores.length) * 10) / 10;
+
+    const perCategory = new Map<string, { completed: number; total: number }>();
+    for (const exam of examList) {
+      const entry = perCategory.get(exam.category) ?? { completed: 0, total: 0 };
+      entry.total += 1;
+      perCategory.set(exam.category, entry);
+    }
+    for (const examId of firstByExam.keys()) {
+      const exam = examById.get(examId);
+      if (!exam) continue;
+      const entry = perCategory.get(exam.category);
+      if (entry) entry.completed += 1;
+    }
+
     return {
       totalAttempts: rows.length,
       completedSets: firstByExam.size,
       passedSets: passedSets.size,
       averageScore: average,
+      totalSets: examList.length,
+      scoreTrend,
+      categoryProgress: [...perCategory.entries()]
+        .map(([slug, entry]) => ({
+          label: categoryLabel(slug),
+          completed: entry.completed,
+          total: entry.total,
+          percent: entry.total === 0 ? 0 : Math.round((entry.completed / entry.total) * 100),
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
     };
-  }, [results]);
+  }, [results, examList, categoryLabel]);
+
 
   const totalSets = examList.length;
   const progressPercent = totalSets === 0 ? 0 : Math.round((stats.completedSets / totalSets) * 100);
 
-  const categories = useMemo(
-    () => [...new Set(examList.map((exam) => exam.category))].sort((a, b) => a.localeCompare(b)),
-    [examList],
-  );
+  const categories = useMemo(() => {
+    const used = new Set(examList.map((exam) => exam.category));
+    const fromDb = (categoryRows ?? []).filter((row) => used.has(row.slug));
+    const known = new Set(fromDb.map((row) => row.slug));
+    const extras = [...used].filter((slug) => !known.has(slug)).map((slug) => ({
+      slug,
+      label: fallbackLabel(slug),
+    }));
+    return [...fromDb.map((row) => ({ slug: row.slug, label: row.label })), ...extras].sort((a, b) =>
+      a.label.localeCompare(b.label),
+    );
+  }, [examList, categoryRows]);
 
   const filtered = useMemo(
     () => (category === "semua" ? examList : examList.filter((e) => e.category === category)),
