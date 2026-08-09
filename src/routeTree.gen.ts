@@ -10,33 +10,456 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ExamStudioRouteImport } from './routes/exam-studio'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
+import { Route as LessonStudioRouteImport } from './routes/lesson-studio'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as MateriRouteImport } from './routes/materi'
+import { Route as MediaRouteImport } from './routes/media'
+import { Route as OwnerRouteImport } from './routes/owner'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as TeacherRouteImport } from './routes/teacher'
+import { Route as TenantRouteImport } from './routes/tenant'
+import { Route as UjianRouteImport } from './routes/ujian'
+import { Route as AdminAnalyticsRouteImport } from './routes/admin_.analytics'
+import { Route as AdminUsersRouteImport } from './routes/admin_.users'
+import { Route as MateriIndexRouteImport } from './routes/materi.index'
+import { Route as MateriCategoryRouteImport } from './routes/materi.$category'
+import { Route as OwnerQuestionBankRouteImport } from './routes/owner_.question-bank'
+import { Route as OwnerSettingsRouteImport } from './routes/owner_.settings'
+import { Route as OwnerTenantsRouteImport } from './routes/owner_.tenants'
+import { Route as OwnerUsersRouteImport } from './routes/owner_.users'
+import { Route as TeacherAnalyticsRouteImport } from './routes/teacher_.analytics'
+import { Route as UjianIndexRouteImport } from './routes/ujian.index'
+import { Route as UjianAttemptIdRouteImport } from './routes/ujian.$attemptId'
+import { Route as MateriLessonLessonIdRouteImport } from './routes/materi.lesson.$lessonId'
+import { Route as OwnerExamStudioIndexRouteImport } from './routes/owner_.exam-studio.index'
+import { Route as OwnerExamStudioExamIdRouteImport } from './routes/owner_.exam-studio.$examId'
+import { Route as OwnerLessonStudioIndexRouteImport } from './routes/owner_.lesson-studio.index'
+import { Route as UjianHasilAttemptIdRouteImport } from './routes/ujian.hasil.$attemptId'
+import { Route as UjianReviewAttemptIdRouteImport } from './routes/ujian.review.$attemptId'
+import { Route as UjianRiwayatExamIdRouteImport } from './routes/ujian.riwayat.$examId'
+import { Route as OwnerLessonStudioLessonIdIndexRouteImport } from './routes/owner_.lesson-studio.$lessonId.index'
+import { Route as OwnerLessonStudioLessonIdPreviewRouteImport } from './routes/owner_.lesson-studio.$lessonId.preview'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExamStudioRoute = ExamStudioRouteImport.update({
+  id: '/exam-studio',
+  path: '/exam-studio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LessonStudioRoute = LessonStudioRouteImport.update({
+  id: '/lesson-studio',
+  path: '/lesson-studio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MateriRoute = MateriRouteImport.update({
+  id: '/materi',
+  path: '/materi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MediaRoute = MediaRouteImport.update({
+  id: '/media',
+  path: '/media',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OwnerRoute = OwnerRouteImport.update({
+  id: '/owner',
+  path: '/owner',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeacherRoute = TeacherRouteImport.update({
+  id: '/teacher',
+  path: '/teacher',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TenantRoute = TenantRouteImport.update({
+  id: '/tenant',
+  path: '/tenant',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UjianRoute = UjianRouteImport.update({
+  id: '/ujian',
+  path: '/ujian',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
+  id: '/admin_/analytics',
+  path: '/admin/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin_/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MateriIndexRoute = MateriIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MateriRoute,
+} as any)
+const MateriCategoryRoute = MateriCategoryRouteImport.update({
+  id: '/$category',
+  path: '/$category',
+  getParentRoute: () => MateriRoute,
+} as any)
+const OwnerQuestionBankRoute = OwnerQuestionBankRouteImport.update({
+  id: '/owner_/question-bank',
+  path: '/owner/question-bank',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OwnerSettingsRoute = OwnerSettingsRouteImport.update({
+  id: '/owner_/settings',
+  path: '/owner/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OwnerTenantsRoute = OwnerTenantsRouteImport.update({
+  id: '/owner_/tenants',
+  path: '/owner/tenants',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OwnerUsersRoute = OwnerUsersRouteImport.update({
+  id: '/owner_/users',
+  path: '/owner/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeacherAnalyticsRoute = TeacherAnalyticsRouteImport.update({
+  id: '/teacher_/analytics',
+  path: '/teacher/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UjianIndexRoute = UjianIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => UjianRoute,
+} as any)
+const UjianAttemptIdRoute = UjianAttemptIdRouteImport.update({
+  id: '/$attemptId',
+  path: '/$attemptId',
+  getParentRoute: () => UjianRoute,
+} as any)
+const MateriLessonLessonIdRoute = MateriLessonLessonIdRouteImport.update({
+  id: '/lesson/$lessonId',
+  path: '/lesson/$lessonId',
+  getParentRoute: () => MateriRoute,
+} as any)
+const OwnerExamStudioIndexRoute = OwnerExamStudioIndexRouteImport.update({
+  id: '/owner_/exam-studio/',
+  path: '/owner/exam-studio/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OwnerExamStudioExamIdRoute = OwnerExamStudioExamIdRouteImport.update({
+  id: '/owner_/exam-studio/$examId',
+  path: '/owner/exam-studio/$examId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OwnerLessonStudioIndexRoute = OwnerLessonStudioIndexRouteImport.update({
+  id: '/owner_/lesson-studio/',
+  path: '/owner/lesson-studio/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UjianHasilAttemptIdRoute = UjianHasilAttemptIdRouteImport.update({
+  id: '/hasil/$attemptId',
+  path: '/hasil/$attemptId',
+  getParentRoute: () => UjianRoute,
+} as any)
+const UjianReviewAttemptIdRoute = UjianReviewAttemptIdRouteImport.update({
+  id: '/review/$attemptId',
+  path: '/review/$attemptId',
+  getParentRoute: () => UjianRoute,
+} as any)
+const UjianRiwayatExamIdRoute = UjianRiwayatExamIdRouteImport.update({
+  id: '/riwayat/$examId',
+  path: '/riwayat/$examId',
+  getParentRoute: () => UjianRoute,
+} as any)
+const OwnerLessonStudioLessonIdIndexRoute =
+  OwnerLessonStudioLessonIdIndexRouteImport.update({
+    id: '/owner_/lesson-studio/$lessonId/',
+    path: '/owner/lesson-studio/$lessonId/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const OwnerLessonStudioLessonIdPreviewRoute =
+  OwnerLessonStudioLessonIdPreviewRouteImport.update({
+    id: '/owner_/lesson-studio/$lessonId/preview',
+    path: '/owner/lesson-studio/$lessonId/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/dashboard': typeof DashboardRoute
+  '/exam-studio': typeof ExamStudioRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/lesson-studio': typeof LessonStudioRoute
+  '/login': typeof LoginRoute
+  '/materi': typeof MateriRouteWithChildren
+  '/media': typeof MediaRoute
+  '/owner': typeof OwnerRoute
+  '/profile': typeof ProfileRoute
+  '/teacher': typeof TeacherRoute
+  '/tenant': typeof TenantRoute
+  '/ujian': typeof UjianRouteWithChildren
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/materi/$category': typeof MateriCategoryRoute
+  '/owner/question-bank': typeof OwnerQuestionBankRoute
+  '/owner/settings': typeof OwnerSettingsRoute
+  '/owner/tenants': typeof OwnerTenantsRoute
+  '/owner/users': typeof OwnerUsersRoute
+  '/teacher/analytics': typeof TeacherAnalyticsRoute
+  '/ujian/$attemptId': typeof UjianAttemptIdRoute
+  '/materi/': typeof MateriIndexRoute
+  '/ujian/': typeof UjianIndexRoute
+  '/materi/lesson/$lessonId': typeof MateriLessonLessonIdRoute
+  '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
+  '/ujian/hasil/$attemptId': typeof UjianHasilAttemptIdRoute
+  '/ujian/review/$attemptId': typeof UjianReviewAttemptIdRoute
+  '/ujian/riwayat/$examId': typeof UjianRiwayatExamIdRoute
+  '/owner/exam-studio/': typeof OwnerExamStudioIndexRoute
+  '/owner/lesson-studio/': typeof OwnerLessonStudioIndexRoute
+  '/owner/lesson-studio/$lessonId/preview': typeof OwnerLessonStudioLessonIdPreviewRoute
+  '/owner/lesson-studio/$lessonId/': typeof OwnerLessonStudioLessonIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/dashboard': typeof DashboardRoute
+  '/exam-studio': typeof ExamStudioRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/lesson-studio': typeof LessonStudioRoute
+  '/login': typeof LoginRoute
+  '/media': typeof MediaRoute
+  '/owner': typeof OwnerRoute
+  '/profile': typeof ProfileRoute
+  '/teacher': typeof TeacherRoute
+  '/tenant': typeof TenantRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/materi/$category': typeof MateriCategoryRoute
+  '/owner/question-bank': typeof OwnerQuestionBankRoute
+  '/owner/settings': typeof OwnerSettingsRoute
+  '/owner/tenants': typeof OwnerTenantsRoute
+  '/owner/users': typeof OwnerUsersRoute
+  '/teacher/analytics': typeof TeacherAnalyticsRoute
+  '/ujian/$attemptId': typeof UjianAttemptIdRoute
+  '/materi': typeof MateriIndexRoute
+  '/ujian': typeof UjianIndexRoute
+  '/materi/lesson/$lessonId': typeof MateriLessonLessonIdRoute
+  '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
+  '/ujian/hasil/$attemptId': typeof UjianHasilAttemptIdRoute
+  '/ujian/review/$attemptId': typeof UjianReviewAttemptIdRoute
+  '/ujian/riwayat/$examId': typeof UjianRiwayatExamIdRoute
+  '/owner/exam-studio': typeof OwnerExamStudioIndexRoute
+  '/owner/lesson-studio': typeof OwnerLessonStudioIndexRoute
+  '/owner/lesson-studio/$lessonId/preview': typeof OwnerLessonStudioLessonIdPreviewRoute
+  '/owner/lesson-studio/$lessonId': typeof OwnerLessonStudioLessonIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/dashboard': typeof DashboardRoute
+  '/exam-studio': typeof ExamStudioRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/lesson-studio': typeof LessonStudioRoute
+  '/login': typeof LoginRoute
+  '/materi': typeof MateriRouteWithChildren
+  '/media': typeof MediaRoute
+  '/owner': typeof OwnerRoute
+  '/profile': typeof ProfileRoute
+  '/teacher': typeof TeacherRoute
+  '/tenant': typeof TenantRoute
+  '/ujian': typeof UjianRouteWithChildren
+  '/admin_/analytics': typeof AdminAnalyticsRoute
+  '/admin_/users': typeof AdminUsersRoute
+  '/materi/$category': typeof MateriCategoryRoute
+  '/owner_/question-bank': typeof OwnerQuestionBankRoute
+  '/owner_/settings': typeof OwnerSettingsRoute
+  '/owner_/tenants': typeof OwnerTenantsRoute
+  '/owner_/users': typeof OwnerUsersRoute
+  '/teacher_/analytics': typeof TeacherAnalyticsRoute
+  '/ujian/$attemptId': typeof UjianAttemptIdRoute
+  '/materi/': typeof MateriIndexRoute
+  '/ujian/': typeof UjianIndexRoute
+  '/materi/lesson/$lessonId': typeof MateriLessonLessonIdRoute
+  '/owner_/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
+  '/ujian/hasil/$attemptId': typeof UjianHasilAttemptIdRoute
+  '/ujian/review/$attemptId': typeof UjianReviewAttemptIdRoute
+  '/ujian/riwayat/$examId': typeof UjianRiwayatExamIdRoute
+  '/owner_/exam-studio/': typeof OwnerExamStudioIndexRoute
+  '/owner_/lesson-studio/': typeof OwnerLessonStudioIndexRoute
+  '/owner_/lesson-studio/$lessonId/preview': typeof OwnerLessonStudioLessonIdPreviewRoute
+  '/owner_/lesson-studio/$lessonId/': typeof OwnerLessonStudioLessonIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/dashboard'
+    | '/exam-studio'
+    | '/leaderboard'
+    | '/lesson-studio'
+    | '/login'
+    | '/materi'
+    | '/media'
+    | '/owner'
+    | '/profile'
+    | '/teacher'
+    | '/tenant'
+    | '/ujian'
+    | '/admin/analytics'
+    | '/admin/users'
+    | '/materi/$category'
+    | '/owner/question-bank'
+    | '/owner/settings'
+    | '/owner/tenants'
+    | '/owner/users'
+    | '/teacher/analytics'
+    | '/ujian/$attemptId'
+    | '/materi/'
+    | '/ujian/'
+    | '/materi/lesson/$lessonId'
+    | '/owner/exam-studio/$examId'
+    | '/ujian/hasil/$attemptId'
+    | '/ujian/review/$attemptId'
+    | '/ujian/riwayat/$examId'
+    | '/owner/exam-studio/'
+    | '/owner/lesson-studio/'
+    | '/owner/lesson-studio/$lessonId/preview'
+    | '/owner/lesson-studio/$lessonId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/admin'
+    | '/dashboard'
+    | '/exam-studio'
+    | '/leaderboard'
+    | '/lesson-studio'
+    | '/login'
+    | '/media'
+    | '/owner'
+    | '/profile'
+    | '/teacher'
+    | '/tenant'
+    | '/admin/analytics'
+    | '/admin/users'
+    | '/materi/$category'
+    | '/owner/question-bank'
+    | '/owner/settings'
+    | '/owner/tenants'
+    | '/owner/users'
+    | '/teacher/analytics'
+    | '/ujian/$attemptId'
+    | '/materi'
+    | '/ujian'
+    | '/materi/lesson/$lessonId'
+    | '/owner/exam-studio/$examId'
+    | '/ujian/hasil/$attemptId'
+    | '/ujian/review/$attemptId'
+    | '/ujian/riwayat/$examId'
+    | '/owner/exam-studio'
+    | '/owner/lesson-studio'
+    | '/owner/lesson-studio/$lessonId/preview'
+    | '/owner/lesson-studio/$lessonId'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/dashboard'
+    | '/exam-studio'
+    | '/leaderboard'
+    | '/lesson-studio'
+    | '/login'
+    | '/materi'
+    | '/media'
+    | '/owner'
+    | '/profile'
+    | '/teacher'
+    | '/tenant'
+    | '/ujian'
+    | '/admin_/analytics'
+    | '/admin_/users'
+    | '/materi/$category'
+    | '/owner_/question-bank'
+    | '/owner_/settings'
+    | '/owner_/tenants'
+    | '/owner_/users'
+    | '/teacher_/analytics'
+    | '/ujian/$attemptId'
+    | '/materi/'
+    | '/ujian/'
+    | '/materi/lesson/$lessonId'
+    | '/owner_/exam-studio/$examId'
+    | '/ujian/hasil/$attemptId'
+    | '/ujian/review/$attemptId'
+    | '/ujian/riwayat/$examId'
+    | '/owner_/exam-studio/'
+    | '/owner_/lesson-studio/'
+    | '/owner_/lesson-studio/$lessonId/preview'
+    | '/owner_/lesson-studio/$lessonId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
+  DashboardRoute: typeof DashboardRoute
+  ExamStudioRoute: typeof ExamStudioRoute
+  LeaderboardRoute: typeof LeaderboardRoute
+  LessonStudioRoute: typeof LessonStudioRoute
+  LoginRoute: typeof LoginRoute
+  MateriRoute: typeof MateriRouteWithChildren
+  MediaRoute: typeof MediaRoute
+  OwnerRoute: typeof OwnerRoute
+  ProfileRoute: typeof ProfileRoute
+  TeacherRoute: typeof TeacherRoute
+  TenantRoute: typeof TenantRoute
+  UjianRoute: typeof UjianRouteWithChildren
+  AdminAnalyticsRoute: typeof AdminAnalyticsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  OwnerQuestionBankRoute: typeof OwnerQuestionBankRoute
+  OwnerSettingsRoute: typeof OwnerSettingsRoute
+  OwnerTenantsRoute: typeof OwnerTenantsRoute
+  OwnerUsersRoute: typeof OwnerUsersRoute
+  TeacherAnalyticsRoute: typeof TeacherAnalyticsRoute
+  OwnerExamStudioExamIdRoute: typeof OwnerExamStudioExamIdRoute
+  OwnerExamStudioIndexRoute: typeof OwnerExamStudioIndexRoute
+  OwnerLessonStudioIndexRoute: typeof OwnerLessonStudioIndexRoute
+  OwnerLessonStudioLessonIdPreviewRoute: typeof OwnerLessonStudioLessonIdPreviewRoute
+  OwnerLessonStudioLessonIdIndexRoute: typeof OwnerLessonStudioLessonIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +471,300 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/exam-studio': {
+      id: '/exam-studio'
+      path: '/exam-studio'
+      fullPath: '/exam-studio'
+      preLoaderRoute: typeof ExamStudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lesson-studio': {
+      id: '/lesson-studio'
+      path: '/lesson-studio'
+      fullPath: '/lesson-studio'
+      preLoaderRoute: typeof LessonStudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/materi': {
+      id: '/materi'
+      path: '/materi'
+      fullPath: '/materi'
+      preLoaderRoute: typeof MateriRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/media': {
+      id: '/media'
+      path: '/media'
+      fullPath: '/media'
+      preLoaderRoute: typeof MediaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/owner': {
+      id: '/owner'
+      path: '/owner'
+      fullPath: '/owner'
+      preLoaderRoute: typeof OwnerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teacher': {
+      id: '/teacher'
+      path: '/teacher'
+      fullPath: '/teacher'
+      preLoaderRoute: typeof TeacherRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tenant': {
+      id: '/tenant'
+      path: '/tenant'
+      fullPath: '/tenant'
+      preLoaderRoute: typeof TenantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ujian': {
+      id: '/ujian'
+      path: '/ujian'
+      fullPath: '/ujian'
+      preLoaderRoute: typeof UjianRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin_/analytics': {
+      id: '/admin_/analytics'
+      path: '/admin/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AdminAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin_/users': {
+      id: '/admin_/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/materi/': {
+      id: '/materi/'
+      path: '/'
+      fullPath: '/materi/'
+      preLoaderRoute: typeof MateriIndexRouteImport
+      parentRoute: typeof MateriRoute
+    }
+    '/materi/$category': {
+      id: '/materi/$category'
+      path: '/$category'
+      fullPath: '/materi/$category'
+      preLoaderRoute: typeof MateriCategoryRouteImport
+      parentRoute: typeof MateriRoute
+    }
+    '/owner_/question-bank': {
+      id: '/owner_/question-bank'
+      path: '/owner/question-bank'
+      fullPath: '/owner/question-bank'
+      preLoaderRoute: typeof OwnerQuestionBankRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/owner_/settings': {
+      id: '/owner_/settings'
+      path: '/owner/settings'
+      fullPath: '/owner/settings'
+      preLoaderRoute: typeof OwnerSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/owner_/tenants': {
+      id: '/owner_/tenants'
+      path: '/owner/tenants'
+      fullPath: '/owner/tenants'
+      preLoaderRoute: typeof OwnerTenantsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/owner_/users': {
+      id: '/owner_/users'
+      path: '/owner/users'
+      fullPath: '/owner/users'
+      preLoaderRoute: typeof OwnerUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teacher_/analytics': {
+      id: '/teacher_/analytics'
+      path: '/teacher/analytics'
+      fullPath: '/teacher/analytics'
+      preLoaderRoute: typeof TeacherAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ujian/': {
+      id: '/ujian/'
+      path: '/'
+      fullPath: '/ujian/'
+      preLoaderRoute: typeof UjianIndexRouteImport
+      parentRoute: typeof UjianRoute
+    }
+    '/ujian/$attemptId': {
+      id: '/ujian/$attemptId'
+      path: '/$attemptId'
+      fullPath: '/ujian/$attemptId'
+      preLoaderRoute: typeof UjianAttemptIdRouteImport
+      parentRoute: typeof UjianRoute
+    }
+    '/materi/lesson/$lessonId': {
+      id: '/materi/lesson/$lessonId'
+      path: '/lesson/$lessonId'
+      fullPath: '/materi/lesson/$lessonId'
+      preLoaderRoute: typeof MateriLessonLessonIdRouteImport
+      parentRoute: typeof MateriRoute
+    }
+    '/owner_/exam-studio/': {
+      id: '/owner_/exam-studio/'
+      path: '/owner/exam-studio'
+      fullPath: '/owner/exam-studio/'
+      preLoaderRoute: typeof OwnerExamStudioIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/owner_/exam-studio/$examId': {
+      id: '/owner_/exam-studio/$examId'
+      path: '/owner/exam-studio/$examId'
+      fullPath: '/owner/exam-studio/$examId'
+      preLoaderRoute: typeof OwnerExamStudioExamIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/owner_/lesson-studio/': {
+      id: '/owner_/lesson-studio/'
+      path: '/owner/lesson-studio'
+      fullPath: '/owner/lesson-studio/'
+      preLoaderRoute: typeof OwnerLessonStudioIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ujian/hasil/$attemptId': {
+      id: '/ujian/hasil/$attemptId'
+      path: '/hasil/$attemptId'
+      fullPath: '/ujian/hasil/$attemptId'
+      preLoaderRoute: typeof UjianHasilAttemptIdRouteImport
+      parentRoute: typeof UjianRoute
+    }
+    '/ujian/review/$attemptId': {
+      id: '/ujian/review/$attemptId'
+      path: '/review/$attemptId'
+      fullPath: '/ujian/review/$attemptId'
+      preLoaderRoute: typeof UjianReviewAttemptIdRouteImport
+      parentRoute: typeof UjianRoute
+    }
+    '/ujian/riwayat/$examId': {
+      id: '/ujian/riwayat/$examId'
+      path: '/riwayat/$examId'
+      fullPath: '/ujian/riwayat/$examId'
+      preLoaderRoute: typeof UjianRiwayatExamIdRouteImport
+      parentRoute: typeof UjianRoute
+    }
+    '/owner_/lesson-studio/$lessonId/': {
+      id: '/owner_/lesson-studio/$lessonId/'
+      path: '/owner/lesson-studio/$lessonId'
+      fullPath: '/owner/lesson-studio/$lessonId/'
+      preLoaderRoute: typeof OwnerLessonStudioLessonIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/owner_/lesson-studio/$lessonId/preview': {
+      id: '/owner_/lesson-studio/$lessonId/preview'
+      path: '/owner/lesson-studio/$lessonId/preview'
+      fullPath: '/owner/lesson-studio/$lessonId/preview'
+      preLoaderRoute: typeof OwnerLessonStudioLessonIdPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface MateriRouteChildren {
+  MateriCategoryRoute: typeof MateriCategoryRoute
+  MateriIndexRoute: typeof MateriIndexRoute
+  MateriLessonLessonIdRoute: typeof MateriLessonLessonIdRoute
+}
+
+const MateriRouteChildren: MateriRouteChildren = {
+  MateriCategoryRoute: MateriCategoryRoute,
+  MateriIndexRoute: MateriIndexRoute,
+  MateriLessonLessonIdRoute: MateriLessonLessonIdRoute,
+}
+
+const MateriRouteWithChildren =
+  MateriRoute._addFileChildren(MateriRouteChildren)
+
+interface UjianRouteChildren {
+  UjianAttemptIdRoute: typeof UjianAttemptIdRoute
+  UjianIndexRoute: typeof UjianIndexRoute
+  UjianHasilAttemptIdRoute: typeof UjianHasilAttemptIdRoute
+  UjianReviewAttemptIdRoute: typeof UjianReviewAttemptIdRoute
+  UjianRiwayatExamIdRoute: typeof UjianRiwayatExamIdRoute
+}
+
+const UjianRouteChildren: UjianRouteChildren = {
+  UjianAttemptIdRoute: UjianAttemptIdRoute,
+  UjianIndexRoute: UjianIndexRoute,
+  UjianHasilAttemptIdRoute: UjianHasilAttemptIdRoute,
+  UjianReviewAttemptIdRoute: UjianReviewAttemptIdRoute,
+  UjianRiwayatExamIdRoute: UjianRiwayatExamIdRoute,
+}
+
+const UjianRouteWithChildren = UjianRoute._addFileChildren(UjianRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
+  DashboardRoute: DashboardRoute,
+  ExamStudioRoute: ExamStudioRoute,
+  LeaderboardRoute: LeaderboardRoute,
+  LessonStudioRoute: LessonStudioRoute,
+  LoginRoute: LoginRoute,
+  MateriRoute: MateriRouteWithChildren,
+  MediaRoute: MediaRoute,
+  OwnerRoute: OwnerRoute,
+  ProfileRoute: ProfileRoute,
+  TeacherRoute: TeacherRoute,
+  TenantRoute: TenantRoute,
+  UjianRoute: UjianRouteWithChildren,
+  AdminAnalyticsRoute: AdminAnalyticsRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  OwnerQuestionBankRoute: OwnerQuestionBankRoute,
+  OwnerSettingsRoute: OwnerSettingsRoute,
+  OwnerTenantsRoute: OwnerTenantsRoute,
+  OwnerUsersRoute: OwnerUsersRoute,
+  TeacherAnalyticsRoute: TeacherAnalyticsRoute,
+  OwnerExamStudioExamIdRoute: OwnerExamStudioExamIdRoute,
+  OwnerExamStudioIndexRoute: OwnerExamStudioIndexRoute,
+  OwnerLessonStudioIndexRoute: OwnerLessonStudioIndexRoute,
+  OwnerLessonStudioLessonIdPreviewRoute: OwnerLessonStudioLessonIdPreviewRoute,
+  OwnerLessonStudioLessonIdIndexRoute: OwnerLessonStudioLessonIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
