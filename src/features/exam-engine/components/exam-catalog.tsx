@@ -444,34 +444,35 @@ export function ExamCatalog() {
       </nav>
 
       {/* MOTIVATIONAL FOOTER CARD */}
-      <section className="relative overflow-hidden rounded-2xl border border-primary/30 bg-card p-4">
+      <section className="relative overflow-hidden rounded-2xl border border-primary/30 bg-card px-3 py-3 sm:px-5 sm:py-4">
         <div
           aria-hidden
           className="pointer-events-none absolute -right-10 -top-12 size-40 rounded-full bg-primary/15 blur-3xl"
         />
-        <div className="relative grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 sm:gap-4">
+        <div className="relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 sm:gap-4">
+          <div className="grid size-10 shrink-0 place-items-center rounded-full border border-primary/40 bg-primary/10 text-primary shadow-[0_0_18px_color-mix(in_oklab,var(--primary)_25%,transparent)] sm:size-14">
+            <Lightbulb className="size-5 sm:size-7" />
+          </div>
+          <div className="min-w-0">
+            <p className="font-bold leading-snug tracking-tight text-foreground [font-size:clamp(0.85rem,3.4vw,1.25rem)]">
+              Kerjakan dengan fokus, raih hasil terbaik!
+            </p>
+            <p className="mt-1 leading-snug text-muted-foreground [font-size:clamp(0.7rem,2.7vw,0.9rem)]">
+              Setiap ujian menggunakan timer dan question palette. Pastikan koneksi stabil dan
+              kerjakan dengan jujur.
+            </p>
+          </div>
           <img
             src={motivationArt}
             alt=""
             width={512}
             height={512}
             loading="lazy"
-            className="size-20 shrink-0 object-contain drop-shadow-[0_0_24px_color-mix(in_oklab,var(--primary)_30%,transparent)] sm:size-24"
+            className="size-14 max-w-[22vw] shrink-0 object-contain drop-shadow-[0_0_24px_color-mix(in_oklab,var(--primary)_30%,transparent)] sm:size-20"
           />
-          <div className="min-w-0">
-            <p className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wider text-primary">
-              <Lightbulb className="size-3.5" /> Tips Ujian
-            </p>
-            <p className="mt-2 text-lg font-bold leading-tight tracking-tight text-foreground sm:text-xl">
-              Kerjakan dengan fokus, raih hasil terbaik!
-            </p>
-            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-              Setiap ujian menggunakan timer dan question palette. Pastikan koneksi stabil dan
-              kerjakan dengan jujur.
-            </p>
-          </div>
         </div>
       </section>
+
 
 
       <ExamInfoDialog open={infoOpen} onOpenChange={setInfoOpen} />
