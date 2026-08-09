@@ -419,3 +419,21 @@ export async function listMyAttempts(): Promise<AttemptRow[]> {
   if (error) return [];
   return (data as AttemptRow[] | null) ?? [];
 }
+
+/**
+ * Semua hasil ujian milik user (read-only) untuk statistik katalog.
+ * Tidak menyentuh Exam Engine — hanya membaca tabel hasil.
+ */
+export async function listMyResults(): Promise<AttemptResultRow[]> {
+  const { data: userData } = await supabase.auth.getUser();
+  const userId = userData.user?.id;
+  if (!userId) return [];
+
+  const { data, error } = await supabase
+    .from(RESULT_TABLE)
+    .select("*")
+    .eq("user_id", userId)
+    .order("submitted_at", { ascending: true });
+  if (error) return [];
+  return (data as AttemptResultRow[] | null) ?? [];
+}
