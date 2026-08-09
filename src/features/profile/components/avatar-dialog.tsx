@@ -44,8 +44,10 @@ export function AvatarDialog({
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isSaving, setIsSaving] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
 
-  const locked = Boolean(cooldown && !cooldown.canChange);
+  // Role bebas cooldown (owner/admin/guru) ditandai server via `exempt`.
+  const locked = Boolean(cooldown && !cooldown.exempt && !cooldown.canChange);
 
   const reset = useCallback(() => {
     imageRef.current = null;
@@ -218,7 +220,14 @@ export function AvatarDialog({
 
           <p className="mt-4 max-w-xs text-center text-sm text-muted-foreground">
             Gunakan foto yang jelas dan sesuai dengan{" "}
-            <span className="text-primary">ketentuan</span> komunitas kami.
+            <button
+              type="button"
+              onClick={() => setTermsOpen(true)}
+              className="rounded-md px-1 py-0.5 font-medium text-primary underline underline-offset-2 transition-colors hover:bg-primary-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              ketentuan
+            </button>{" "}
+            komunitas kami.
           </p>
 
           {locked && cooldown ? (
