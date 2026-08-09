@@ -136,21 +136,11 @@ export function AvatarDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        showCloseButton={false}
-        className="max-w-md gap-0 border-border bg-background p-0"
-      >
+      <DialogContent className="max-w-md gap-0 border-border bg-background p-0">
         <div className="flex items-center gap-2 px-4 py-4">
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            aria-label="Tutup"
-            className="rounded-md p-1 text-foreground/80 transition-colors hover:text-foreground"
-          >
-            <X className="h-5 w-5" />
-          </button>
-          <h2 className="flex-1 pr-6 text-center text-lg font-semibold">Ganti Foto Profil</h2>
+          <h2 className="flex-1 text-center text-lg font-semibold">Ganti Foto Profil</h2>
         </div>
+
 
         <div className="flex flex-col items-center px-6 pb-6">
           <div
