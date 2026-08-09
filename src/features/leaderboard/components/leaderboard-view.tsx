@@ -34,7 +34,7 @@ const PAGE_SIZE = 7;
 
 /** Kolom eksplisit: Siswa fleksibel, angka compact tapi aman untuk angka besar. */
 const GRID_COLS =
-  "grid grid-cols-[2rem_minmax(0,1fr)_max-content_max-content] gap-x-2 sm:grid-cols-[3.5rem_minmax(0,1fr)_max-content_max-content] sm:gap-x-4";
+  "grid grid-cols-[3.25rem_minmax(0,1fr)_max-content_max-content] gap-x-2 sm:grid-cols-[4rem_minmax(0,1fr)_max-content_max-content] sm:gap-x-4";
 
 const NUM_CELL =
   "min-w-[3rem] whitespace-nowrap text-right text-sm font-semibold tabular-nums [font-variant-numeric:tabular-nums] text-primary sm:min-w-[4rem]";
