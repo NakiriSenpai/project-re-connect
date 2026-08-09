@@ -27,6 +27,7 @@ import type { Theme } from "@/types/common";
 import { cn } from "@/lib/utils";
 import { AvatarDialog } from "./avatar-dialog";
 import { ChangePasswordDialog } from "./change-password-dialog";
+import { ChangeNameDialog } from "./change-name-dialog";
 
 const ROLE_DESCRIPTION: Record<AppRole, string> = {
   owner: "Pemilik akun dan pengelola utama platform.",
@@ -76,6 +77,7 @@ export function ProfileView() {
   const navigate = useNavigate();
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
+  const [nameOpen, setNameOpen] = useState(false);
 
   const cooldownQuery = useQuery({
     queryKey: ["avatar-cooldown", user?.id],
@@ -148,12 +150,16 @@ export function ProfileView() {
 
       {/* Informasi akun */}
       <SectionCard icon={UserIcon} title="Informasi Akun">
-        <div className="flex items-center gap-3 px-4 py-3.5">
+        <button
+          type="button"
+          onClick={() => setNameOpen(true)}
+          className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-surface-elevated"
+        >
           <UserIcon className="h-5 w-5 text-muted-foreground" />
           <span className="text-sm font-medium">Nama</span>
           <span className="ml-auto truncate text-sm text-muted-foreground">{displayName}</span>
           <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-        </div>
+        </button>
         <div className="flex items-center gap-3 px-4 py-3.5">
           <Mail className="h-5 w-5 text-muted-foreground" />
           <span className="text-sm font-medium">Email</span>
@@ -254,6 +260,11 @@ export function ProfileView() {
         currentAvatarUrl={avatarUrl}
         cooldown={cooldownQuery.data ?? null}
         onSaved={() => void cooldownQuery.refetch()}
+      />
+      <ChangeNameDialog
+        open={nameOpen}
+        onOpenChange={setNameOpen}
+        currentName={profile?.display_name ?? profile?.full_name ?? ""}
       />
       <ChangePasswordDialog open={passwordOpen} onOpenChange={setPasswordOpen} />
     </div>
