@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
   BarChart3,
@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { CATEGORY_LABELS, EXAM_DIFFICULTY_LABELS } from "@/features/exam/exam.constants";
 import { useAvailableExams, useMyResults, useMyAttempts, useStartAttempt } from "@/hooks/attempt";
+import { useExamCategories } from "@/hooks/exam/use-exam-category";
 import { cn } from "@/lib/utils";
 import type { ExamRow } from "@/types/exam";
 import motivationArt from "@/assets/exam-motivation.png";
@@ -41,9 +42,10 @@ const DIFFICULTY_STYLE: Record<string, string> = {
   sulit: "border-rose-500/40 bg-rose-500/10 text-rose-400",
 };
 
-function categoryLabel(category: string) {
+function fallbackLabel(category: string) {
   return CATEGORY_LABELS[category] ?? category.charAt(0).toUpperCase() + category.slice(1);
 }
+
 
 function ExamIcon({ exam }: { exam: ExamRow }) {
   const category = exam.category.toLowerCase();
@@ -112,6 +114,12 @@ export function ExamCatalog() {
   const [page, setPage] = useState(1);
 
   const examList = useMemo(() => exams ?? [], [exams]);
+  const { data: categoryRows } = useExamCategories();
+  const categoryLabel = useCallback(
+    (slug: string) =>
+      (categoryRows ?? []).find((item) => item.slug === slug)?.label ?? fallbackLabel(slug),
+    [categoryRows],
+  );
 
   const activeByExam = useMemo(
     () =>
@@ -130,10 +138,18 @@ export function ExamCatalog() {
 
   const stats = useMemo(() => {
     const rows = results ?? [];
+    const examById = new Map(examList.map((exam) => [exam.id, exam]));
     const firstByExam = new Map<string, number>();
     const passedSets = new Set<string>();
+    const scoreTrend: { label: string; score: number }[] = [];
     for (const row of rows) {
-      if (!firstByExam.has(row.exam_id)) firstByExam.set(row.exam_id, row.score);
+      if (!firstByExam.has(row.exam_id)) {
+        firstByExam.set(row.exam_id, row.score);
+        scoreTrend.push({
+          label: `#${scoreTrend.length + 1}`,
+          score: Math.round(row.score),
+        });
+      }
       if (row.passed) passedSets.add(row.exam_id);
     }
     const firstScores = [...firstByExam.values()];
@@ -141,21 +157,54 @@ export function ExamCatalog() {
       firstScores.length === 0
         ? null
         : Math.round((firstScores.reduce((a, b) => a + b, 0) / firstScores.length) * 10) / 10;
+
+    const perCategory = new Map<string, { completed: number; total: number }>();
+    for (const exam of examList) {
+      const entry = perCategory.get(exam.category) ?? { completed: 0, total: 0 };
+      entry.total += 1;
+      perCategory.set(exam.category, entry);
+    }
+    for (const examId of firstByExam.keys()) {
+      const exam = examById.get(examId);
+      if (!exam) continue;
+      const entry = perCategory.get(exam.category);
+      if (entry) entry.completed += 1;
+    }
+
     return {
       totalAttempts: rows.length,
       completedSets: firstByExam.size,
       passedSets: passedSets.size,
       averageScore: average,
+      totalSets: examList.length,
+      scoreTrend,
+      categoryProgress: [...perCategory.entries()]
+        .map(([slug, entry]) => ({
+          label: categoryLabel(slug),
+          completed: entry.completed,
+          total: entry.total,
+          percent: entry.total === 0 ? 0 : Math.round((entry.completed / entry.total) * 100),
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
     };
-  }, [results]);
+  }, [results, examList, categoryLabel]);
+
 
   const totalSets = examList.length;
   const progressPercent = totalSets === 0 ? 0 : Math.round((stats.completedSets / totalSets) * 100);
 
-  const categories = useMemo(
-    () => [...new Set(examList.map((exam) => exam.category))].sort((a, b) => a.localeCompare(b)),
-    [examList],
-  );
+  const categories = useMemo(() => {
+    const used = new Set(examList.map((exam) => exam.category));
+    const fromDb = (categoryRows ?? []).filter((row) => used.has(row.slug));
+    const known = new Set(fromDb.map((row) => row.slug));
+    const extras = [...used].filter((slug) => !known.has(slug)).map((slug) => ({
+      slug,
+      label: fallbackLabel(slug),
+    }));
+    return [...fromDb.map((row) => ({ slug: row.slug, label: row.label })), ...extras].sort((a, b) =>
+      a.label.localeCompare(b.label),
+    );
+  }, [examList, categoryRows]);
 
   const filtered = useMemo(
     () => (category === "semua" ? examList : examList.filter((e) => e.category === category)),
@@ -296,9 +345,9 @@ export function ExamCatalog() {
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="semua">Semua Kategori</SelectItem>
-          {categories.map((value) => (
-            <SelectItem key={value} value={value}>
-              {categoryLabel(value)}
+          {categories.map((item) => (
+            <SelectItem key={item.slug} value={item.slug}>
+              {item.label}
             </SelectItem>
           ))}
         </SelectContent>
@@ -320,37 +369,41 @@ export function ExamCatalog() {
               >
                 <div className="flex min-w-0 items-start gap-3">
                   <ExamIcon exam={exam} />
-                  <div className="min-w-0 flex-1 space-y-2">
+                  <div className="min-w-0 flex-1 space-y-1">
                     <h2 className="line-clamp-2 text-base font-semibold leading-snug text-foreground">
                       {exam.title}
                     </h2>
                     {exam.description ? (
-                      <p className="line-clamp-2 text-sm text-muted-foreground">
+                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                         {exam.description}
                       </p>
                     ) : null}
-                    <div className="flex flex-wrap gap-1.5 text-xs">
-                      <span className="rounded-md border border-primary/40 bg-primary/10 px-2 py-1 text-primary">
-                        {categoryLabel(exam.category)}
-                      </span>
-                      <span
-                        className={cn(
-                          "rounded-md border px-2 py-1",
-                          DIFFICULTY_STYLE[exam.difficulty] ??
-                            "border-border bg-muted/40 text-muted-foreground",
-                        )}
-                      >
-                        {EXAM_DIFFICULTY_LABELS[exam.difficulty]}
-                      </span>
-                      <span className="flex items-center gap-1 rounded-md border border-border bg-muted/30 px-2 py-1 text-muted-foreground">
-                        <Clock className="size-3" /> {exam.duration_minutes} menit
-                      </span>
-                      <span className="flex items-center gap-1 rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-1 text-amber-400">
-                        <Target className="size-3" /> Pass {exam.passing_score}%
-                      </span>
-                    </div>
                   </div>
                 </div>
+                {/* 4 chip metadata — selalu satu baris */}
+                <div className="mt-3 grid grid-cols-4 gap-1.5 text-[11px] leading-none">
+                  <span className="flex min-w-0 items-center justify-center rounded-md border border-primary/40 bg-primary/10 px-1.5 py-1.5 text-primary">
+                    <span className="truncate">{categoryLabel(exam.category)}</span>
+                  </span>
+                  <span
+                    className={cn(
+                      "flex min-w-0 items-center justify-center rounded-md border px-1.5 py-1.5",
+                      DIFFICULTY_STYLE[exam.difficulty] ??
+                        "border-border bg-muted/40 text-muted-foreground",
+                    )}
+                  >
+                    <span className="truncate">{EXAM_DIFFICULTY_LABELS[exam.difficulty]}</span>
+                  </span>
+                  <span className="flex min-w-0 items-center justify-center gap-1 rounded-md border border-border bg-muted/30 px-1.5 py-1.5 text-muted-foreground">
+                    <Clock className="size-3 shrink-0" />
+                    <span className="truncate tabular-nums">{exam.duration_minutes}m</span>
+                  </span>
+                  <span className="flex min-w-0 items-center justify-center gap-1 rounded-md border border-amber-500/40 bg-amber-500/10 px-1.5 py-1.5 text-amber-400">
+                    <Target className="size-3 shrink-0" />
+                    <span className="truncate tabular-nums">{exam.passing_score}%</span>
+                  </span>
+                </div>
+
                 <Button
                   className="mt-3 h-11 w-full rounded-xl"
                   disabled={start.isPending}
@@ -391,30 +444,35 @@ export function ExamCatalog() {
       </nav>
 
       {/* MOTIVATIONAL FOOTER CARD */}
-      <section className="overflow-hidden rounded-2xl border border-border bg-card p-4">
-        <div className="flex items-start gap-3">
-          <div className="grid size-11 shrink-0 place-items-center rounded-full border border-primary/40 bg-primary/10 text-primary shadow-[0_0_20px_color-mix(in_oklab,var(--primary)_25%,transparent)]">
-            <Lightbulb className="size-5" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-base font-semibold leading-snug text-foreground">
-              Kerjakan dengan fokus, raih hasil terbaik!
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Setiap ujian menggunakan timer dan question palette. Pastikan koneksi stabil dan
-              kerjakan dengan jujur.
-            </p>
-          </div>
+      <section className="relative overflow-hidden rounded-2xl border border-primary/30 bg-card p-4">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-10 -top-12 size-40 rounded-full bg-primary/15 blur-3xl"
+        />
+        <div className="relative grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 sm:gap-4">
           <img
             src={motivationArt}
             alt=""
             width={512}
             height={512}
             loading="lazy"
-            className="hidden size-20 shrink-0 self-center object-contain sm:block"
+            className="size-20 shrink-0 object-contain drop-shadow-[0_0_24px_color-mix(in_oklab,var(--primary)_30%,transparent)] sm:size-24"
           />
+          <div className="min-w-0">
+            <p className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wider text-primary">
+              <Lightbulb className="size-3.5" /> Tips Ujian
+            </p>
+            <p className="mt-2 text-lg font-bold leading-tight tracking-tight text-foreground sm:text-xl">
+              Kerjakan dengan fokus, raih hasil terbaik!
+            </p>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+              Setiap ujian menggunakan timer dan question palette. Pastikan koneksi stabil dan
+              kerjakan dengan jujur.
+            </p>
+          </div>
         </div>
       </section>
+
 
       <ExamInfoDialog open={infoOpen} onOpenChange={setInfoOpen} />
       <ExamStatsDialog open={statsOpen} onOpenChange={setStatsOpen} stats={stats} />

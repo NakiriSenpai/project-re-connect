@@ -15,12 +15,9 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDeleteExam, useExams } from "@/hooks/exam";
-import {
-  CATEGORY_LABELS,
-  EXAM_CATEGORIES,
-  EXAM_DIFFICULTY_LABELS,
-  EXAM_STATUS_LABELS,
-} from "@/features/exam/exam.constants";
+import { useExamCategories } from "@/hooks/exam/use-exam-category";
+import { ExamCategoryManager } from "./exam-category-manager";
+import { EXAM_DIFFICULTY_LABELS, EXAM_STATUS_LABELS } from "@/features/exam/exam.constants";
 import type { ExamRow, ExamStatus } from "@/types/exam";
 import { ImportBundleDialog } from "@/features/content-io/components/import-bundle-dialog";
 import { recordContentIoAudit } from "@/services/content/bundle/audit.service";
@@ -77,6 +74,10 @@ export function ExamList() {
     [search, status, category, page],
   );
   const { data, isLoading, isError } = useExams(params);
+  const { data: categoryRows } = useExamCategories();
+  const categoryOptions = useMemo(() => categoryRows ?? [], [categoryRows]);
+  const categoryLabel = (slug: string) =>
+    categoryOptions.find((item) => item.slug === slug)?.label ?? slug;
   const deleteExam = useDeleteExam();
 
   const handleDelete = async (exam: ExamRow) => {
@@ -97,6 +98,10 @@ export function ExamList() {
           Susun ujian, section, dan soal. Nilai total selalu 100.
         </p>
       </header>
+
+      <ExamCategoryManager />
+
+
 
       <div className="flex flex-wrap gap-2">
         <Button
@@ -157,9 +162,10 @@ export function ExamList() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="semua">Semua kategori</SelectItem>
-              {EXAM_CATEGORIES.map((item) => (
-                <SelectItem key={item} value={item}>
-                  {CATEGORY_LABELS[item] ?? item}
+              {categoryOptions.map((item) => (
+                <SelectItem key={item.slug} value={item.slug}>
+                  {item.label}
+
                 </SelectItem>
               ))}
             </SelectContent>
@@ -196,7 +202,7 @@ export function ExamList() {
               <dl className="mt-3 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
                 <div>
                   <dt className="font-medium text-foreground">Kategori</dt>
-                  <dd>{CATEGORY_LABELS[exam.category] ?? exam.category}</dd>
+                  <dd>{categoryLabel(exam.category)}</dd>
                 </div>
                 <div>
                   <dt className="font-medium text-foreground">Kesulitan</dt>

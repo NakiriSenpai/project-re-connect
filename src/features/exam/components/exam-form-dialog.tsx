@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -24,9 +24,8 @@ import { Switch } from "@/components/ui/switch";
 import { MediaPicker } from "@/features/media";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateExam, useUpdateExam } from "@/hooks/exam";
+import { useExamCategories } from "@/hooks/exam/use-exam-category";
 import {
-  CATEGORY_LABELS,
-  EXAM_CATEGORIES,
   EXAM_DIFFICULTY_LABELS,
   EXAM_STATUS_LABELS,
   EXAM_TOTAL_SCORE,
@@ -59,6 +58,8 @@ export function ExamFormDialog({ open, onOpenChange, exam = null }: Props) {
   const [error, setError] = useState<string | null>(null);
   const createExam = useCreateExam();
   const updateExam = useUpdateExam();
+  const { data: categoryRows } = useExamCategories();
+  const categoryOptions = useMemo(() => categoryRows ?? [], [categoryRows]);
   const isEdit = Boolean(exam);
   const pending = createExam.isPending || updateExam.isPending;
 
@@ -83,6 +84,18 @@ export function ExamFormDialog({ open, onOpenChange, exam = null }: Props) {
         : initialForm,
     );
   }, [open, exam]);
+
+  // Kategori berasal dari database; pilih opsi pertama bila nilai lama tidak tersedia.
+  useEffect(() => {
+    if (!open || exam || categoryOptions.length === 0) return;
+    setForm((prev) =>
+      categoryOptions.some((item) => item.slug === prev.category)
+        ? prev
+        : { ...prev, category: categoryOptions[0]!.slug },
+    );
+  }, [open, exam, categoryOptions]);
+
+
 
   const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -172,16 +185,22 @@ export function ExamFormDialog({ open, onOpenChange, exam = null }: Props) {
               <Label>Kategori</Label>
               <Select value={form.category} onValueChange={(v) => set("category", v)}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Pilih kategori" />
                 </SelectTrigger>
                 <SelectContent>
-                  {EXAM_CATEGORIES.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {CATEGORY_LABELS[category] ?? category}
+                  {categoryOptions.map((category) => (
+                    <SelectItem key={category.slug} value={category.slug}>
+                      {category.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {categoryOptions.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  Belum ada kategori. Tambahkan dari bagian “Kategori Ujian” di Exam Studio.
+                </p>
+              ) : null}
+
             </div>
 
             <div className="space-y-2">
