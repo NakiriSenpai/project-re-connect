@@ -1,16 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { PagePlaceholder } from "@/components/common/page-placeholder";
+import { ProfileView } from "@/features/profile/components/profile-view";
 import { AppLayout } from "@/layouts/app-layout";
 import { RequireAuth } from "@/middleware";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
     meta: [
-      { title: "Profil — LPK Learning" },
-      { name: "description", content: "Profil pengguna LPK Learning." },
-      { property: "og:title", content: "Profil — LPK Learning" },
-      { property: "og:description", content: "Profil pengguna LPK Learning." },
+      { title: "Profil Saya — LPK Learning" },
+      { name: "description", content: "Kelola informasi akun, foto profil, keamanan, dan tema." },
+      { property: "og:title", content: "Profil Saya — LPK Learning" },
+      {
+        property: "og:description",
+        content: "Kelola informasi akun, foto profil, keamanan, dan tema.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -22,8 +25,9 @@ function ProfilePage() {
   return (
     <AppLayout>
       <RequireAuth>
-        <PagePlaceholder title="Profil" description="Data dan pengaturan akun." />
+        <ProfileView />
       </RequireAuth>
     </AppLayout>
   );
 }
+
