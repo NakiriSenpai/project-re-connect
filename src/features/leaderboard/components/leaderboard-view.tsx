@@ -25,30 +25,47 @@ import { useLeaderboard, useLeaderboardExams, useLeaderboardPodium } from "@/hoo
 import { cn } from "@/lib/utils";
 import type { LeaderboardRow } from "@/types/analytics";
 
+import { LeaderboardInfoDialog } from "./leaderboard-info-dialog";
 import { LeaderboardPodium, RoleBadge } from "./leaderboard-podium";
 import { RankAvatar } from "./rank-avatar";
 import { formatScore } from "../utils";
 
 const PAGE_SIZE = 7;
 
+/** Kolom eksplisit agar tidak pernah bertabrakan di layar sempit. */
+const GRID_COLS =
+  "grid grid-cols-[2.75rem_minmax(0,1fr)_4.25rem_5.5rem] gap-2 sm:grid-cols-[4rem_minmax(0,1fr)_minmax(100px,140px)_minmax(100px,140px)] sm:gap-3";
+
 function RankRow({ row }: { row: LeaderboardRow }) {
   return (
     <li
       className={cn(
-        "grid grid-cols-[2rem_minmax(0,1fr)_3.5rem_4.5rem] items-center gap-2 border-b border-border/60 px-3 py-2.5 last:border-b-0 sm:grid-cols-[2.5rem_minmax(0,1fr)_5rem_6rem] sm:gap-3",
+        GRID_COLS,
+        "min-h-[3.75rem] items-center border-b border-border/60 px-3 py-2 transition-colors last:border-b-0 hover:bg-primary/5",
         row.is_current_user ? "bg-primary/10" : "",
       )}
     >
-      <span className="text-sm font-bold text-foreground">{row.rank}</span>
-      <div className="flex min-w-0 items-center gap-2">
-        <RankAvatar row={row} className="size-8 shrink-0 ring-1 ring-border" />
-        <span className="truncate text-sm font-semibold text-foreground">{row.display_name}</span>
-        <RoleBadge role={row.role} />
+      <span className="text-sm font-bold tabular-nums text-foreground">{row.rank}</span>
+
+      <div className="flex min-w-0 items-center gap-2.5">
+        <RankAvatar row={row} className="size-10 shrink-0 ring-1 ring-border sm:size-11" />
+        <div className="min-w-0">
+          <p
+            className="truncate text-sm font-semibold leading-tight text-foreground"
+            title={row.display_name}
+          >
+            {row.display_name}
+          </p>
+          <div className="mt-1">
+            <RoleBadge role={row.role} />
+          </div>
+        </div>
       </div>
-      <span className="text-right text-sm font-semibold text-primary sm:text-center">
-        {row.exams_taken}
+
+      <span className="truncate text-right text-sm font-semibold tabular-nums text-primary">
+        {formatScore(row.exams_taken)}
       </span>
-      <span className="text-right text-sm font-semibold text-primary">
+      <span className="truncate text-right text-sm font-semibold tabular-nums text-primary">
         {formatScore(row.total_score)}
       </span>
     </li>
@@ -60,6 +77,7 @@ export function LeaderboardView() {
   const router = useRouter();
   const [examId, setExamId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [infoOpen, setInfoOpen] = useState(false);
 
   const listParams = useMemo(
     () => ({ examId, page, pageSize: PAGE_SIZE, skip: 3 }),
@@ -82,24 +100,35 @@ export function LeaderboardView() {
 
   return (
     <div className="space-y-3">
-      <header className="flex items-start gap-3">
+      <header className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3">
         <button
           type="button"
           aria-label="Kembali"
           onClick={() => router.history.back()}
-          className="mt-1 text-foreground"
+          className="mt-1 shrink-0 text-foreground"
         >
           <ArrowLeft className="size-6" />
         </button>
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0">
           <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
             Leaderboard
-            <Trophy className="size-5 text-primary" />
+            <Trophy className="size-5 shrink-0 text-primary" />
           </h1>
-          <p className="text-sm text-muted-foreground">Lihat peringkat terbaik para siswa</p>
+          <p className="truncate text-sm text-muted-foreground">
+            Lihat peringkat terbaik para siswa
+          </p>
         </div>
-        <Info className="mt-1 size-6 text-muted-foreground" />
+        <button
+          type="button"
+          aria-label="Tentang Leaderboard"
+          onClick={() => setInfoOpen(true)}
+          className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
+        >
+          <Info className="size-5" />
+        </button>
       </header>
+
+      <LeaderboardInfoDialog open={infoOpen} onOpenChange={setInfoOpen} />
 
       {/* Mode: Semua / Per Exam */}
       <div className="grid grid-cols-2 gap-2 rounded-2xl border border-border bg-card p-2">
@@ -113,7 +142,7 @@ export function LeaderboardView() {
               : "text-muted-foreground",
           )}
         >
-          <Globe className="size-4" />
+          <Globe className="size-4 shrink-0" />
           Semua
         </button>
 
@@ -146,30 +175,20 @@ export function LeaderboardView() {
       </div>
 
       {/* Penjelasan logic */}
-      <div className="flex gap-3 rounded-2xl border border-border bg-card p-3">
+      <div className="flex gap-3 rounded-2xl border border-border bg-card p-3.5">
         <Users className="mt-0.5 size-5 shrink-0 text-primary" />
-        <div className="space-y-1 text-xs leading-relaxed text-muted-foreground">
-          {examId ? (
-            <>
-              <p>Peringkat berdasarkan skor attempt pertama pada ujian yang dipilih.</p>
-              <p>Attempt kedua dan seterusnya tidak dihitung.</p>
-            </>
-          ) : (
-            <>
-              <p>Peringkat berdasarkan total skor dari attempt pertama setiap ujian.</p>
-              <p>Setiap ujian hanya dihitung satu kali berdasarkan attempt pertama.</p>
-            </>
-          )}
+        <div className="min-w-0 space-y-1.5 text-xs leading-relaxed text-muted-foreground">
+          <p>
+            Peringkat berdasarkan jumlah ujian yang telah dikerjakan dan total skor dari attempt
+            pertama setiap ujian.
+          </p>
+          <p>Setiap ujian hanya dihitung satu kali berdasarkan attempt pertama.</p>
         </div>
       </div>
 
       {podium.isLoading || isLoading ? (
         <div className="space-y-3">
-          <div className="grid grid-cols-3 items-end gap-2">
-            {[0, 1, 2].map((i) => (
-              <Skeleton key={i} className="h-44 rounded-xl" />
-            ))}
-          </div>
+          <Skeleton className="h-60 rounded-2xl" />
           <Skeleton className="h-64 rounded-2xl" />
         </div>
       ) : isError || podium.isError ? (
@@ -187,14 +206,16 @@ export function LeaderboardView() {
         </div>
       ) : isEmpty ? (
         <div className="space-y-2 rounded-2xl border border-border bg-card p-8 text-center">
-          <Trophy className="mx-auto size-8 text-primary" />
+          <span className="mx-auto grid size-14 place-items-center rounded-full border border-primary/40 bg-primary/10 shadow-[0_0_28px_hsl(var(--primary)/0.25)]">
+            <Trophy className="size-7 text-primary" />
+          </span>
           <p className="text-sm font-semibold text-foreground">
             {examId ? "Belum ada peserta" : "Belum ada peringkat"}
           </p>
           <p className="text-sm text-muted-foreground">
             {examId
-              ? "Belum ada siswa yang mengerjakan ujian ini."
-              : "Belum ada siswa yang menyelesaikan ujian."}
+              ? "Belum ada siswa yang menyelesaikan attempt pertama pada ujian ini."
+              : "Belum ada siswa yang menyelesaikan attempt pertama pada ujian."}
           </p>
         </div>
       ) : (
@@ -202,10 +223,15 @@ export function LeaderboardView() {
           <LeaderboardPodium rows={podiumRows} />
 
           <div className="overflow-hidden rounded-2xl border border-border bg-card">
-            <div className="grid grid-cols-[2rem_minmax(0,1fr)_3.5rem_4.5rem] gap-2 border-b border-border px-3 py-2.5 text-[11px] text-muted-foreground sm:grid-cols-[2.5rem_minmax(0,1fr)_5rem_6rem] sm:gap-3">
+            <div
+              className={cn(
+                GRID_COLS,
+                "items-end border-b border-border px-3 py-2.5 text-[10px] leading-tight text-muted-foreground sm:text-[11px]",
+              )}
+            >
               <span>Peringkat</span>
               <span>Siswa</span>
-              <span className="text-right sm:text-center">Ujian</span>
+              <span className="text-right">Ujian Dikerjakan</span>
               <span className="text-right">Total Skor</span>
             </div>
             {rows.length === 0 ? (
@@ -232,7 +258,7 @@ export function LeaderboardView() {
               <ChevronLeft className="size-4" />
               Sebelumnya
             </Button>
-            <span className="text-xs text-muted-foreground">
+            <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
               {page} / {totalPages}
             </span>
             <Button
@@ -250,10 +276,10 @@ export function LeaderboardView() {
       )}
 
       <div className="flex items-start gap-3 rounded-2xl border border-border bg-card p-3">
-        <span className="grid size-10 shrink-0 place-items-center rounded-full border border-primary/40 bg-primary/10">
+        <span className="grid size-10 shrink-0 place-items-center rounded-full border border-primary/40 bg-primary/10 shadow-[0_0_20px_hsl(var(--primary)/0.25)]">
           <TrendingUp className="size-5 text-primary" />
         </span>
-        <div className="space-y-1">
+        <div className="min-w-0 space-y-1">
           <p className="text-sm font-semibold text-primary">Peringkat diperbarui real-time.</p>
           <p className="text-xs leading-relaxed text-muted-foreground">
             Setiap kali ada siswa menyelesaikan attempt pertama pada suatu ujian, peringkat akan
