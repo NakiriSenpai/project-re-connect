@@ -230,14 +230,19 @@ export function LeaderboardView() {
             <div
               className={cn(
                 GRID_COLS,
-                "items-end border-b border-border px-3 py-2.5 text-[10px] leading-tight text-muted-foreground sm:text-[11px]",
+                "items-end border-b border-border px-3 py-2.5 text-[9px] leading-tight text-muted-foreground sm:text-[11px]",
               )}
             >
-              <span>Peringkat</span>
-              <span>Siswa</span>
-              <span className="text-right">Ujian Dikerjakan</span>
-              <span className="text-right">Total Skor</span>
+              <span className="whitespace-nowrap">Peringkat</span>
+              <span className="min-w-0 truncate">Siswa</span>
+              <span className="min-w-[3rem] whitespace-nowrap text-right sm:min-w-[4rem]">
+                Ujian
+              </span>
+              <span className="min-w-[3rem] whitespace-nowrap text-right sm:min-w-[4rem]">
+                Total Skor
+              </span>
             </div>
+
             {rows.length === 0 ? (
               <p className="px-3 py-6 text-center text-sm text-muted-foreground">
                 Tidak ada peringkat lain di halaman ini.
