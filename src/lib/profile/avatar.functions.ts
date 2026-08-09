@@ -12,20 +12,28 @@ const commitSchema = z.object({
 
 export type AvatarCooldownStatus = {
   canChange: boolean;
+  /** true bila role pemanggil tidak terkena cooldown (owner/admin/guru). */
+  exempt: boolean;
   lastChangedAt: string | null;
   nextAllowedAt: string | null;
   daysRemaining: number;
 };
 
-function cooldownStatus(lastChangedAt: string | null): AvatarCooldownStatus {
-  if (!lastChangedAt) {
-    return { canChange: true, lastChangedAt: null, nextAllowedAt: null, daysRemaining: 0 };
+/** Hanya role `siswa` yang terkena cooldown. Role ditentukan di server. */
+function isCooldownRole(role: string): boolean {
+  return role === "siswa";
+}
+
+function cooldownStatus(lastChangedAt: string | null, exempt = false): AvatarCooldownStatus {
+  if (exempt || !lastChangedAt) {
+    return { canChange: true, exempt, lastChangedAt, nextAllowedAt: null, daysRemaining: 0 };
   }
   const last = new Date(lastChangedAt).getTime();
   const next = last + AVATAR_COOLDOWN_DAYS * 24 * 60 * 60 * 1000;
   const remaining = next - Date.now();
   return {
     canChange: remaining <= 0,
+    exempt: false,
     lastChangedAt,
     nextAllowedAt: new Date(next).toISOString(),
     daysRemaining: remaining <= 0 ? 0 : Math.ceil(remaining / (24 * 60 * 60 * 1000)),
@@ -50,7 +58,10 @@ export const getAvatarCooldown = createServerFn({ method: "GET" }).handler(async
     );
   }
 
-  return cooldownStatus((data?.["avatar_updated_at"] as string | null) ?? null);
+  return cooldownStatus(
+    (data?.["avatar_updated_at"] as string | null) ?? null,
+    !isCooldownRole(caller.role),
+  );
 });
 
 /**
@@ -83,7 +94,11 @@ export const commitAvatarChange = createServerFn({ method: "POST" })
       );
     }
 
-    const status = cooldownStatus((current?.["avatar_updated_at"] as string | null) ?? null);
+    const exempt = !isCooldownRole(caller.role);
+    const status = cooldownStatus(
+      (current?.["avatar_updated_at"] as string | null) ?? null,
+      exempt,
+    );
     if (!status.canChange) {
       throw new Error(
         `Anda baru mengubah foto profil. Dapat diubah kembali dalam ${status.daysRemaining} hari.`,
@@ -106,6 +121,6 @@ export const commitAvatarChange = createServerFn({ method: "POST" })
     return {
       avatarUrl: data.avatarUrl,
       previousPublicId,
-      cooldown: cooldownStatus(new Date().toISOString()),
+      cooldown: cooldownStatus(new Date().toISOString(), exempt),
     };
   });
