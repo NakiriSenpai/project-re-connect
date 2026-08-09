@@ -68,10 +68,7 @@ export function LeaderboardInfoDialog({
 
         <div className="space-y-3">
           {SECTIONS.map((s) => (
-            <section
-              key={s.title}
-              className="rounded-xl border border-border bg-background/40 p-3"
-            >
+            <section key={s.title} className="rounded-xl border border-border bg-background/40 p-3">
               <h3 className="text-sm font-semibold text-primary">{s.title}</h3>
               <div className="mt-1 space-y-1">
                 {s.body.map((line) => (

@@ -156,12 +156,7 @@ function PodiumSlot({ row, place }: { row: LeaderboardRow | undefined; place: Pl
                 <p className="text-[9px] leading-tight text-muted-foreground sm:text-[10px]">
                   Ujian
                 </p>
-                <p
-                  className={cn(
-                    "truncate text-xs font-bold tabular-nums sm:text-sm",
-                    s.text,
-                  )}
-                >
+                <p className={cn("truncate text-xs font-bold tabular-nums sm:text-sm", s.text)}>
                   {formatScore(row.exams_taken)}
                 </p>
               </div>
@@ -169,12 +164,7 @@ function PodiumSlot({ row, place }: { row: LeaderboardRow | undefined; place: Pl
                 <p className="text-[9px] leading-tight text-muted-foreground sm:text-[10px]">
                   Skor
                 </p>
-                <p
-                  className={cn(
-                    "truncate text-xs font-bold tabular-nums sm:text-sm",
-                    s.text,
-                  )}
-                >
+                <p className={cn("truncate text-xs font-bold tabular-nums sm:text-sm", s.text)}>
                   {formatScore(row.total_score)}
                 </p>
               </div>
