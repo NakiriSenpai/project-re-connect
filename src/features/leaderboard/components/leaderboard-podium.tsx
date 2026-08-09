@@ -57,9 +57,17 @@ function PodiumSlot({ row, place }: { row: LeaderboardRow | undefined; place: Pl
   const s = STYLES[place];
   const first = place === 1;
   const order = place === 1 ? "order-2" : place === 2 ? "order-1" : "order-3";
+  /** Elevation podium: #1 tertinggi, #2 menengah, #3 terendah. */
+  const lift = first ? "pt-0" : place === 2 ? "pt-8 sm:pt-10" : "pt-14 sm:pt-16";
+  const cardMinH = first
+    ? "min-h-[10.5rem] sm:min-h-[11rem]"
+    : place === 2
+      ? "min-h-[9.5rem] sm:min-h-[10rem]"
+      : "min-h-[8.5rem] sm:min-h-[9rem]";
 
   return (
-    <div className={cn("flex min-w-0 flex-col items-center", order, first ? "" : "pt-6")}>
+    <div className={cn("flex min-w-0 flex-col items-center self-end", order, lift)}>
+
       {/* Rank badge */}
       <div
         className={cn(
@@ -130,7 +138,8 @@ function PodiumSlot({ row, place }: { row: LeaderboardRow | undefined; place: Pl
       {/* Card */}
       <div
         className={cn(
-          "mt-3 flex min-h-[7.5rem] w-full min-w-0 flex-col justify-between rounded-xl border p-2 text-center sm:min-h-[8rem] sm:p-2.5",
+          "mt-3 flex w-full min-w-0 flex-col justify-between rounded-xl border p-2 text-center sm:p-2.5",
+          cardMinH,
           row ? s.border : "border-dashed border-border",
           row ? s.bg : "bg-transparent",
           first ? "-mt-1 pt-4" : "",
@@ -141,7 +150,7 @@ function PodiumSlot({ row, place }: { row: LeaderboardRow | undefined; place: Pl
           <>
             <div className="min-w-0">
               <p
-                className="truncate text-xs font-semibold leading-tight text-foreground sm:text-sm"
+                className="line-clamp-2 min-h-[2.1em] break-words text-xs font-semibold leading-tight text-foreground sm:text-sm"
                 title={row.display_name}
               >
                 {row.display_name}
@@ -156,7 +165,13 @@ function PodiumSlot({ row, place }: { row: LeaderboardRow | undefined; place: Pl
                 <p className="text-[9px] leading-tight text-muted-foreground sm:text-[10px]">
                   Ujian
                 </p>
-                <p className={cn("truncate text-xs font-bold tabular-nums sm:text-sm", s.text)}>
+                <p
+                  className={cn(
+                    "text-[11px] font-bold leading-tight tabular-nums [font-variant-numeric:tabular-nums] sm:text-sm",
+                    s.text,
+                  )}
+                  title={formatScore(row.exams_taken)}
+                >
                   {formatScore(row.exams_taken)}
                 </p>
               </div>
@@ -164,11 +179,18 @@ function PodiumSlot({ row, place }: { row: LeaderboardRow | undefined; place: Pl
                 <p className="text-[9px] leading-tight text-muted-foreground sm:text-[10px]">
                   Skor
                 </p>
-                <p className={cn("truncate text-xs font-bold tabular-nums sm:text-sm", s.text)}>
+                <p
+                  className={cn(
+                    "text-[11px] font-bold leading-tight tabular-nums [font-variant-numeric:tabular-nums] sm:text-sm",
+                    s.text,
+                  )}
+                  title={formatScore(row.total_score)}
+                >
                   {formatScore(row.total_score)}
                 </p>
               </div>
             </div>
+
           </>
         ) : (
           <p className="my-auto text-xs text-muted-foreground">Belum ada</p>
