@@ -369,37 +369,41 @@ export function ExamCatalog() {
               >
                 <div className="flex min-w-0 items-start gap-3">
                   <ExamIcon exam={exam} />
-                  <div className="min-w-0 flex-1 space-y-2">
+                  <div className="min-w-0 flex-1 space-y-1">
                     <h2 className="line-clamp-2 text-base font-semibold leading-snug text-foreground">
                       {exam.title}
                     </h2>
                     {exam.description ? (
-                      <p className="line-clamp-2 text-sm text-muted-foreground">
+                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                         {exam.description}
                       </p>
                     ) : null}
-                    <div className="flex flex-wrap gap-1.5 text-xs">
-                      <span className="rounded-md border border-primary/40 bg-primary/10 px-2 py-1 text-primary">
-                        {categoryLabel(exam.category)}
-                      </span>
-                      <span
-                        className={cn(
-                          "rounded-md border px-2 py-1",
-                          DIFFICULTY_STYLE[exam.difficulty] ??
-                            "border-border bg-muted/40 text-muted-foreground",
-                        )}
-                      >
-                        {EXAM_DIFFICULTY_LABELS[exam.difficulty]}
-                      </span>
-                      <span className="flex items-center gap-1 rounded-md border border-border bg-muted/30 px-2 py-1 text-muted-foreground">
-                        <Clock className="size-3" /> {exam.duration_minutes} menit
-                      </span>
-                      <span className="flex items-center gap-1 rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-1 text-amber-400">
-                        <Target className="size-3" /> Pass {exam.passing_score}%
-                      </span>
-                    </div>
                   </div>
                 </div>
+                {/* 4 chip metadata — selalu satu baris */}
+                <div className="mt-3 grid grid-cols-4 gap-1.5 text-[11px] leading-none">
+                  <span className="flex min-w-0 items-center justify-center rounded-md border border-primary/40 bg-primary/10 px-1.5 py-1.5 text-primary">
+                    <span className="truncate">{categoryLabel(exam.category)}</span>
+                  </span>
+                  <span
+                    className={cn(
+                      "flex min-w-0 items-center justify-center rounded-md border px-1.5 py-1.5",
+                      DIFFICULTY_STYLE[exam.difficulty] ??
+                        "border-border bg-muted/40 text-muted-foreground",
+                    )}
+                  >
+                    <span className="truncate">{EXAM_DIFFICULTY_LABELS[exam.difficulty]}</span>
+                  </span>
+                  <span className="flex min-w-0 items-center justify-center gap-1 rounded-md border border-border bg-muted/30 px-1.5 py-1.5 text-muted-foreground">
+                    <Clock className="size-3 shrink-0" />
+                    <span className="truncate tabular-nums">{exam.duration_minutes}m</span>
+                  </span>
+                  <span className="flex min-w-0 items-center justify-center gap-1 rounded-md border border-amber-500/40 bg-amber-500/10 px-1.5 py-1.5 text-amber-400">
+                    <Target className="size-3 shrink-0" />
+                    <span className="truncate tabular-nums">{exam.passing_score}%</span>
+                  </span>
+                </div>
+
                 <Button
                   className="mt-3 h-11 w-full rounded-xl"
                   disabled={start.isPending}
