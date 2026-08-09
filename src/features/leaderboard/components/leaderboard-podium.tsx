@@ -160,13 +160,18 @@ function PodiumSlot({ row, place }: { row: LeaderboardRow | undefined; place: Pl
               </div>
             </div>
 
-
             <div className="mt-2 grid grid-cols-2 gap-1 divide-x divide-border border-t border-border/70 pt-2">
               <div className="min-w-0 px-0.5">
                 <p className="text-[9px] leading-tight text-muted-foreground sm:text-[10px]">
                   Ujian
                 </p>
-                <p className={cn("truncate text-xs font-bold tabular-nums sm:text-sm", s.text)}>
+                <p
+                  className={cn(
+                    "text-[11px] font-bold leading-tight tabular-nums [font-variant-numeric:tabular-nums] sm:text-sm",
+                    s.text,
+                  )}
+                  title={formatScore(row.exams_taken)}
+                >
                   {formatScore(row.exams_taken)}
                 </p>
               </div>
@@ -174,11 +179,18 @@ function PodiumSlot({ row, place }: { row: LeaderboardRow | undefined; place: Pl
                 <p className="text-[9px] leading-tight text-muted-foreground sm:text-[10px]">
                   Skor
                 </p>
-                <p className={cn("truncate text-xs font-bold tabular-nums sm:text-sm", s.text)}>
+                <p
+                  className={cn(
+                    "text-[11px] font-bold leading-tight tabular-nums [font-variant-numeric:tabular-nums] sm:text-sm",
+                    s.text,
+                  )}
+                  title={formatScore(row.total_score)}
+                >
                   {formatScore(row.total_score)}
                 </p>
               </div>
             </div>
+
           </>
         ) : (
           <p className="my-auto text-xs text-muted-foreground">Belum ada</p>
