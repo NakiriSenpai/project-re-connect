@@ -345,9 +345,9 @@ export function ExamCatalog() {
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="semua">Semua Kategori</SelectItem>
-          {categories.map((value) => (
-            <SelectItem key={value} value={value}>
-              {categoryLabel(value)}
+          {categories.map((item) => (
+            <SelectItem key={item.slug} value={item.slug}>
+              {item.label}
             </SelectItem>
           ))}
         </SelectContent>
