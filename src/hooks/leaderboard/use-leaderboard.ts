@@ -47,11 +47,11 @@ export function useMyRank(params: LeaderboardParams) {
 }
 
 /** Opsi filter exam pada leaderboard. */
-export function useLeaderboardExams(tenantId: string | null = null) {
+export function useLeaderboardExams() {
   const { isAuthenticated } = useAuth();
   return useQuery({
-    queryKey: ["leaderboard-exams", tenantId],
-    queryFn: () => listLeaderboardExams(tenantId),
+    queryKey: ["leaderboard-exams"],
+    queryFn: () => listLeaderboardExams(),
     enabled: isAuthenticated,
     staleTime: 5 * 60_000,
   });
