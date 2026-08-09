@@ -3,7 +3,7 @@ import { AlertTriangle, Camera, Clock, Loader2, Minus, Plus } from "lucide-react
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { useAuth } from "@/hooks/auth";
 import { commitAvatarChange, type AvatarCooldownStatus } from "@/lib/profile/avatar.functions";
@@ -138,7 +138,7 @@ export function AvatarDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md gap-0 border-border bg-background p-0">
         <div className="flex items-center gap-2 px-4 py-4">
-          <h2 className="flex-1 text-center text-lg font-semibold">Ganti Foto Profil</h2>
+          <DialogTitle className="flex-1 text-center text-lg font-semibold">Ganti Foto Profil</DialogTitle>
         </div>
 
 
