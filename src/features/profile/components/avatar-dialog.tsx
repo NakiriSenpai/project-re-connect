@@ -16,6 +16,7 @@ import {
 } from "@/lib/profile/avatar-image";
 import { uploadAvatar } from "@/services/profile/avatar.service";
 import { cn } from "@/lib/utils";
+import { AvatarTermsDialog } from "./avatar-terms-dialog";
 
 const VIEWPORT = 264;
 
@@ -27,13 +28,7 @@ type Props = {
   onSaved: () => void;
 };
 
-export function AvatarDialog({
-  open,
-  onOpenChange,
-  currentAvatarUrl,
-  cooldown,
-  onSaved,
-}: Props) {
+export function AvatarDialog({ open, onOpenChange, currentAvatarUrl, cooldown, onSaved }: Props) {
   const { user, tenantId, refreshProfile } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
@@ -140,9 +135,10 @@ export function AvatarDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md gap-0 border-border bg-background p-0">
         <div className="flex items-center gap-2 px-4 py-4">
-          <DialogTitle className="flex-1 text-center text-lg font-semibold">Ganti Foto Profil</DialogTitle>
+          <DialogTitle className="flex-1 text-center text-lg font-semibold">
+            Ganti Foto Profil
+          </DialogTitle>
         </div>
-
 
         <div className="flex flex-col items-center px-6 pb-6">
           <div
@@ -263,6 +259,7 @@ export function AvatarDialog({
           </Button>
         </div>
       </DialogContent>
+      <AvatarTermsDialog open={termsOpen} onOpenChange={setTermsOpen} />
     </Dialog>
   );
 }
