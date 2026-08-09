@@ -1,6 +1,16 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "@tanstack/react-router";
-import { ArrowLeft, ChevronLeft, ChevronRight, FileText, Globe, Info, Trophy, TrendingUp, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  Globe,
+  Info,
+  Trophy,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -107,10 +117,7 @@ export function LeaderboardView() {
           Semua
         </button>
 
-        <Select
-          value={examId ?? ""}
-          onValueChange={(v) => selectMode(v)}
-        >
+        <Select value={examId ?? ""} onValueChange={(v) => selectMode(v)}>
           <SelectTrigger
             aria-label="Pilih ujian"
             className={cn(

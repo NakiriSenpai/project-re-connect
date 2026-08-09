@@ -19,7 +19,6 @@ export type LeaderboardRow = {
   total_rows: number;
 };
 
-
 export type LeaderboardResult = {
   rows: LeaderboardRow[];
   total: number;

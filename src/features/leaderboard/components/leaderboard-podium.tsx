@@ -89,10 +89,7 @@ function PodiumSlot({ row, place }: { row: LeaderboardRow | undefined; place: Pl
       </div>
 
       <div className="relative">
-        <RankAvatar
-          row={row}
-          className={cn(first ? "size-24" : "size-[4.5rem]", s.ring, s.glow)}
-        />
+        <RankAvatar row={row} className={cn(first ? "size-24" : "size-[4.5rem]", s.ring, s.glow)} />
         {first ? (
           <span className="absolute -bottom-1 -right-1 grid size-7 place-items-center rounded-full border border-[#facc15] bg-background">
             <Crown className="size-3.5 text-[#facc15]" />
