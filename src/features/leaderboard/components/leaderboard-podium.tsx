@@ -57,9 +57,17 @@ function PodiumSlot({ row, place }: { row: LeaderboardRow | undefined; place: Pl
   const s = STYLES[place];
   const first = place === 1;
   const order = place === 1 ? "order-2" : place === 2 ? "order-1" : "order-3";
+  /** Elevation podium: #1 tertinggi, #2 menengah, #3 terendah. */
+  const lift = first ? "pt-0" : place === 2 ? "pt-8 sm:pt-10" : "pt-14 sm:pt-16";
+  const cardMinH = first
+    ? "min-h-[10.5rem] sm:min-h-[11rem]"
+    : place === 2
+      ? "min-h-[9.5rem] sm:min-h-[10rem]"
+      : "min-h-[8.5rem] sm:min-h-[9rem]";
 
   return (
-    <div className={cn("flex min-w-0 flex-col items-center", order, first ? "" : "pt-6")}>
+    <div className={cn("flex min-w-0 flex-col items-center self-end", order, lift)}>
+
       {/* Rank badge */}
       <div
         className={cn(
