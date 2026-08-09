@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { MediaPicker } from "@/features/media";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateExam, useUpdateExam } from "@/hooks/exam";
 import {
@@ -50,6 +51,7 @@ const initialForm = {
   status: "draft" as ExamStatus,
   shuffleQuestions: false,
   shuffleAnswers: false,
+  iconUrl: "",
 };
 
 export function ExamFormDialog({ open, onOpenChange, exam = null }: Props) {
@@ -76,6 +78,7 @@ export function ExamFormDialog({ open, onOpenChange, exam = null }: Props) {
             status: exam.status,
             shuffleQuestions: exam.shuffle_questions,
             shuffleAnswers: exam.shuffle_answers,
+            iconUrl: exam.icon_url ?? "",
           }
         : initialForm,
     );
@@ -113,6 +116,7 @@ export function ExamFormDialog({ open, onOpenChange, exam = null }: Props) {
       status: form.status,
       shuffle_questions: form.shuffleQuestions,
       shuffle_answers: form.shuffleAnswers,
+      icon_url: form.iconUrl || null,
     };
 
     try {
@@ -198,6 +202,32 @@ export function ExamFormDialog({ open, onOpenChange, exam = null }: Props) {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Icon Exam</Label>
+            <p className="text-xs text-muted-foreground">
+              Icon tampil pada katalog ujian. Kosongkan untuk memakai icon bawaan kategori.
+            </p>
+            {form.iconUrl ? (
+              <div className="flex items-center gap-3 rounded-lg border p-2">
+                <img
+                  src={form.iconUrl}
+                  alt="Pratinjau icon exam"
+                  className="size-12 rounded-lg object-cover"
+                  loading="lazy"
+                />
+                <Button type="button" size="sm" variant="outline" onClick={() => set("iconUrl", "")}>
+                  Ganti icon
+                </Button>
+              </div>
+            ) : (
+              <MediaPicker
+                allowed={["image"]}
+                folder="exam/icons"
+                onChange={(asset) => set("iconUrl", asset?.url ?? "")}
+              />
+            )}
           </div>
 
           <div className="space-y-2">
