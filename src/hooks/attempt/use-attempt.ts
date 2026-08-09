@@ -9,6 +9,7 @@ import {
   getAttemptSession,
   listAvailableExams,
   listMyAttempts,
+  listMyResults,
   recordFullscreenViolation,
   saveAnswer,
   setFlag,
@@ -27,6 +28,11 @@ export function useAvailableExams() {
 
 export function useMyAttempts() {
   return useQuery({ queryKey: ["my-attempts"], queryFn: listMyAttempts, staleTime: 10_000 });
+}
+
+/** Hasil ujian milik user — dipakai statistik katalog ujian. */
+export function useMyResults() {
+  return useQuery({ queryKey: ["my-results"], queryFn: listMyResults, staleTime: 30_000 });
 }
 
 export function useActiveAttempt(examId: string) {

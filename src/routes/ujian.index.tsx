@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { ExamStartList } from "@/features/exam-engine/components/exam-start-list";
+import { ExamCatalog } from "@/features/exam-engine/components/exam-catalog";
 
 export const Route = createFileRoute("/ujian/")({
   head: () => ({
@@ -17,5 +17,5 @@ export const Route = createFileRoute("/ujian/")({
 });
 
 function UjianIndexPage() {
-  return <ExamStartList />;
+  return <ExamCatalog />;
 }

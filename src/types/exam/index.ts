@@ -33,6 +33,8 @@ export type ExamRow = {
   shuffle_answers: boolean;
   total_score: number;
   created_by: string | null;
+  /** Icon exam (Cloudinary) — dikelola dari Exam Studio. */
+  icon_url?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -93,6 +95,7 @@ export type ExamInput = {
   status: ExamStatus;
   shuffle_questions: boolean;
   shuffle_answers: boolean;
+  icon_url?: string | null;
 };
 
 export type SectionInput = {
