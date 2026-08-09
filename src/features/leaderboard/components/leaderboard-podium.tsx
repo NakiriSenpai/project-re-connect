@@ -138,7 +138,8 @@ function PodiumSlot({ row, place }: { row: LeaderboardRow | undefined; place: Pl
       {/* Card */}
       <div
         className={cn(
-          "mt-3 flex min-h-[7.5rem] w-full min-w-0 flex-col justify-between rounded-xl border p-2 text-center sm:min-h-[8rem] sm:p-2.5",
+          "mt-3 flex w-full min-w-0 flex-col justify-between rounded-xl border p-2 text-center sm:p-2.5",
+          cardMinH,
           row ? s.border : "border-dashed border-border",
           row ? s.bg : "bg-transparent",
           first ? "-mt-1 pt-4" : "",
@@ -149,7 +150,7 @@ function PodiumSlot({ row, place }: { row: LeaderboardRow | undefined; place: Pl
           <>
             <div className="min-w-0">
               <p
-                className="truncate text-xs font-semibold leading-tight text-foreground sm:text-sm"
+                className="line-clamp-2 min-h-[2.1em] break-words text-xs font-semibold leading-tight text-foreground sm:text-sm"
                 title={row.display_name}
               >
                 {row.display_name}
@@ -158,6 +159,7 @@ function PodiumSlot({ row, place }: { row: LeaderboardRow | undefined; place: Pl
                 <RoleBadge role={row.role} />
               </div>
             </div>
+
 
             <div className="mt-2 grid grid-cols-2 gap-1 divide-x divide-border border-t border-border/70 pt-2">
               <div className="min-w-0 px-0.5">
