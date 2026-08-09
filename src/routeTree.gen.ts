@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ExamStudioRouteImport } from './routes/exam-studio'
+import { Route as LbpreviewRouteImport } from './routes/lbpreview'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as LessonStudioRouteImport } from './routes/lesson-studio'
 import { Route as LoginRouteImport } from './routes/login'
@@ -62,6 +63,11 @@ const DashboardRoute = DashboardRouteImport.update({
 const ExamStudioRoute = ExamStudioRouteImport.update({
   id: '/exam-studio',
   path: '/exam-studio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LbpreviewRoute = LbpreviewRouteImport.update({
+  id: '/lbpreview',
+  path: '/lbpreview',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LeaderboardRoute = LeaderboardRouteImport.update({
@@ -222,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/dashboard': typeof DashboardRoute
   '/exam-studio': typeof ExamStudioRoute
+  '/lbpreview': typeof LbpreviewRoute
   '/leaderboard': typeof LeaderboardRoute
   '/lesson-studio': typeof LessonStudioRoute
   '/login': typeof LoginRoute
@@ -258,6 +265,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/dashboard': typeof DashboardRoute
   '/exam-studio': typeof ExamStudioRoute
+  '/lbpreview': typeof LbpreviewRoute
   '/leaderboard': typeof LeaderboardRoute
   '/lesson-studio': typeof LessonStudioRoute
   '/login': typeof LoginRoute
@@ -293,6 +301,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/dashboard': typeof DashboardRoute
   '/exam-studio': typeof ExamStudioRoute
+  '/lbpreview': typeof LbpreviewRoute
   '/leaderboard': typeof LeaderboardRoute
   '/lesson-studio': typeof LessonStudioRoute
   '/login': typeof LoginRoute
@@ -331,6 +340,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/exam-studio'
+    | '/lbpreview'
     | '/leaderboard'
     | '/lesson-studio'
     | '/login'
@@ -367,6 +377,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/exam-studio'
+    | '/lbpreview'
     | '/leaderboard'
     | '/lesson-studio'
     | '/login'
@@ -401,6 +412,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/exam-studio'
+    | '/lbpreview'
     | '/leaderboard'
     | '/lesson-studio'
     | '/login'
@@ -438,6 +450,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   DashboardRoute: typeof DashboardRoute
   ExamStudioRoute: typeof ExamStudioRoute
+  LbpreviewRoute: typeof LbpreviewRoute
   LeaderboardRoute: typeof LeaderboardRoute
   LessonStudioRoute: typeof LessonStudioRoute
   LoginRoute: typeof LoginRoute
@@ -490,6 +503,13 @@ declare module '@tanstack/react-router' {
       path: '/exam-studio'
       fullPath: '/exam-studio'
       preLoaderRoute: typeof ExamStudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lbpreview': {
+      id: '/lbpreview'
+      path: '/lbpreview'
+      fullPath: '/lbpreview'
+      preLoaderRoute: typeof LbpreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/leaderboard': {
@@ -743,6 +763,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   DashboardRoute: DashboardRoute,
   ExamStudioRoute: ExamStudioRoute,
+  LbpreviewRoute: LbpreviewRoute,
   LeaderboardRoute: LeaderboardRoute,
   LessonStudioRoute: LessonStudioRoute,
   LoginRoute: LoginRoute,
@@ -769,13 +790,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
