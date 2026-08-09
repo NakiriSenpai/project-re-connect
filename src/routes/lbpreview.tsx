@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { LeaderboardPodium } from "@/features/leaderboard/components/leaderboard-podium";
 import type { LeaderboardRow } from "@/types/analytics";
 
-export const Route = createFileRoute("/__lbpreview")({
+export const Route = createFileRoute("/lbpreview")({
   component: Preview,
 });
 
