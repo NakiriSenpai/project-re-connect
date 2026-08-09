@@ -6,43 +6,69 @@ import type { Theme } from "@/types/common";
 const STORAGE_KEY = "lms-theme";
 
 type ThemeContextValue = {
+  /** Preferensi pengguna: light | dark | system. */
   theme: Theme;
+  /** Tema efektif yang sedang tampil. */
+  resolvedTheme: "light" | "dark";
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-/**
- * Sprint 11 FINAL: aplikasi memakai satu Global Dark Design System.
- * Tema selalu dark agar seluruh halaman terlihat sebagai satu produk.
- */
-function applyTheme(_theme: Theme) {
+function systemTheme(): "light" | "dark" {
+  if (typeof window === "undefined") return "dark";
+  return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+}
+
+function applyTheme(theme: Theme): "light" | "dark" {
+  const resolved = theme === "system" ? systemTheme() : theme;
   const root = document.documentElement;
-  root.classList.add("dark");
-  root.style.colorScheme = "dark";
+  root.classList.remove("light", "dark");
+  root.classList.add(resolved);
+  root.style.colorScheme = resolved;
+  return resolved;
+}
+
+function readStoredTheme(): Theme {
+  if (typeof window === "undefined") return "dark";
+  const stored = window.localStorage.getItem(STORAGE_KEY);
+  return stored === "light" || stored === "dark" || stored === "system" ? stored : "dark";
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("dark");
+  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("dark");
 
   useEffect(() => {
-    applyTheme("dark");
+    const stored = readStoredTheme();
+    setThemeState(stored);
+    setResolvedTheme(applyTheme(stored));
   }, []);
 
-  const setTheme = useCallback((_next: Theme) => {
-    setThemeState("dark");
-    window.localStorage.setItem(STORAGE_KEY, "dark");
-    applyTheme("dark");
+  // Ikuti perubahan tema perangkat saat preferensi = system.
+  useEffect(() => {
+    if (theme !== "system") return;
+    const media = window.matchMedia("(prefers-color-scheme: light)");
+    const handler = () => setResolvedTheme(applyTheme("system"));
+    media.addEventListener("change", handler);
+    return () => media.removeEventListener("change", handler);
+  }, [theme]);
+
+  const setTheme = useCallback((next: Theme) => {
+    setThemeState(next);
+    window.localStorage.setItem(STORAGE_KEY, next);
+    setResolvedTheme(applyTheme(next));
   }, []);
 
   const value = useMemo<ThemeContextValue>(
     () => ({
       theme,
+      resolvedTheme,
       setTheme,
-      toggleTheme: () => setTheme("dark"),
+      toggleTheme: () => setTheme(resolvedTheme === "dark" ? "light" : "dark"),
     }),
-    [theme, setTheme],
+    [theme, resolvedTheme, setTheme],
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
@@ -55,4 +81,4 @@ export function useTheme(): ThemeContextValue {
 }
 
 /** Script inline untuk mencegah kedipan tema saat halaman dimuat. */
-export const themeInitScript = `(function(){try{document.documentElement.classList.add('dark');document.documentElement.style.colorScheme='dark';localStorage.setItem('lms-theme','dark');}catch(e){}})();`;
+export const themeInitScript = `(function(){try{var t=localStorage.getItem('lms-theme')||'dark';var r=t==='system'?(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):t;var e=document.documentElement;e.classList.remove('light','dark');e.classList.add(r);e.style.colorScheme=r;}catch(e){}})();`;
