@@ -151,6 +151,51 @@
   --cat-bookmark: oklch(0.66 0.19 5);
 }
 
+/* Mode terang — hanya menimpa nilai token, struktur design system tetap sama. */
+.light {
+  --background: oklch(0.98 0.006 275);
+  --background-elevated: oklch(1 0 0);
+  --surface: oklch(1 0 0);
+  --surface-elevated: oklch(0.97 0.008 275);
+
+  --foreground: oklch(0.22 0.03 275);
+  --muted-foreground: oklch(0.5 0.025 272);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.03 275);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.03 275);
+
+  --primary: oklch(0.55 0.2 285);
+  --primary-hover: oklch(0.5 0.2 285);
+  --primary-muted: oklch(0.55 0.2 285 / 12%);
+  --primary-foreground: oklch(0.99 0.005 285);
+
+  --secondary: oklch(0.95 0.012 275);
+  --secondary-foreground: oklch(0.22 0.03 275);
+  --muted: oklch(0.95 0.012 275);
+
+  --accent: oklch(0.55 0.16 258);
+  --accent-muted: oklch(0.55 0.16 258 / 12%);
+  --accent-foreground: oklch(0.99 0.005 260);
+
+  --success-foreground: oklch(0.99 0.005 152);
+  --warning-foreground: oklch(0.25 0.05 82);
+
+  --border: oklch(0.22 0.03 275 / 12%);
+  --border-subtle: oklch(0.22 0.03 275 / 7%);
+  --input: oklch(0.22 0.03 275 / 16%);
+  --ring: oklch(0.55 0.2 285 / 55%);
+
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.22 0.03 275);
+  --sidebar-accent: oklch(0.95 0.012 275);
+  --sidebar-accent-foreground: oklch(0.22 0.03 275);
+  --sidebar-border: oklch(0.22 0.03 275 / 12%);
+
+  --progress-track: oklch(0.22 0.03 275 / 10%);
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
@@ -158,6 +203,10 @@
 
   html {
     color-scheme: dark;
+  }
+
+  html.light {
+    color-scheme: light;
   }
 
   body {
