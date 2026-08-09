@@ -1,6 +1,7 @@
-/** Tipe domain Leaderboard & Teacher Analytics (Sprint 12). */
+/** Tipe domain Leaderboard & Teacher Analytics (Sprint 12; scoring Sprint 18). */
 
-export type LeaderboardRange = "all" | "week" | "month";
+/** Leaderboard hanya punya dua mode: seluruh ujian, atau satu ujian. */
+export type LeaderboardMode = "all" | "exam";
 
 export type LeaderboardRow = {
   rank: number;
@@ -8,12 +9,16 @@ export type LeaderboardRow = {
   display_name: string;
   username: string | null;
   avatar_url: string | null;
-  average_score: number;
-  exams_completed: number;
-  last_submitted_at: string | null;
+  role: string;
+  /** Mode "all": SUM skor attempt pertama tiap exam. Mode "exam": skor attempt pertama. */
+  total_score: number;
+  /** Jumlah exam DISTINCT yang punya attempt pertama. */
+  exams_taken: number;
+  first_qualified_at: string | null;
   is_current_user: boolean;
   total_rows: number;
 };
+
 
 export type LeaderboardResult = {
   rows: LeaderboardRow[];
