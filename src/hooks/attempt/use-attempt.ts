@@ -9,6 +9,7 @@ import {
   getAttemptSession,
   listAvailableExams,
   listMyAttempts,
+  listMyResults,
   recordFullscreenViolation,
   saveAnswer,
   setFlag,
