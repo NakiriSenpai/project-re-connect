@@ -150,8 +150,7 @@ export function ExamCatalog() {
   }, [results]);
 
   const totalSets = examList.length;
-  const progressPercent =
-    totalSets === 0 ? 0 : Math.round((stats.completedSets / totalSets) * 100);
+  const progressPercent = totalSets === 0 ? 0 : Math.round((stats.completedSets / totalSets) * 100);
 
   const categories = useMemo(
     () => [...new Set(examList.map((exam) => exam.category))].sort((a, b) => a.localeCompare(b)),

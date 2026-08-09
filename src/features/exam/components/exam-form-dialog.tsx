@@ -217,7 +217,12 @@ export function ExamFormDialog({ open, onOpenChange, exam = null }: Props) {
                   className="size-12 rounded-lg object-cover"
                   loading="lazy"
                 />
-                <Button type="button" size="sm" variant="outline" onClick={() => set("iconUrl", "")}>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => set("iconUrl", "")}
+                >
                   Ganti icon
                 </Button>
               </div>

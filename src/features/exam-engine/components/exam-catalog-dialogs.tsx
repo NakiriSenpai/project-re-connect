@@ -1,10 +1,4 @@
-import {
-  BarChart3,
-  CheckCircle2,
-  ClipboardList,
-  HelpCircle,
-  X,
-} from "lucide-react";
+import { BarChart3, CheckCircle2, ClipboardList, HelpCircle, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -116,5 +110,3 @@ export function ExamStatsDialog({
     </Dialog>
   );
 }
-
-export const CatalogIcons = { ClipboardList };
