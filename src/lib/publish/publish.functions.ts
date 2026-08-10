@@ -39,15 +39,11 @@ export const publishContent = createServerFn({ method: "POST" })
     if (!row) throw new Error("Konten tidak ditemukan.");
 
     const contentTenantId = (row["tenant_id"] as string | null) ?? null;
-    if (caller.role !== "owner" && contentTenantId && contentTenantId !== caller.tenantId) {
-      throw new Error("Konten ini bukan milik tenant Anda.");
+    // Publish SELALU tenant-scoped: caller wajib punya tenant, termasuk Owner.
+    if (!caller.tenantId) {
+      throw new Error("Owner belum memiliki tenant. Hubungi administrator platform.");
     }
-    if (
-      caller.role === "owner" &&
-      caller.tenantId &&
-      contentTenantId &&
-      contentTenantId !== caller.tenantId
-    ) {
+    if (contentTenantId !== caller.tenantId) {
       throw new Error("Konten ini bukan milik tenant Anda.");
     }
 
@@ -65,7 +61,7 @@ export const publishContent = createServerFn({ method: "POST" })
     // Re-publish / edit konten yang sudah published: tanpa notifikasi.
     if (wasPublished) return { published: true, notified: false, notifications: 0 };
 
-    const tenantId = caller.tenantId ?? contentTenantId;
+    const tenantId = caller.tenantId;
     const title = (row["title"] as string | null) ?? "";
 
     const payload =

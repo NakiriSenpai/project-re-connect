@@ -77,6 +77,21 @@ export function UserList({ scope }: Props) {
 
   const resetFilterPage = () => setPage(1);
 
+  // Arsitektur baru: setiap Owner wajib punya tenant sendiri (tanpa mode global).
+  if (!tenantId) {
+    return (
+      <section className="space-y-4">
+        <h1 className="text-xl font-semibold tracking-tight">Manajemen User</h1>
+        <p
+          role="alert"
+          className="rounded-md border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive"
+        >
+          Owner belum memiliki tenant. Hubungi administrator platform.
+        </p>
+      </section>
+    );
+  }
+
   return (
     <section className="space-y-4">
       <header className="flex flex-wrap items-center justify-between gap-3">
@@ -84,7 +99,7 @@ export function UserList({ scope }: Props) {
           <h1 className="text-xl font-semibold tracking-tight">Manajemen User</h1>
           <p className="text-sm text-muted-foreground">
             {scope === "owner"
-              ? "Kelola seluruh pengguna pada semua tenant."
+              ? "Kelola seluruh pengguna pada tenant Anda."
               : "Kelola guru dan siswa pada lembaga Anda."}
           </p>
         </div>

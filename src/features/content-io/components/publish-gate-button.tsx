@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { useSetExamStatus } from "@/hooks/exam";
+import { useSetLessonStatus } from "@/hooks/lesson";
 import { publishContent } from "@/lib/publish/publish.functions";
 import { recordContentIoAudit } from "@/services/content/bundle/audit.service";
 import {
@@ -32,6 +34,22 @@ export function PublishGateButton({
   const [report, setReport] = useState<ValidationReport | null>(null);
   const queryClient = useQueryClient();
   const publishFn = useServerFn(publishContent);
+  const setExamStatus = useSetExamStatus();
+  const setLessonStatus = useSetLessonStatus();
+
+  // Kembali ke draft (unpublish) TIDAK pernah memicu notifikasi.
+  const unpublish = async () => {
+    try {
+      if (kind === "exam") {
+        await setExamStatus.mutateAsync({ id: entityId, status: "draft" });
+      } else {
+        await setLessonStatus.mutateAsync({ id: entityId, status: "draft" });
+      }
+      toast.success(`${label} dikembalikan ke draft.`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal mengubah status konten.");
+    }
+  };
 
 
   const runValidation = async () => {
@@ -82,6 +100,18 @@ export function PublishGateButton({
         <ShieldCheck className="mr-1 size-4" />
         {isPublished ? "Validasi ulang" : "Validasi & Publish"}
       </Button>
+      {isPublished ? (
+        <Button
+          size="sm"
+          variant="ghost"
+          className="min-h-11"
+          disabled={setExamStatus.isPending || setLessonStatus.isPending}
+          onClick={() => void unpublish()}
+        >
+          <Undo2 className="mr-1 size-4" />
+          Kembalikan ke draft
+        </Button>
+      ) : null}
       <ValidationReportDialog
         open={open}
         onOpenChange={setOpen}
