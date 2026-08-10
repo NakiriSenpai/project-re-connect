@@ -38,7 +38,6 @@ import { cn } from "@/lib/utils";
 import type { NotificationItem, NotificationType } from "@/types/notification";
 import { NOTIFICATION_TYPE_LABELS } from "@/types/notification";
 
-
 const TYPE_ICON: Record<NotificationType, typeof BellRing> = {
   material: BookOpen,
   exam: ClipboardList,
@@ -188,7 +187,6 @@ export function NotificationCenter({
         {isStaff ? (
           <NotificationComposer open={composerOpen} onOpenChange={setComposerOpen} />
         ) : null}
-
 
         <ScrollArea className="flex-1">
           <div className="space-y-3 p-4">

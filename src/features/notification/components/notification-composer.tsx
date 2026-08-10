@@ -113,10 +113,7 @@ export function NotificationComposer({
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="notif-role">Penerima</Label>
-              <Select
-                value={role}
-                onValueChange={(value) => setRole(value as typeof role)}
-              >
+              <Select value={role} onValueChange={(value) => setRole(value as typeof role)}>
                 <SelectTrigger id="notif-role">
                   <SelectValue />
                 </SelectTrigger>

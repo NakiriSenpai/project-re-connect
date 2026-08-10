@@ -141,10 +141,7 @@ export async function deliverPushForNotification(
 
   let removed = 0;
   if (deadEndpoints.length > 0) {
-    const { error } = await admin
-      .from("push_subscriptions")
-      .delete()
-      .in("endpoint", deadEndpoints);
+    const { error } = await admin.from("push_subscriptions").delete().in("endpoint", deadEndpoints);
     if (!error) removed = deadEndpoints.length;
   }
 
