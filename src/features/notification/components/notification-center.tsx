@@ -6,6 +6,7 @@ import {
   Download,
   Megaphone,
   ClipboardList,
+  Send,
   Wrench,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -20,6 +21,8 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
+import { NotificationComposer } from "@/features/notification/components/notification-composer";
+import { useAuth } from "@/hooks/auth";
 import {
   useMarkAllNotificationsRead,
   useMarkNotificationRead,
@@ -111,12 +114,15 @@ export function NotificationCenter({
   onOpenChange: (open: boolean) => void;
 }) {
   const { data, isLoading } = useNotifications();
+  const { role } = useAuth();
   const markRead = useMarkNotificationRead();
   const markAll = useMarkAllNotificationsRead();
   const [pushDismissed, setPushDismissed] = useState(false);
+  const [composerOpen, setComposerOpen] = useState(false);
 
   const items = useMemo(() => data ?? [], [data]);
   const unread = items.filter((item) => !item.readAt);
+  const isStaff = role === "owner" || role === "admin" || role === "guru";
 
   const showPushPrompt =
     !pushDismissed &&
@@ -152,19 +158,35 @@ export function NotificationCenter({
                 {unread.length > 0 ? `${unread.length} belum dibaca` : "Semua sudah dibaca"}
               </SheetDescription>
             </div>
-            {unread.length > 0 ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="gap-1 text-xs"
-                onClick={() => markAll.mutate(unread.map((item) => item.id))}
-                disabled={markAll.isPending}
-              >
-                <CheckCheck className="size-4" /> Tandai semua
-              </Button>
-            ) : null}
+            <div className="flex items-center gap-1">
+              {isStaff ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1 text-xs"
+                  onClick={() => setComposerOpen(true)}
+                >
+                  <Send className="size-4" /> Kirim
+                </Button>
+              ) : null}
+              {unread.length > 0 ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1 text-xs"
+                  onClick={() => markAll.mutate(unread.map((item) => item.id))}
+                  disabled={markAll.isPending}
+                >
+                  <CheckCheck className="size-4" /> Tandai semua
+                </Button>
+              ) : null}
+            </div>
           </div>
         </SheetHeader>
+
+        {isStaff ? (
+          <NotificationComposer open={composerOpen} onOpenChange={setComposerOpen} />
+        ) : null}
 
         <ScrollArea className="flex-1">
           <div className="space-y-3 p-4">
