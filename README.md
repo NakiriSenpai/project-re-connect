@@ -726,3 +726,5 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+<!-- Cloudflare build trigger: 2026-08-10 -->
