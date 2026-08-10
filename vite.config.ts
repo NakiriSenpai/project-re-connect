@@ -10,10 +10,10 @@ import type { Plugin } from "vite";
 import type { VitePWAOptions } from "vite-plugin-pwa";
 
 // vite-plugin-pwa membaca `viteConfig.build.outDir` (root-level = "dist"), bukan
-// output environment client. Plugin kecil ini menyalin resolved client outDir
-// (sandbox -> dist/client, Cloudflare/Nitro -> .output/public) ke opsi PWA
-// sebelum hook configResolved milik VitePWA berjalan, sehingga sw.js selalu
-// mendarat di direktori aset yang benar-benar dideploy.
+// output environment client. Plugin kecil di bawah menyalin resolved client outDir
+// (sandbox -> dist/client, Cloudflare/Nitro -> .output/public) ke opsi PWA sebelum
+// hook configResolved milik VitePWA berjalan, sehingga sw.js selalu mendarat di
+// direktori aset yang benar-benar dideploy.
 const pwaOptions: Partial<VitePWAOptions> = {
   strategies: "generateSW",
   // Generate the PWA artifacts before Nitro snapshots the client output for
@@ -66,7 +66,7 @@ const pwaOptions: Partial<VitePWAOptions> = {
   },
 };
 
-const pwaOutDirFromClientEnv: Plugin = {
+const pwaOutDirFollowsClientEnv: Plugin = {
   name: "lpk-pwa-outdir-follow-client-env",
   enforce: "pre",
   apply: "build",
@@ -83,52 +83,6 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
-    plugins: [pwaOutDirFromClientEnv, VitePWA(pwaOptions)],
-  },
-});
-
-        manifestFilename: "manifest.webmanifest",
-        devOptions: { enabled: false },
-        workbox: {
-          globPatterns: ["**/*.{js,css,ico,png,svg,webp,woff2}"],
-          // Handler Web Push (bukan cache app-shell) disisipkan ke service worker generated.
-          importScripts: ["/push-sw.js"],
-          navigateFallback: "/",
-          navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//, /^\/_serverFn\//],
-          cleanupOutdatedCaches: true,
-          clientsClaim: true,
-          skipWaiting: true,
-          runtimeCaching: [
-            {
-              urlPattern: ({ request }: { request: Request }) => request.mode === "navigate",
-              handler: "NetworkFirst",
-              options: {
-                cacheName: "html-navigations",
-                networkTimeoutSeconds: 5,
-                expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 },
-              },
-            },
-            {
-              urlPattern: ({ request, sameOrigin }: { request: Request; sameOrigin: boolean }) =>
-                sameOrigin && ["style", "script", "worker", "font"].includes(request.destination),
-              handler: "CacheFirst",
-              options: {
-                cacheName: "static-assets",
-                expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 },
-              },
-            },
-            {
-              urlPattern: ({ request, sameOrigin }: { request: Request; sameOrigin: boolean }) =>
-                sameOrigin && request.destination === "image",
-              handler: "CacheFirst",
-              options: {
-                cacheName: "images",
-                expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 },
-              },
-            },
-          ],
-        },
-      }),
-    ],
+    plugins: [pwaOutDirFollowsClientEnv, VitePWA(pwaOptions)],
   },
 });
