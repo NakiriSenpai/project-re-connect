@@ -254,7 +254,7 @@ export function UserFormDialog({ open, onOpenChange, scope, fixedTenantId, user 
             </div>
           </div>
 
-          {scope === "owner" && form.role !== "owner" ? (
+          {scope === "owner" && !fixedTenantId && form.role !== "owner" ? (
             <div className="space-y-2">
               <Label htmlFor="tenant">Tenant</Label>
               <Select value={form.tenantId} onValueChange={(v) => set("tenantId", v)}>
@@ -271,6 +271,7 @@ export function UserFormDialog({ open, onOpenChange, scope, fixedTenantId, user 
               </Select>
             </div>
           ) : null}
+
 
           <div className="space-y-2">
             <Label htmlFor="avatar">Avatar</Label>
