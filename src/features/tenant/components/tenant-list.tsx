@@ -1,6 +1,17 @@
-import { useMemo, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { useMemo, useState, type MouseEvent } from "react";
+import { Pencil, Plus, Power, Search } from "lucide-react";
+import { toast } from "sonner";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,10 +23,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUpdateTenant } from "@/hooks/owner";
 import { useTenants } from "@/hooks/tenant";
 import type { TenantStatusFilter } from "@/services/tenant";
 import type { TenantRow } from "@/types/database";
+import { TenantEditDialog } from "./tenant-edit-dialog";
 import { TenantFormDialog } from "./tenant-form-dialog";
+
 
 const PAGE_SIZE = 10;
 
