@@ -23,7 +23,8 @@ export default defineConfig({
         registerType: "autoUpdate",
         injectRegister: null,
         filename: "sw.js",
-        outDir: "dist/client",
+        // Tidak ada override outDir: ikuti resolved Vite build.outDir
+        // (sandbox -> dist/client, Cloudflare/Nitro -> .output/public).
         manifest: false,
         manifestFilename: "manifest.webmanifest",
         devOptions: { enabled: false },
