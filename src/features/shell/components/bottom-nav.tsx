@@ -58,7 +58,9 @@ export function BottomNav({ items }: { items: BottomNavItem[] }) {
                       : "text-muted-foreground hover:text-foreground",
                   )}
                 >
-                  <Icon className={cn("size-5", active && "drop-shadow-[0_0_6px_var(--primary)]")} />
+                  <Icon
+                    className={cn("size-5", active && "drop-shadow-[0_0_6px_var(--primary)]")}
+                  />
                   <span className="w-full truncate text-center text-[11px] font-medium leading-none">
                     {item.label}
                   </span>

@@ -25,7 +25,12 @@ import {
   useMarkNotificationRead,
   useNotifications,
 } from "@/hooks/notification";
-import { enablePushNotifications, isPushSupported, pushPermission, vapidPublicKey } from "@/lib/push/push-client";
+import {
+  enablePushNotifications,
+  isPushSupported,
+  pushPermission,
+  vapidPublicKey,
+} from "@/lib/push/push-client";
 import { cn } from "@/lib/utils";
 import type { NotificationItem, NotificationType } from "@/types/notification";
 import { NOTIFICATION_TYPE_LABELS } from "@/types/notification";

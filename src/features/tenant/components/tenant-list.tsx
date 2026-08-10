@@ -30,7 +30,6 @@ import type { TenantRow } from "@/types/database";
 import { TenantEditDialog } from "./tenant-edit-dialog";
 import { TenantFormDialog } from "./tenant-form-dialog";
 
-
 const PAGE_SIZE = 10;
 
 function formatDate(value: string) {
@@ -151,7 +150,6 @@ function TenantCard({ tenant, onEdit }: { tenant: TenantRow; onEdit: (t: TenantR
     </li>
   );
 }
-
 
 export function TenantList() {
   const [search, setSearch] = useState("");
