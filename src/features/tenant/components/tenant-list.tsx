@@ -1,4 +1,4 @@
-import { useMemo, useState, type MouseEvent } from "react";
+import { useMemo, useState } from "react";
 import { Pencil, Plus, Power, Search } from "lucide-react";
 import { toast } from "sonner";
 
@@ -158,6 +158,7 @@ export function TenantList() {
   const [status, setStatus] = useState<TenantStatusFilter>("semua");
   const [page, setPage] = useState(1);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<TenantRow | null>(null);
 
   const params = useMemo(
     () => ({ search, status, page, pageSize: PAGE_SIZE }),
@@ -228,7 +229,7 @@ export function TenantList() {
       ) : (
         <ul className="space-y-2">
           {data?.rows.map((tenant) => (
-            <TenantCard key={tenant.id} tenant={tenant} />
+            <TenantCard key={tenant.id} tenant={tenant} onEdit={setEditing} />
           ))}
         </ul>
       )}
@@ -260,6 +261,11 @@ export function TenantList() {
       ) : null}
 
       <TenantFormDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <TenantEditDialog
+        tenant={editing}
+        open={editing !== null}
+        onOpenChange={(next) => !next && setEditing(null)}
+      />
     </section>
   );
 }
