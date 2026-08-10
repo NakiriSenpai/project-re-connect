@@ -1,10 +1,11 @@
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { useSetExamStatus } from "@/hooks/exam";
-import { useSetLessonStatus } from "@/hooks/lesson";
+import { publishContent } from "@/lib/publish/publish.functions";
 import { recordContentIoAudit } from "@/services/content/bundle/audit.service";
 import {
   validateExam,
@@ -12,6 +13,7 @@ import {
   type ValidationReport,
 } from "@/services/content/bundle/bundle-validation.service";
 import { ValidationReportDialog } from "./validation-report-dialog";
+
 
 /** Tombol publish dengan validasi konten wajib (ERROR memblok publish). */
 export function PublishGateButton({
@@ -28,8 +30,9 @@ export function PublishGateButton({
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<ValidationReport | null>(null);
-  const setExamStatus = useSetExamStatus();
-  const setLessonStatus = useSetLessonStatus();
+  const queryClient = useQueryClient();
+  const publishFn = useServerFn(publishContent);
+
 
   const runValidation = async () => {
     setOpen(true);
@@ -56,16 +59,16 @@ export function PublishGateButton({
 
   const publish = async () => {
     try {
-      if (kind === "exam") {
-        await setExamStatus.mutateAsync({ id: entityId, status: "published" });
-      } else {
-        await setLessonStatus.mutateAsync({ id: entityId, status: "published" });
-      }
+      await publishFn({ data: { kind, id: entityId } });
+      void queryClient.invalidateQueries({ queryKey: kind === "exam" ? ["exams"] : ["lessons"] });
+      void queryClient.invalidateQueries({ queryKey: [kind] });
+      void queryClient.invalidateQueries({ queryKey: ["notifications"] });
       toast.success(`${label} berhasil dipublish.`);
       setOpen(false);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Gagal mempublish konten.");
     }
+
   };
 
   return (

@@ -117,7 +117,10 @@ export function UserFormDialog({ open, onOpenChange, scope, fixedTenantId, user 
           isActive: form.isActive === "aktif",
           avatarUrl: form.avatarUrl ? form.avatarUrl : null,
           ...(scope === "owner"
-            ? { role: form.role, tenantId: form.tenantId ? form.tenantId : null }
+            ? {
+                role: form.role,
+                tenantId: fixedTenantId ?? (form.tenantId ? form.tenantId : null),
+              }
             : {}),
         });
         toast.success("Data user berhasil diperbarui.");
@@ -128,11 +131,11 @@ export function UserFormDialog({ open, onOpenChange, scope, fixedTenantId, user 
           username: form.username.toLowerCase(),
           email: form.email,
           password: form.password,
-          role: scope === "owner" ? form.role : form.role,
+          role: form.role,
           isActive: form.isActive === "aktif",
           avatarUrl: form.avatarUrl ? form.avatarUrl : null,
-          tenantId:
-            scope === "admin" ? (fixedTenantId ?? null) : form.tenantId ? form.tenantId : null,
+          tenantId: fixedTenantId ?? (form.tenantId ? form.tenantId : null),
+
         });
         toast.success("User berhasil dibuat.");
       }
@@ -254,7 +257,7 @@ export function UserFormDialog({ open, onOpenChange, scope, fixedTenantId, user 
             </div>
           </div>
 
-          {scope === "owner" && form.role !== "owner" ? (
+          {scope === "owner" && !fixedTenantId && form.role !== "owner" ? (
             <div className="space-y-2">
               <Label htmlFor="tenant">Tenant</Label>
               <Select value={form.tenantId} onValueChange={(v) => set("tenantId", v)}>
@@ -271,6 +274,7 @@ export function UserFormDialog({ open, onOpenChange, scope, fixedTenantId, user 
               </Select>
             </div>
           ) : null}
+
 
           <div className="space-y-2">
             <Label htmlFor="avatar">Avatar</Label>

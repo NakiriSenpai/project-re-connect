@@ -37,7 +37,9 @@ type Props = { scope: "owner" | "admin" };
 
 export function UserList({ scope }: Props) {
   const { profile } = useAuth();
-  const tenantId = scope === "admin" ? (profile?.tenant_id ?? null) : null;
+  // Owner memiliki tenant sendiri: daftar dibatasi ke tenant miliknya.
+  const tenantId = profile?.tenant_id ?? null;
+
 
   const [search, setSearch] = useState("");
   const [role, setRole] = useState<UserRoleFilter>("semua");
