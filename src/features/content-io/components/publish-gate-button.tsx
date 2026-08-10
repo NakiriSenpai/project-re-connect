@@ -1,10 +1,11 @@
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { useSetExamStatus } from "@/hooks/exam";
-import { useSetLessonStatus } from "@/hooks/lesson";
+import { publishContent } from "@/lib/publish/publish.functions";
 import { recordContentIoAudit } from "@/services/content/bundle/audit.service";
 import {
   validateExam,
@@ -12,6 +13,7 @@ import {
   type ValidationReport,
 } from "@/services/content/bundle/bundle-validation.service";
 import { ValidationReportDialog } from "./validation-report-dialog";
+
 
 /** Tombol publish dengan validasi konten wajib (ERROR memblok publish). */
 export function PublishGateButton({
