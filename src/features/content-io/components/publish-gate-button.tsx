@@ -30,8 +30,9 @@ export function PublishGateButton({
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<ValidationReport | null>(null);
-  const setExamStatus = useSetExamStatus();
-  const setLessonStatus = useSetLessonStatus();
+  const queryClient = useQueryClient();
+  const publishFn = useServerFn(publishContent);
+
 
   const runValidation = async () => {
     setOpen(true);
