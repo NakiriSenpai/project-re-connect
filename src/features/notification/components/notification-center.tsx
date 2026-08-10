@@ -6,6 +6,7 @@ import {
   Download,
   Megaphone,
   ClipboardList,
+  Send,
   Wrench,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -20,6 +21,8 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
+import { NotificationComposer } from "@/features/notification/components/notification-composer";
+import { useAuth } from "@/hooks/auth";
 import {
   useMarkAllNotificationsRead,
   useMarkNotificationRead,
@@ -34,6 +37,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { NotificationItem, NotificationType } from "@/types/notification";
 import { NOTIFICATION_TYPE_LABELS } from "@/types/notification";
+
 
 const TYPE_ICON: Record<NotificationType, typeof BellRing> = {
   material: BookOpen,
