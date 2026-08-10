@@ -208,3 +208,51 @@ export const createTenantWithAdmin = createServerFn({ method: "POST" })
 
     return { tenantId, adminUserId };
   });
+
+const updateSchema = z.object({
+  tenantId: z.string().uuid(),
+  name: z.string().trim().min(3, "Nama tenant minimal 3 karakter.").max(120),
+  tagline: z.string().trim().max(160).nullable(),
+  logoUrl: z.string().trim().url().max(500).nullable(),
+  isActive: z.boolean(),
+});
+
+export type UpdateTenantPayload = z.infer<typeof updateSchema>;
+
+/**
+ * Memperbarui branding & status tenant.
+ * Identitas pemanggil diambil dari Bearer token (bukan dari payload client),
+ * lalu divalidasi: hanya Owner yang boleh mengubah tenant.
+ */
+export const updateTenantBranding = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => updateSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { createAdminClient, verifyCaller } = await import("@/lib/server/supabase-admin.server");
+    const admin = createAdminClient();
+    const caller = await verifyCaller(admin, getRequestHeader("authorization") ?? "");
+
+    if (caller.role !== "owner") {
+      throw new Error("Hanya Pemilik yang dapat mengubah data tenant.");
+    }
+
+    const { data: target } = await admin
+      .from("tenants")
+      .select("id")
+      .eq("id", data.tenantId)
+      .maybeSingle();
+    if (!target) throw new Error("Tenant tidak ditemukan.");
+
+    const { error } = await admin
+      .from("tenants")
+      .update({
+        name: data.name,
+        tagline: data.tagline,
+        logo_url: data.logoUrl,
+        is_active: data.isActive,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", data.tenantId);
+
+    if (error) throw new Error(`Gagal menyimpan tenant: ${error.message}`);
+    return { tenantId: data.tenantId };
+  });
