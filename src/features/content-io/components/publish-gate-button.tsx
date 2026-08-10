@@ -59,16 +59,16 @@ export function PublishGateButton({
 
   const publish = async () => {
     try {
-      if (kind === "exam") {
-        await setExamStatus.mutateAsync({ id: entityId, status: "published" });
-      } else {
-        await setLessonStatus.mutateAsync({ id: entityId, status: "published" });
-      }
+      await publishFn({ data: { kind, id: entityId } });
+      void queryClient.invalidateQueries({ queryKey: kind === "exam" ? ["exams"] : ["lessons"] });
+      void queryClient.invalidateQueries({ queryKey: [kind] });
+      void queryClient.invalidateQueries({ queryKey: ["notifications"] });
       toast.success(`${label} berhasil dipublish.`);
       setOpen(false);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Gagal mempublish konten.");
     }
+
   };
 
   return (
