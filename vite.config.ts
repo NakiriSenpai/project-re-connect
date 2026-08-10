@@ -17,6 +17,9 @@ export default defineConfig({
     plugins: [
       VitePWA({
         strategies: "generateSW",
+        // Generate the PWA artifacts before Nitro snapshots dist/client for
+        // Cloudflare Workers static-asset deployment.
+        integration: { closeBundleOrder: "pre" },
         registerType: "autoUpdate",
         injectRegister: null,
         filename: "sw.js",
