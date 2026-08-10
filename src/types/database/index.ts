@@ -6,6 +6,7 @@ export type TenantRow = {
   name: string;
   slug: string;
   tenant_code: string | null;
+  tagline: string | null;
   timezone: string;
   logo_url: string | null;
   is_active: boolean;

@@ -3,7 +3,7 @@ import type { TenantRow } from "@/types/database";
 import { TABLES } from "@/types/database";
 
 const COLUMNS =
-  "id, name, slug, tenant_code, timezone, logo_url, is_active, created_by, created_at, updated_at";
+  "id, name, slug, tenant_code, tagline, timezone, logo_url, is_active, created_by, created_at, updated_at";
 
 export type TenantStatusFilter = "semua" | "aktif" | "nonaktif";
 
