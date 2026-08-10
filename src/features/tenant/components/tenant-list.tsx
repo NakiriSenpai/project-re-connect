@@ -1,6 +1,17 @@
 import { useMemo, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Pencil, Plus, Power, Search } from "lucide-react";
+import { toast } from "sonner";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,9 +23,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUpdateTenant } from "@/hooks/owner";
 import { useTenants } from "@/hooks/tenant";
 import type { TenantStatusFilter } from "@/services/tenant";
 import type { TenantRow } from "@/types/database";
+import { TenantEditDialog } from "./tenant-edit-dialog";
 import { TenantFormDialog } from "./tenant-form-dialog";
 
 const PAGE_SIZE = 10;
@@ -27,7 +40,26 @@ function formatDate(value: string) {
   });
 }
 
-function TenantCard({ tenant }: { tenant: TenantRow }) {
+function TenantCard({ tenant, onEdit }: { tenant: TenantRow; onEdit: (t: TenantRow) => void }) {
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const updateTenant = useUpdateTenant();
+
+  const toggleStatus = async () => {
+    try {
+      await updateTenant.mutateAsync({
+        tenantId: tenant.id,
+        name: tenant.name,
+        tagline: tenant.tagline,
+        logoUrl: tenant.logo_url,
+        isActive: !tenant.is_active,
+      });
+      toast.success(tenant.is_active ? "Tenant dinonaktifkan." : "Tenant diaktifkan.");
+      setConfirmOpen(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal mengubah status tenant.");
+    }
+  };
+
   return (
     <li className="rounded-lg border border-border p-4">
       <div className="flex items-start gap-3">
@@ -51,6 +83,9 @@ function TenantCard({ tenant }: { tenant: TenantRow }) {
               {tenant.is_active ? "Aktif" : "Nonaktif"}
             </Badge>
           </div>
+          {tenant.tagline ? (
+            <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{tenant.tagline}</p>
+          ) : null}
           <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground sm:grid-cols-3">
             <div>
               <dt className="font-medium text-foreground/70">Tenant Code</dt>
@@ -65,16 +100,53 @@ function TenantCard({ tenant }: { tenant: TenantRow }) {
               <dd>{tenant.timezone}</dd>
             </div>
             <div>
-              <dt className="font-medium text-foreground/70">Jumlah User</dt>
-              <dd>—</dd>
-            </div>
-            <div>
               <dt className="font-medium text-foreground/70">Dibuat</dt>
               <dd>{formatDate(tenant.created_at)}</dd>
             </div>
           </dl>
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" onClick={() => onEdit(tenant)}>
+              <Pencil className="mr-1 size-4" /> Edit
+            </Button>
+            <Button
+              size="sm"
+              variant={tenant.is_active ? "ghost" : "secondary"}
+              onClick={() => setConfirmOpen(true)}
+            >
+              <Power className="mr-1 size-4" />
+              {tenant.is_active ? "Nonaktifkan" : "Aktifkan"}
+            </Button>
+          </div>
         </div>
       </div>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {tenant.is_active ? "Nonaktifkan tenant?" : "Aktifkan tenant?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {tenant.is_active
+                ? `Pengguna pada tenant “${tenant.name}” tidak lagi dapat menggunakan aplikasi sesuai aturan akses yang berlaku.`
+                : `Pengguna pada tenant “${tenant.name}” kembali dapat menggunakan aplikasi.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={updateTenant.isPending}>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(event) => {
+                event.preventDefault();
+                void toggleStatus();
+              }}
+              disabled={updateTenant.isPending}
+            >
+              {tenant.is_active ? "Nonaktifkan" : "Aktifkan"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </li>
   );
 }
@@ -84,6 +156,7 @@ export function TenantList() {
   const [status, setStatus] = useState<TenantStatusFilter>("semua");
   const [page, setPage] = useState(1);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<TenantRow | null>(null);
 
   const params = useMemo(
     () => ({ search, status, page, pageSize: PAGE_SIZE }),
@@ -154,7 +227,7 @@ export function TenantList() {
       ) : (
         <ul className="space-y-2">
           {data?.rows.map((tenant) => (
-            <TenantCard key={tenant.id} tenant={tenant} />
+            <TenantCard key={tenant.id} tenant={tenant} onEdit={setEditing} />
           ))}
         </ul>
       )}
@@ -186,6 +259,11 @@ export function TenantList() {
       ) : null}
 
       <TenantFormDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <TenantEditDialog
+        tenant={editing}
+        open={editing !== null}
+        onOpenChange={(next) => !next && setEditing(null)}
+      />
     </section>
   );
 }

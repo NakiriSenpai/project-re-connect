@@ -26,6 +26,8 @@ export default defineConfig({
         devOptions: { enabled: false },
         workbox: {
           globPatterns: ["**/*.{js,css,ico,png,svg,webp,woff2}"],
+          // Handler Web Push (bukan cache app-shell) disisipkan ke service worker generated.
+          importScripts: ["/push-sw.js"],
           navigateFallback: "/",
           navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//, /^\/_serverFn\//],
           cleanupOutdatedCaches: true,
