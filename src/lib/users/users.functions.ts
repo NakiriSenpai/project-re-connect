@@ -2,6 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { z } from "zod";
 
+const OWNER_NO_TENANT = "Owner belum memiliki tenant. Hubungi administrator platform.";
+const CROSS_TENANT = "Anda hanya dapat mengelola user pada tenant Anda sendiri.";
+
 const roleSchema = z.enum(["owner", "admin", "guru", "siswa"]);
 
 const createSchema = z.object({
@@ -60,12 +63,8 @@ export const createUserAccount = createServerFn({ method: "POST" })
     let tenantId = data.tenantId ?? null;
     if (caller.role === "owner") {
       // Owner memiliki tenant sendiri: user baru SELALU masuk tenant Owner.
-      if (caller.tenantId) {
-        tenantId = caller.tenantId;
-      } else {
-        if (data.role !== "owner" && !tenantId) throw new Error("Tenant wajib dipilih.");
-        if (data.role === "owner") tenantId = null;
-      }
+      if (!caller.tenantId) throw new Error(OWNER_NO_TENANT);
+      tenantId = caller.tenantId;
     } else if (caller.role === "admin") {
       if (data.role !== "guru" && data.role !== "siswa") {
         throw new Error("Admin hanya dapat membuat akun Guru atau Siswa.");
@@ -160,17 +159,11 @@ export const updateUserAccount = createServerFn({ method: "POST" })
     };
 
     if (caller.role === "owner") {
-      if (caller.tenantId) {
-        // Owner ber-tenant hanya boleh mengelola user pada tenant miliknya.
-        if (target.tenant_id !== caller.tenantId) {
-          throw new Error("Anda hanya dapat mengelola user pada tenant Anda sendiri.");
-        }
-        if (data.role) patch["role"] = data.role;
-        patch["tenant_id"] = caller.tenantId;
-      } else {
-        if (data.role) patch["role"] = data.role;
-        if (data.tenantId !== undefined) patch["tenant_id"] = data.tenantId;
-      }
+      // Owner ber-tenant hanya boleh mengelola user pada tenant miliknya.
+      if (!caller.tenantId) throw new Error(OWNER_NO_TENANT);
+      if (target.tenant_id !== caller.tenantId) throw new Error(CROSS_TENANT);
+      if (data.role) patch["role"] = data.role;
+      patch["tenant_id"] = caller.tenantId;
     } else if (caller.role === "admin") {
       if (target.tenant_id !== caller.tenantId) {
         throw new Error("Anda hanya dapat mengelola user pada tenant Anda sendiri.");
@@ -232,9 +225,8 @@ export const setUserStatus = createServerFn({ method: "POST" })
         throw new Error("Admin tidak dapat mengubah akun Owner maupun Admin lain.");
       }
     } else if (caller.role === "owner") {
-      if (caller.tenantId && target.tenant_id !== caller.tenantId) {
-        throw new Error("Anda hanya dapat mengelola user pada tenant Anda sendiri.");
-      }
+      if (!caller.tenantId) throw new Error(OWNER_NO_TENANT);
+      if (target.tenant_id !== caller.tenantId) throw new Error(CROSS_TENANT);
     } else {
       throw new Error("Anda tidak memiliki akses untuk mengubah status user.");
     }
@@ -271,9 +263,8 @@ export const resetUserPassword = createServerFn({ method: "POST" })
         throw new Error("Admin tidak dapat mengubah akun Owner maupun Admin lain.");
       }
     } else if (caller.role === "owner") {
-      if (caller.tenantId && target.tenant_id !== caller.tenantId) {
-        throw new Error("Anda hanya dapat mengelola user pada tenant Anda sendiri.");
-      }
+      if (!caller.tenantId) throw new Error(OWNER_NO_TENANT);
+      if (target.tenant_id !== caller.tenantId) throw new Error(CROSS_TENANT);
     } else {
       throw new Error("Anda tidak memiliki akses untuk mengatur ulang password.");
     }
