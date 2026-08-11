@@ -17,7 +17,17 @@ export const env = {
   ),
   cloudinaryCloudName: read("VITE_CLOUDINARY_CLOUD_NAME", "iwcvk9dw"),
   cloudinaryUploadPreset: read("VITE_CLOUDINARY_UPLOAD_PRESET", "aquilacafe_upload"),
+  /** URL publik aplikasi (dipakai untuk redirect email recovery). */
+  siteUrl: read("VITE_SITE_URL", "https://korean-learn.jackplus91.workers.dev"),
 } as const;
+
+/** Origin aman untuk redirect email: origin nyata kecuali saat dev lokal. */
+export function resolvePublicOrigin(): string {
+  if (typeof window === "undefined") return env.siteUrl;
+  const { origin, hostname } = window.location;
+  const isLocal = hostname === "localhost" || hostname === "127.0.0.1";
+  return isLocal ? env.siteUrl : origin;
+}
 
 export const appConfig = {
   name: "LPK Learning",
