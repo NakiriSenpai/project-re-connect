@@ -39,7 +39,13 @@ export const createNotification = createServerFn({ method: "POST" })
     }
 
     // Tenant SELALU dari profil pemanggil (bukan payload client).
-    const tenantId = caller.role === "owner" ? (caller.tenantId ?? null) : caller.tenantId;
+    if (caller.role === "owner" && !caller.tenantId) {
+      throw new Error("Owner belum memiliki tenant. Hubungi administrator platform.");
+    }
+    const tenantId = caller.tenantId;
+    if (!tenantId) {
+      throw new Error("Akun Anda belum terhubung ke tenant. Hubungi administrator platform.");
+    }
 
     return insertNotificationAndPush(admin, {
       tenantId,
