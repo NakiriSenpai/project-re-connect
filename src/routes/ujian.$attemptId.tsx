@@ -5,9 +5,9 @@ import { ExamWorkspace } from "@/features/exam-engine/workspace/exam-workspace";
 export const Route = createFileRoute("/ujian/$attemptId")({
   head: () => ({
     meta: [
-      { title: "Sedang Ujian — LPK Learning" },
+      { title: "Sedang Ujian — I:UM 이음" },
       { name: "description", content: "Halaman pengerjaan ujian dengan timer dan auto save." },
-      { property: "og:title", content: "Sedang Ujian — LPK Learning" },
+      { property: "og:title", content: "Sedang Ujian — I:UM 이음" },
       {
         property: "og:description",
         content: "Halaman pengerjaan ujian dengan timer dan auto save.",

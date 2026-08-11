@@ -5,9 +5,9 @@ import { ReviewWorkspace } from "@/features/exam-engine/workspace/review-workspa
 export const Route = createFileRoute("/ujian/review/$attemptId")({
   head: () => ({
     meta: [
-      { title: "Review Ujian — LPK Learning" },
+      { title: "Review Ujian — I:UM 이음" },
       { name: "description", content: "Tinjau soal, jawaban benar, dan pembahasan ujian Anda." },
-      { property: "og:title", content: "Review Ujian — LPK Learning" },
+      { property: "og:title", content: "Review Ujian — I:UM 이음" },
       {
         property: "og:description",
         content: "Tinjau soal, jawaban benar, dan pembahasan ujian Anda.",

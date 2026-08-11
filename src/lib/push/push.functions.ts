@@ -80,7 +80,13 @@ export const sendPushForNotification = createServerFn({ method: "POST" })
       .maybeSingle();
 
     if (!row) throw new Error("Notifikasi tidak ditemukan.");
-    if (caller.role !== "owner" && row["tenant_id"] !== caller.tenantId) {
+
+    // Tenant caller SELALU wajib, termasuk Owner (tidak ada owner global bypass).
+    if (!caller.tenantId) {
+      throw new Error("Owner belum memiliki tenant. Hubungi administrator platform.");
+    }
+    const rowTenantId = (row["tenant_id"] as string | null) ?? null;
+    if (rowTenantId === null || rowTenantId !== caller.tenantId) {
       throw new Error("Notifikasi ini bukan milik tenant Anda.");
     }
 

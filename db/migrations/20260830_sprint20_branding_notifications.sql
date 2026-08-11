@@ -69,23 +69,24 @@ using (
   and (tenant_id is null or tenant_id = public.notif_current_tenant())
 );
 
+-- Sinkron dengan policy production aktif: tidak ada owner bypass tenant,
+-- tenant_id wajib non-null dan sama dengan tenant pemanggil.
 drop policy if exists "notifications_insert_staff" on public.notifications;
 create policy "notifications_insert_staff"
 on public.notifications for insert to authenticated
 with check (
   public.notif_current_role() in ('owner', 'admin', 'guru')
-  and (
-    public.notif_current_role() = 'owner'
-    or tenant_id = public.notif_current_tenant()
-  )
+  and tenant_id is not null
+  and tenant_id = public.notif_current_tenant()
 );
 
 drop policy if exists "notifications_delete_staff" on public.notifications;
 create policy "notifications_delete_staff"
 on public.notifications for delete to authenticated
 using (
-  public.notif_current_role() = 'owner'
-  or (public.notif_current_role() = 'admin' and tenant_id = public.notif_current_tenant())
+  public.notif_current_role() in ('owner', 'admin')
+  and tenant_id is not null
+  and tenant_id = public.notif_current_tenant()
 );
 
 -- 4) Status baca per user ---------------------------------------------------

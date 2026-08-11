@@ -8,12 +8,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export const Route = createFileRoute("/media")({
   head: () => ({
     meta: [
-      { title: "Media — LPK Learning" },
-      { name: "description", content: "Pusat unggah media gambar dan audio LPK Learning." },
-      { property: "og:title", content: "Media — LPK Learning" },
+      { title: "Media — I:UM 이음" },
+      { name: "description", content: "Pusat unggah media gambar dan audio I:UM 이음." },
+      { property: "og:title", content: "Media — I:UM 이음" },
       {
         property: "og:description",
-        content: "Pusat unggah media gambar dan audio LPK Learning.",
+        content: "Pusat unggah media gambar dan audio I:UM 이음.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

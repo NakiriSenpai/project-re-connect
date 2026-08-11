@@ -7,12 +7,12 @@ import { RequireAuth } from "@/middleware";
 export const Route = createFileRoute("/leaderboard")({
   head: () => ({
     meta: [
-      { title: "Peringkat — LPK Learning" },
+      { title: "Peringkat — I:UM 이음" },
       {
         name: "description",
         content: "Papan peringkat peserta pelatihan berdasarkan nilai ujian.",
       },
-      { property: "og:title", content: "Peringkat — LPK Learning" },
+      { property: "og:title", content: "Peringkat — I:UM 이음" },
       {
         property: "og:description",
         content: "Papan peringkat peserta pelatihan berdasarkan nilai ujian.",

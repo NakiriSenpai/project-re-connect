@@ -7,9 +7,9 @@ import { TeacherAnalyticsDashboard } from "@/features/teacher-analytics/componen
 export const Route = createFileRoute("/admin_/analytics")({
   head: () => ({
     meta: [
-      { title: "Analitik Lembaga — LPK Learning" },
+      { title: "Analitik Lembaga — I:UM 이음" },
       { name: "description", content: "Analitik performa ujian pada lembaga Anda." },
-      { property: "og:title", content: "Analitik Lembaga — LPK Learning" },
+      { property: "og:title", content: "Analitik Lembaga — I:UM 이음" },
       { property: "og:description", content: "Analitik performa ujian pada lembaga Anda." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

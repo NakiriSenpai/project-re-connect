@@ -7,12 +7,12 @@ import { UserList } from "@/features/users/components/user-list";
 export const Route = createFileRoute("/owner_/users")({
   head: () => ({
     meta: [
-      { title: "Manajemen User — LPK Learning" },
-      { name: "description", content: "Kelola seluruh pengguna pada semua tenant LPK Learning." },
-      { property: "og:title", content: "Manajemen User — LPK Learning" },
+      { title: "Manajemen User — I:UM 이음" },
+      { name: "description", content: "Kelola seluruh pengguna pada semua tenant I:UM 이음." },
+      { property: "og:title", content: "Manajemen User — I:UM 이음" },
       {
         property: "og:description",
-        content: "Kelola seluruh pengguna pada semua tenant LPK Learning.",
+        content: "Kelola seluruh pengguna pada semua tenant I:UM 이음.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

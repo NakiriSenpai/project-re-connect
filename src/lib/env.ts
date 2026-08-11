@@ -30,8 +30,8 @@ export function resolvePublicOrigin(): string {
 }
 
 export const appConfig = {
-  name: "LPK Learning",
-  shortName: "LPK LMS",
+  name: "I:UM 이음",
+  shortName: "I:UM",
   description: "Platform pembelajaran multi-tenant untuk Lembaga Pelatihan Kerja.",
   locale: "id-ID",
 } as const;

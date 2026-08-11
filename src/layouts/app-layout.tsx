@@ -34,8 +34,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
   if (isFullscreen) {
     return (
       <MaintenanceGate>
-        <div className="min-h-screen bg-background text-foreground">
-          <main className="mx-auto w-full max-w-5xl px-3 py-3">{children}</main>
+        <div className="min-h-screen bg-background pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] text-foreground">
+          <main className="mx-auto w-full max-w-5xl px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-[calc(0.75rem+env(safe-area-inset-top))]">{children}</main>
         </div>
       </MaintenanceGate>
     );
@@ -43,10 +43,10 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <MaintenanceGate>
-      <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <div className="flex min-h-screen flex-col bg-background pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] text-foreground">
         {isAuthenticated ? <AppHeader /> : null}
 
-        <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-4 pb-28">
+        <main className="mx-auto w-full max-w-5xl flex-1 px-4 pt-4 pb-[calc(7rem+env(safe-area-inset-bottom))]">
           {children}
           <p className="pt-8 text-center text-[11px] text-muted-foreground">
             {config.appName} · v{version}

@@ -10,13 +10,13 @@ import { ReleaseChecklist } from "@/features/settings/components/release-checkli
 export const Route = createFileRoute("/owner_/settings")({
   head: () => ({
     meta: [
-      { title: "Pengaturan Platform — LPK Learning" },
+      { title: "Pengaturan Platform — I:UM 이음" },
       {
         name: "description",
         content:
           "Atur branding white label, feature flag, mode pemeliharaan, dan kesiapan rilis platform.",
       },
-      { property: "og:title", content: "Pengaturan Platform — LPK Learning" },
+      { property: "og:title", content: "Pengaturan Platform — I:UM 이음" },
       {
         property: "og:description",
         content: "Branding, feature flag, mode pemeliharaan, dan audit kesiapan rilis.",

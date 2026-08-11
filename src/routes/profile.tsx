@@ -7,9 +7,9 @@ import { RequireAuth } from "@/middleware";
 export const Route = createFileRoute("/profile")({
   head: () => ({
     meta: [
-      { title: "Profil Saya — LPK Learning" },
+      { title: "Profil Saya — I:UM 이음" },
       { name: "description", content: "Kelola informasi akun, foto profil, keamanan, dan tema." },
-      { property: "og:title", content: "Profil Saya — LPK Learning" },
+      { property: "og:title", content: "Profil Saya — I:UM 이음" },
       {
         property: "og:description",
         content: "Kelola informasi akun, foto profil, keamanan, dan tema.",

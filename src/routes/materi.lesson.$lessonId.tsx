@@ -5,12 +5,12 @@ import { LessonViewer } from "@/features/lesson/components/lesson-viewer";
 export const Route = createFileRoute("/materi/lesson/$lessonId")({
   head: () => ({
     meta: [
-      { title: "Belajar Materi — LPK Learning" },
+      { title: "Belajar Materi — I:UM 이음" },
       {
         name: "description",
         content: "Baca materi pembelajaran per bagian dengan progres tersimpan otomatis.",
       },
-      { property: "og:title", content: "Belajar Materi — LPK Learning" },
+      { property: "og:title", content: "Belajar Materi — I:UM 이음" },
       {
         property: "og:description",
         content: "Baca materi pembelajaran per bagian dengan progres tersimpan otomatis.",

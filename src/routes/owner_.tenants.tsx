@@ -7,12 +7,12 @@ import { TenantList } from "@/features/tenant/components/tenant-list";
 export const Route = createFileRoute("/owner_/tenants")({
   head: () => ({
     meta: [
-      { title: "Manajemen Tenant — LPK Learning" },
+      { title: "Manajemen Tenant — I:UM 이음" },
       {
         name: "description",
         content: "Kelola tenant lembaga pelatihan dan akun admin pertamanya.",
       },
-      { property: "og:title", content: "Manajemen Tenant — LPK Learning" },
+      { property: "og:title", content: "Manajemen Tenant — I:UM 이음" },
       {
         property: "og:description",
         content: "Kelola tenant lembaga pelatihan dan akun admin pertamanya.",
