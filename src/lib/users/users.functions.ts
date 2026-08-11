@@ -166,6 +166,10 @@ export const updateUserAccount = createServerFn({ method: "POST" })
       // Owner ber-tenant hanya boleh mengelola user pada tenant miliknya.
       if (!caller.tenantId) throw new Error(OWNER_NO_TENANT);
       if (target.tenant_id !== caller.tenantId) throw new Error(CROSS_TENANT);
+      // Promosi ke Owner dilarang; akun Owner yang sudah ada tetap Owner.
+      if (data.role === "owner" && target.role !== "owner") {
+        throw new Error("Owner tidak dapat mempromosikan user menjadi Owner.");
+      }
       if (data.role) patch["role"] = data.role;
       patch["tenant_id"] = caller.tenantId;
     } else if (caller.role === "admin") {
