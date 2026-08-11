@@ -62,6 +62,10 @@ export const createUserAccount = createServerFn({ method: "POST" })
 
     let tenantId = data.tenantId ?? null;
     if (caller.role === "owner") {
+      // Owner tidak boleh membuat Owner baru; role dari payload client tidak dipercaya.
+      if (data.role === "owner") {
+        throw new Error("Owner tidak dapat membuat akun Owner baru.");
+      }
       // Owner memiliki tenant sendiri: user baru SELALU masuk tenant Owner.
       if (!caller.tenantId) throw new Error(OWNER_NO_TENANT);
       tenantId = caller.tenantId;
