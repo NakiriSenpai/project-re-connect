@@ -82,19 +82,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "LPK Learning — Platform LMS Multi-Tenant" },
+      {
+        name: "viewport",
+        content: "width=device-width, initial-scale=1, viewport-fit=cover",
+      },
+      { title: "I:UM 이음 — Platform Belajar Bahasa Korea" },
       {
         name: "description",
-        content: "Platform pembelajaran multi-tenant untuk Lembaga Pelatihan Kerja.",
+        content: "Belajar bahasa Korea, hubungkan masa depan. Platform pembelajaran multi-tenant.",
       },
       { name: "theme-color", content: "#1d4ed8" },
+      { name: "application-name", content: "I:UM" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
-      { name: "apple-mobile-web-app-title", content: "LPK LMS" },
-      { property: "og:title", content: "LPK Learning — Platform LMS Multi-Tenant" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "I:UM" },
+      { property: "og:title", content: "I:UM 이음 — Platform Belajar Bahasa Korea" },
       {
         property: "og:description",
-        content: "Platform pembelajaran multi-tenant untuk Lembaga Pelatihan Kerja.",
+        content: "Belajar bahasa Korea, hubungkan masa depan. Platform pembelajaran multi-tenant.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

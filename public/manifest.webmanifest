@@ -1,7 +1,7 @@
 {
-  "name": "LPK Learning — LMS Multi-Tenant",
-  "short_name": "LPK LMS",
-  "description": "Platform pembelajaran multi-tenant untuk Lembaga Pelatihan Kerja.",
+  "name": "I:UM 이음",
+  "short_name": "I:UM",
+  "description": "Belajar bahasa Korea, hubungkan masa depan. Platform pembelajaran multi-tenant.",
   "id": "/",
   "start_url": "/",
   "scope": "/",
@@ -24,7 +24,7 @@
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "/icons/icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
