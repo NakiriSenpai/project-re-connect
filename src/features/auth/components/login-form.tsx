@@ -25,7 +25,7 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
     setError(null);
 
     if (!identifier.trim() || !password) {
-      setError("Username dan kata sandi wajib diisi.");
+      setError("Email dan kata sandi wajib diisi.");
       return;
     }
 
