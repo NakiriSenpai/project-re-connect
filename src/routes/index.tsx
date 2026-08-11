@@ -2,8 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { BarChart3, BookOpen, ClipboardCheck, Trophy } from "lucide-react";
 
 import { MaintenanceGate } from "@/components/common/maintenance-gate";
-import logoAsset from "@/assets/ium-logo.png.asset.json";
-import heroAsset from "@/assets/ium-hero.png.asset.json";
+import logoUrl from "@/assets/ium-logo.png";
+import heroUrl from "@/assets/ium-hero.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -40,7 +40,7 @@ function Welcome() {
         <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-6 pb-8 pt-10">
           <header className="flex flex-col items-center text-center">
             <img
-              src={logoAsset.url}
+              src={logoUrl}
               alt="Logo I:UM 이음"
               width={512}
               height={512}
@@ -62,7 +62,7 @@ function Welcome() {
 
           <div className="mt-6 flex justify-center">
             <img
-              src={heroAsset.url}
+              src={heroUrl}
               alt="Ilustrasi belajar bahasa Korea: buku, dokumen, headphone, dan grafik progres"
               width={1024}
               height={768}

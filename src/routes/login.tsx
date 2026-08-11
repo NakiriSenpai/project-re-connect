@@ -7,7 +7,7 @@ import { LoginForm } from "@/features/auth/components/login-form";
 import { LoadingScreen } from "@/components/common/loading-screen";
 import { useAuth } from "@/hooks/auth";
 import { resolvePostLoginTarget } from "@/lib/auth/landing";
-import logoAsset from "@/assets/ium-logo.png.asset.json";
+import logoUrl from "@/assets/ium-logo.png";
 
 export const Route = createFileRoute("/login")({
   validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
@@ -52,7 +52,7 @@ function LoginPage() {
         <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-8 pt-10">
           <header className="flex flex-col items-center text-center">
             <img
-              src={logoAsset.url}
+              src={logoUrl}
               alt="Logo I:UM 이음"
               width={512}
               height={512}
