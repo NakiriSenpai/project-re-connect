@@ -5,9 +5,9 @@ import { ResultWorkspace } from "@/features/exam-engine/workspace/result-workspa
 export const Route = createFileRoute("/ujian/hasil/$attemptId")({
   head: () => ({
     meta: [
-      { title: "Hasil Ujian — LPK Learning" },
+      { title: "Hasil Ujian — I:UM 이음" },
       { name: "description", content: "Nilai, status kelulusan, dan ringkasan hasil ujian Anda." },
-      { property: "og:title", content: "Hasil Ujian — LPK Learning" },
+      { property: "og:title", content: "Hasil Ujian — I:UM 이음" },
       {
         property: "og:description",
         content: "Nilai, status kelulusan, dan ringkasan hasil ujian Anda.",

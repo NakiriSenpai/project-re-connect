@@ -7,10 +7,10 @@ import { AdminDashboard } from "@/features/admin/components/admin-dashboard";
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: "Admin — LPK Learning" },
-      { name: "description", content: "Panel administrasi lembaga LPK Learning." },
-      { property: "og:title", content: "Admin — LPK Learning" },
-      { property: "og:description", content: "Panel administrasi lembaga LPK Learning." },
+      { title: "Admin — I:UM 이음" },
+      { name: "description", content: "Panel administrasi lembaga I:UM 이음." },
+      { property: "og:title", content: "Admin — I:UM 이음" },
+      { property: "og:description", content: "Panel administrasi lembaga I:UM 이음." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

@@ -5,12 +5,12 @@ import { MateriCategory } from "@/features/materi/components/materi-category";
 export const Route = createFileRoute("/materi/$category")({
   head: () => ({
     meta: [
-      { title: "Kategori Materi — LPK Learning" },
+      { title: "Kategori Materi — I:UM 이음" },
       {
         name: "description",
         content: "Daftar materi per kategori beserta progres, level, dan status belajar.",
       },
-      { property: "og:title", content: "Kategori Materi — LPK Learning" },
+      { property: "og:title", content: "Kategori Materi — I:UM 이음" },
       {
         property: "og:description",
         content: "Daftar materi per kategori beserta progres, level, dan status belajar.",

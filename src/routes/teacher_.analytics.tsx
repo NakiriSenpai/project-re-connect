@@ -7,9 +7,9 @@ import { RequireStaff } from "@/middleware";
 export const Route = createFileRoute("/teacher_/analytics")({
   head: () => ({
     meta: [
-      { title: "Analitik Pengajar — LPK Learning" },
+      { title: "Analitik Pengajar — I:UM 이음" },
       { name: "description", content: "Analisis performa ujian siswa untuk pengajar LPK." },
-      { property: "og:title", content: "Analitik Pengajar — LPK Learning" },
+      { property: "og:title", content: "Analitik Pengajar — I:UM 이음" },
       { property: "og:description", content: "Analisis performa ujian siswa untuk pengajar LPK." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

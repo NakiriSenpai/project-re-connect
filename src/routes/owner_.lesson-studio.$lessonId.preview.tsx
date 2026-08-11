@@ -7,9 +7,9 @@ import { LessonPreview } from "@/features/lesson/components/lesson-preview";
 export const Route = createFileRoute("/owner_/lesson-studio/$lessonId/preview")({
   head: () => ({
     meta: [
-      { title: "Preview Lesson — LPK Learning" },
+      { title: "Preview Lesson — I:UM 이음" },
       { name: "description", content: "Pratinjau tampilan materi untuk siswa." },
-      { property: "og:title", content: "Preview Lesson — LPK Learning" },
+      { property: "og:title", content: "Preview Lesson — I:UM 이음" },
       { property: "og:description", content: "Pratinjau tampilan materi untuk siswa." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

@@ -7,10 +7,10 @@ import { RequireAuth } from "@/middleware";
 export const Route = createFileRoute("/tenant")({
   head: () => ({
     meta: [
-      { title: "Tenant — LPK Learning" },
-      { name: "description", content: "Manajemen tenant LPK Learning." },
-      { property: "og:title", content: "Tenant — LPK Learning" },
-      { property: "og:description", content: "Manajemen tenant LPK Learning." },
+      { title: "Tenant — I:UM 이음" },
+      { name: "description", content: "Manajemen tenant I:UM 이음." },
+      { property: "og:title", content: "Tenant — I:UM 이음" },
+      { property: "og:description", content: "Manajemen tenant I:UM 이음." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

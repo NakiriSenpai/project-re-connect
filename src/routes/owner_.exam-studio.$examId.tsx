@@ -7,9 +7,9 @@ import { ExamEditor } from "@/features/exam/components/exam-editor";
 export const Route = createFileRoute("/owner_/exam-studio/$examId")({
   head: () => ({
     meta: [
-      { title: "Editor Exam — LPK Learning" },
+      { title: "Editor Exam — I:UM 이음" },
       { name: "description", content: "Kelola section, soal, jawaban, dan pembahasan ujian." },
-      { property: "og:title", content: "Editor Exam — LPK Learning" },
+      { property: "og:title", content: "Editor Exam — I:UM 이음" },
       {
         property: "og:description",
         content: "Kelola section, soal, jawaban, dan pembahasan ujian.",

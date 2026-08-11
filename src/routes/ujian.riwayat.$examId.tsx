@@ -5,9 +5,9 @@ import { ExamHistory } from "@/features/exam-engine/components/exam-history";
 export const Route = createFileRoute("/ujian/riwayat/$examId")({
   head: () => ({
     meta: [
-      { title: "Riwayat Ujian — LPK Learning" },
+      { title: "Riwayat Ujian — I:UM 이음" },
       { name: "description", content: "Seluruh percobaan ujian Anda beserta nilai dan durasi." },
-      { property: "og:title", content: "Riwayat Ujian — LPK Learning" },
+      { property: "og:title", content: "Riwayat Ujian — I:UM 이음" },
       {
         property: "og:description",
         content: "Seluruh percobaan ujian Anda beserta nilai dan durasi.",

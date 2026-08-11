@@ -6,12 +6,12 @@ import { RequireAuth } from "@/middleware";
 export const Route = createFileRoute("/materi")({
   head: () => ({
     meta: [
-      { title: "Materi — LPK Learning" },
-      { name: "description", content: "Materi pembelajaran LPK Learning yang sudah terbit." },
-      { property: "og:title", content: "Materi — LPK Learning" },
+      { title: "Materi — I:UM 이음" },
+      { name: "description", content: "Materi pembelajaran I:UM 이음 yang sudah terbit." },
+      { property: "og:title", content: "Materi — I:UM 이음" },
       {
         property: "og:description",
-        content: "Materi pembelajaran LPK Learning yang sudah terbit.",
+        content: "Materi pembelajaran I:UM 이음 yang sudah terbit.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

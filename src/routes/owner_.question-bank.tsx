@@ -7,12 +7,12 @@ import { QuestionBankList } from "@/features/question-bank/components/question-b
 export const Route = createFileRoute("/owner_/question-bank")({
   head: () => ({
     meta: [
-      { title: "Question Bank — LPK Learning" },
+      { title: "Question Bank — I:UM 이음" },
       {
         name: "description",
         content: "Library soal yang dapat dipakai ulang untuk Exam dan Lesson.",
       },
-      { property: "og:title", content: "Question Bank — LPK Learning" },
+      { property: "og:title", content: "Question Bank — I:UM 이음" },
       {
         property: "og:description",
         content: "Library soal yang dapat dipakai ulang untuk Exam dan Lesson.",
