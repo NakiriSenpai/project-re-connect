@@ -51,3 +51,11 @@ export async function getCurrentSession() {
   const { data } = await supabase.auth.getSession();
   return data.session;
 }
+
+/** Kirim tautan reset password melalui Supabase Auth (tanpa sistem auth baru). */
+export async function requestPasswordReset(email: string) {
+  const redirectTo =
+    typeof window !== "undefined" ? `${window.location.origin}/login` : undefined;
+  const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo });
+  if (error) throw new Error(translateAuthError(error.message));
+}
