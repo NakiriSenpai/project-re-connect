@@ -2,8 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { BarChart3, BookOpen, ClipboardCheck, Trophy } from "lucide-react";
 
 import { MaintenanceGate } from "@/components/common/maintenance-gate";
-import logoAsset from "@/assets/ium-logo.png.asset.json";
-import heroAsset from "@/assets/ium-hero.png.asset.json";
+import logoUrl from "@/assets/ium-logo.png";
+import heroUrl from "@/assets/ium-hero.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
