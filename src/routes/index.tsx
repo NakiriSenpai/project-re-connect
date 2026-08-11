@@ -1,106 +1,100 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { BookOpen, CloudUpload, Database, Smartphone } from "lucide-react";
+import { BarChart3, BookOpen, ClipboardCheck, Trophy } from "lucide-react";
 
-import { AppLayout } from "@/layouts/app-layout";
-import { Button } from "@/components/ui/button";
-import { useCloudinaryStatus, useSupabaseStatus } from "@/hooks/use-connection-status";
+import { MaintenanceGate } from "@/components/common/maintenance-gate";
+import logoAsset from "@/assets/ium-logo.png.asset.json";
+import heroAsset from "@/assets/ium-hero.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "LPK Learning — Platform LMS Multi-Tenant" },
+      { title: "I:UM 이음 — Belajar Bahasa Korea, Hubungkan Masa Depan" },
       {
         name: "description",
         content:
-          "Fondasi platform pembelajaran multi-tenant untuk Lembaga Pelatihan Kerja: materi, ujian, dan peringkat dalam satu aplikasi.",
+          "I:UM 이음 membantu Anda meningkatkan kemampuan bahasa Korea lewat materi lengkap, latihan interaktif, pantau progress, dan peringkat pencapaian.",
       },
-      { property: "og:title", content: "LPK Learning — Platform LMS Multi-Tenant" },
+      { property: "og:title", content: "I:UM 이음 — Belajar Bahasa Korea" },
       {
         property: "og:description",
-        content: "Platform pembelajaran multi-tenant untuk Lembaga Pelatihan Kerja.",
+        content: "Tingkatkan kemampuan bahasa Korea Anda bersama I:UM dan raih peluang lebih luas.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: Beranda,
+  component: Welcome,
 });
 
-function StatusBadge({ label, ok, loading }: { label: string; ok: boolean; loading: boolean }) {
+const FEATURES = [
+  { icon: BookOpen, line1: "Materi", line2: "Lengkap" },
+  { icon: ClipboardCheck, line1: "Latihan", line2: "Interaktif" },
+  { icon: BarChart3, line1: "Pantau", line2: "Progress" },
+  { icon: Trophy, line1: "Peringkat &", line2: "Pencapaian" },
+] as const;
+
+function Welcome() {
   return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs">
-      <span
-        aria-hidden
-        className={
-          loading
-            ? "size-2 rounded-full bg-muted-foreground"
-            : ok
-              ? "size-2 rounded-full bg-chart-2"
-              : "size-2 rounded-full bg-destructive"
-        }
-      />
-      {label}: {loading ? "memeriksa…" : ok ? "terhubung" : "gagal"}
-    </span>
-  );
-}
+    <MaintenanceGate>
+      <div className="ium-page min-h-screen">
+        <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-6 pb-8 pt-10">
+          <header className="flex flex-col items-center text-center">
+            <img
+              src={logoAsset.url}
+              alt="Logo I:UM 이음"
+              width={512}
+              height={512}
+              className="size-28 object-contain"
+            />
+            <h1 className="mt-4 text-[26px] font-bold leading-snug tracking-tight sm:text-3xl">
+              Belajar bahasa Korea,
+              <br />
+              hubungkan{" "}
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                masa depan
+              </span>
+              .
+            </h1>
+            <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">
+              Tingkatkan kemampuan bahasa Korea Anda bersama I:UM dan raih peluang yang lebih luas.
+            </p>
+          </header>
 
-function Beranda() {
-  const supabaseStatus = useSupabaseStatus();
-  const cloudinaryStatus = useCloudinaryStatus();
+          <div className="mt-6 flex justify-center">
+            <img
+              src={heroAsset.url}
+              alt="Ilustrasi belajar bahasa Korea: buku, dokumen, headphone, dan grafik progres"
+              width={1024}
+              height={768}
+              className="h-auto w-full max-w-sm object-contain"
+            />
+          </div>
 
-  return (
-    <AppLayout>
-      <section className="space-y-6">
-        <div className="space-y-3">
-          <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            Sprint 0 · Fondasi
-          </p>
-          <h1 className="text-3xl font-semibold leading-tight tracking-tight md:text-4xl">
-            Platform LMS Multi-Tenant untuk Lembaga Pelatihan Kerja
-          </h1>
-          <p className="max-w-2xl text-sm text-muted-foreground md:text-base">
-            Fondasi aplikasi sudah siap: routing, tema terang/gelap, koneksi Supabase dan
-            Cloudinary, serta dukungan PWA. Fitur pembelajaran menyusul pada sprint berikutnya.
-          </p>
+          <section className="ium-card mt-8 grid grid-cols-4 divide-x divide-border-subtle p-4">
+            {FEATURES.map(({ icon: Icon, line1, line2 }) => (
+              <div key={line1} className="flex min-w-0 flex-col items-center gap-2 px-1 text-center">
+                <span className="grid size-11 place-items-center rounded-full bg-primary-muted">
+                  <Icon className="size-5 text-primary" aria-hidden />
+                </span>
+                <span className="text-[11px] font-medium leading-tight text-foreground/80 sm:text-xs">
+                  {line1}
+                  <br />
+                  {line2}
+                </span>
+              </div>
+            ))}
+          </section>
+
+          <div className="mt-auto pt-8">
+            <Link
+              to="/login"
+              className="ium-cta flex min-h-14 w-full items-center justify-center rounded-2xl text-base font-semibold transition-opacity hover:opacity-95"
+            >
+              Mulai
+            </Link>
+          </div>
         </div>
-
-        <div className="flex flex-wrap gap-2">
-          <StatusBadge
-            label="Supabase"
-            ok={supabaseStatus.data?.connected ?? false}
-            loading={supabaseStatus.isPending}
-          />
-          <StatusBadge
-            label="Cloudinary"
-            ok={cloudinaryStatus.data?.connected ?? false}
-            loading={cloudinaryStatus.isPending}
-          />
-        </div>
-
-        <div className="flex flex-wrap gap-3">
-          <Button asChild size="lg" className="min-h-12">
-            <Link to="/dashboard">Buka Dasbor</Link>
-          </Button>
-          <Button asChild variant="outline" size="lg" className="min-h-12">
-            <Link to="/login">Masuk</Link>
-          </Button>
-        </div>
-
-        <ul className="grid gap-3 sm:grid-cols-2">
-          {[
-            { icon: BookOpen, title: "Materi & Ujian", text: "Struktur route siap dikembangkan." },
-            { icon: Database, title: "Supabase", text: "Koneksi eksternal terkonfigurasi." },
-            { icon: CloudUpload, title: "Cloudinary", text: "Helper unggah media tersedia." },
-            { icon: Smartphone, title: "Mobile First", text: "Responsif dan ramah sentuhan." },
-          ].map(({ icon: Icon, title, text }) => (
-            <li key={title} className="rounded-lg border border-border p-4">
-              <Icon className="size-5 text-primary" aria-hidden />
-              <h2 className="mt-2 text-sm font-semibold">{title}</h2>
-              <p className="text-sm text-muted-foreground">{text}</p>
-            </li>
-          ))}
-        </ul>
-      </section>
-    </AppLayout>
+      </div>
+    </MaintenanceGate>
   );
 }
