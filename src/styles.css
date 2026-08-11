@@ -240,3 +240,28 @@
   transform-origin: center;
   animation: wave-bar 900ms ease-in-out infinite;
 }
+
+/* Onboarding & Login I:UM — permukaan lavender premium (light) / navy (dark). */
+@utility ium-page {
+  background:
+    radial-gradient(120% 60% at 50% -10%, oklch(0.62 0.19 285 / 14%) 0%, transparent 60%),
+    radial-gradient(90% 50% at 100% 100%, oklch(0.62 0.19 285 / 10%) 0%, transparent 65%),
+    var(--background);
+}
+
+@utility ium-card {
+  background-color: var(--card);
+  border: 1px solid var(--border-subtle, var(--border));
+  border-radius: 28px;
+  box-shadow: 0 24px 60px -30px oklch(0.42 0.14 285 / 45%);
+}
+
+@utility ium-cta {
+  background-image: linear-gradient(
+    135deg,
+    oklch(0.58 0.19 285) 0%,
+    oklch(0.66 0.19 292) 100%
+  );
+  color: oklch(0.99 0 0);
+  box-shadow: 0 16px 34px -16px oklch(0.58 0.19 285 / 70%);
+}

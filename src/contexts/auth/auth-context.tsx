@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 
 import { supabase } from "@/lib/supabase/client";
+import { shouldDropSessionOnBoot } from "@/lib/auth/remember";
 import { getCurrentSession, signInWithPassword, signOut, toAuthUser } from "@/services/auth";
 import { getProfileById } from "@/services/profile";
 import type { AppRole, AuthState, LoginCredentials } from "@/types/auth";
@@ -73,6 +74,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     void getCurrentSession().then(async (restored) => {
       if (!activeRef.current) return;
+      // "Ingat saya" nonaktif: sesi tidak dilanjutkan setelah browser ditutup.
+      if (restored && shouldDropSessionOnBoot()) {
+        await signOut().catch(() => undefined);
+        if (!activeRef.current) return;
+        setSession(null);
+        setProfile(null);
+        setIsProfileLoading(false);
+        setIsSessionLoading(false);
+        return;
+      }
       setSession(restored);
       await loadProfile(restored);
       if (activeRef.current) setIsSessionLoading(false);
