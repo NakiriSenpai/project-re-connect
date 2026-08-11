@@ -20,6 +20,7 @@ import { Route as MateriRouteImport } from './routes/materi'
 import { Route as MediaRouteImport } from './routes/media'
 import { Route as OwnerRouteImport } from './routes/owner'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TeacherRouteImport } from './routes/teacher'
 import { Route as TenantRouteImport } from './routes/tenant'
 import { Route as UjianRouteImport } from './routes/ujian'
@@ -97,6 +98,11 @@ const OwnerRoute = OwnerRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TeacherRoute = TeacherRouteImport.update({
@@ -229,6 +235,7 @@ export interface FileRoutesByFullPath {
   '/media': typeof MediaRoute
   '/owner': typeof OwnerRoute
   '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/teacher': typeof TeacherRoute
   '/tenant': typeof TenantRoute
   '/ujian': typeof UjianRouteWithChildren
@@ -264,6 +271,7 @@ export interface FileRoutesByTo {
   '/media': typeof MediaRoute
   '/owner': typeof OwnerRoute
   '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/teacher': typeof TeacherRoute
   '/tenant': typeof TenantRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
@@ -300,6 +308,7 @@ export interface FileRoutesById {
   '/media': typeof MediaRoute
   '/owner': typeof OwnerRoute
   '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/teacher': typeof TeacherRoute
   '/tenant': typeof TenantRoute
   '/ujian': typeof UjianRouteWithChildren
@@ -338,6 +347,7 @@ export interface FileRouteTypes {
     | '/media'
     | '/owner'
     | '/profile'
+    | '/reset-password'
     | '/teacher'
     | '/tenant'
     | '/ujian'
@@ -373,6 +383,7 @@ export interface FileRouteTypes {
     | '/media'
     | '/owner'
     | '/profile'
+    | '/reset-password'
     | '/teacher'
     | '/tenant'
     | '/admin/analytics'
@@ -408,6 +419,7 @@ export interface FileRouteTypes {
     | '/media'
     | '/owner'
     | '/profile'
+    | '/reset-password'
     | '/teacher'
     | '/tenant'
     | '/ujian'
@@ -445,6 +457,7 @@ export interface RootRouteChildren {
   MediaRoute: typeof MediaRoute
   OwnerRoute: typeof OwnerRoute
   ProfileRoute: typeof ProfileRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   TeacherRoute: typeof TeacherRoute
   TenantRoute: typeof TenantRoute
   UjianRoute: typeof UjianRouteWithChildren
@@ -539,6 +552,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/teacher': {
@@ -750,6 +770,7 @@ const rootRouteChildren: RootRouteChildren = {
   MediaRoute: MediaRoute,
   OwnerRoute: OwnerRoute,
   ProfileRoute: ProfileRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   TeacherRoute: TeacherRoute,
   TenantRoute: TenantRoute,
   UjianRoute: UjianRouteWithChildren,
@@ -769,3 +790,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

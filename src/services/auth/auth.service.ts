@@ -1,6 +1,7 @@
 import type { Session } from "@supabase/supabase-js";
 
 import { supabase } from "@/lib/supabase/client";
+import { resolvePublicOrigin } from "@/lib/env";
 import type { AuthUser, LoginCredentials } from "@/types/auth";
 import type { ProfileRow } from "@/types/database";
 
@@ -52,10 +53,23 @@ export async function getCurrentSession() {
   return data.session;
 }
 
-/** Kirim tautan reset password melalui Supabase Auth (tanpa sistem auth baru). */
+/** Kirim tautan reset password melalui Auth existing (tanpa sistem auth baru). */
 export async function requestPasswordReset(email: string) {
-  const options =
-    typeof window !== "undefined" ? { redirectTo: `${window.location.origin}/login` } : {};
-  const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), options);
+  const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+    redirectTo: `${resolvePublicOrigin()}/reset-password`,
+  });
   if (error) throw new Error(translateAuthError(error.message));
+}
+
+/** Ubah password memakai sesi recovery yang sudah divalidasi Auth. */
+export async function updateUserPassword(password: string) {
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    const m = error.message.toLowerCase();
+    if (m.includes("expired") || m.includes("invalid") || m.includes("session"))
+      throw new Error("Sesi reset password sudah tidak berlaku. Minta tautan baru.");
+    if (m.includes("should be different") || m.includes("same as the old"))
+      throw new Error("Password baru harus berbeda dari password lama.");
+    throw new Error("Gagal memperbarui password. Silakan coba lagi.");
+  }
 }
