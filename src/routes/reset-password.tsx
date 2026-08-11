@@ -189,7 +189,7 @@ function ResetPasswordPage() {
                 </p>
                 <Button
                   className="ium-cta mt-6 min-h-13 w-full rounded-2xl text-base font-semibold hover:opacity-95"
-                  onClick={() => void navigate({ to: "/login", search: { reset: "1" } })}
+                  onClick={() => void navigate({ to: "/login" })}
                 >
                   Kirim Ulang Link Reset Password
                 </Button>
