@@ -59,10 +59,12 @@ export function UserFormDialog({ open, onOpenChange, scope, fixedTenantId, user 
   const updateUser = useUpdateUser();
   const tenantsQuery = useTenants({ page: 1, pageSize: 100, status: "semua" });
 
-  const roleOptions = useMemo<AppRole[]>(
-    () => (scope === "owner" ? ["owner", "admin", "guru", "siswa"] : ["guru", "siswa"]),
-    [scope],
-  );
+  // Owner tidak boleh membuat/menetapkan role owner baru (server juga menolak).
+  // Akun Owner yang sudah ada tetap ditampilkan apa adanya saat mode ubah.
+  const roleOptions = useMemo<AppRole[]>(() => {
+    const base: AppRole[] = scope === "owner" ? ["admin", "guru", "siswa"] : ["guru", "siswa"];
+    return user?.role === "owner" ? ["owner", ...base] : base;
+  }, [scope, user?.role]);
 
   useEffect(() => {
     if (!open) return;
