@@ -52,7 +52,7 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
 
       <div className="space-y-2">
         <Label htmlFor="identifier" className="text-sm font-semibold">
-          Username
+          Email
         </Label>
         <div className="relative">
           <User
@@ -61,10 +61,10 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
           />
           <Input
             id="identifier"
-            type="text"
+            type="email"
             inputMode="email"
             autoComplete="username"
-            placeholder="Masukkan username"
+            placeholder="Masukkan email"
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
             disabled={isSubmitting}
