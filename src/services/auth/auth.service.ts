@@ -1,6 +1,7 @@
 import type { Session } from "@supabase/supabase-js";
 
 import { supabase } from "@/lib/supabase/client";
+import { resolvePublicOrigin } from "@/lib/env";
 import type { AuthUser, LoginCredentials } from "@/types/auth";
 import type { ProfileRow } from "@/types/database";
 
