@@ -59,8 +59,9 @@ export function UserFormDialog({ open, onOpenChange, scope, fixedTenantId, user 
   const updateUser = useUpdateUser();
   const tenantsQuery = useTenants({ page: 1, pageSize: 100, status: "semua" });
 
+  // Owner tidak boleh membuat/menetapkan role owner baru (server juga menolak).
   const roleOptions = useMemo<AppRole[]>(
-    () => (scope === "owner" ? ["owner", "admin", "guru", "siswa"] : ["guru", "siswa"]),
+    () => (scope === "owner" ? ["admin", "guru", "siswa"] : ["guru", "siswa"]),
     [scope],
   );
 
