@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
   CalendarPlus,
   Camera,
   ChevronRight,
   Crown,
+  Download,
   LogOut,
   Lock,
   Mail,
