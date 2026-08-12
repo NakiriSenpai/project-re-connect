@@ -91,7 +91,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         name: "description",
         content: "Belajar bahasa Korea, hubungkan masa depan. Platform pembelajaran multi-tenant.",
       },
-      { name: "theme-color", content: "#1d4ed8" },
+      { name: "theme-color", content: "#16162b" },
       { name: "application-name", content: "I:UM" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },

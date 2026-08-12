@@ -46,7 +46,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
       <div className="flex min-h-screen flex-col bg-background pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] text-foreground">
         {isAuthenticated ? <AppHeader /> : null}
 
-        <main className="mx-auto w-full max-w-5xl flex-1 px-4 pt-4 pb-[calc(7rem+env(safe-area-inset-bottom))]">
+        <main className="mx-auto w-full max-w-5xl flex-1 px-4 pt-4 pb-[calc(6rem+env(safe-area-inset-bottom))]">
           {children}
           <p className="pt-8 text-center text-[11px] text-muted-foreground">
             {config.appName} · v{version}

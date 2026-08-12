@@ -40,9 +40,9 @@ export function BottomNav({ items }: { items: BottomNavItem[] }) {
   return (
     <nav
       aria-label="Navigasi utama"
-      className="fixed inset-x-0 bottom-0 z-40 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2"
+      className="fixed inset-x-0 bottom-0 z-40 bg-gradient-to-t from-background via-background/95 to-transparent px-2 pb-[env(safe-area-inset-bottom)] pt-2"
     >
-      <div className="mx-auto w-full max-w-5xl rounded-3xl border border-primary/25 bg-card/90 p-1.5 shadow-[0_-4px_40px_-16px_color-mix(in_oklab,var(--primary)_80%,transparent)] backdrop-blur">
+      <div className="mx-auto mb-1 w-full max-w-5xl rounded-3xl border border-primary/25 bg-card/90 p-1.5 shadow-[0_-4px_40px_-16px_color-mix(in_oklab,var(--primary)_80%,transparent)] backdrop-blur">
         <ul className="flex items-stretch justify-between gap-1">
           {items.map((item) => {
             const active = pathname === item.to || pathname.startsWith(`${item.to}/`);
