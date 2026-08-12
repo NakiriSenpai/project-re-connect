@@ -7,6 +7,7 @@ import {
   type ShortcutItem,
 } from "@/features/dashboard/components/dashboard-primitives";
 import { StudentLessonProgressPanel } from "@/features/dashboard/components/student-lesson-progress";
+import { DownloadAppBanner } from "@/features/download/components/download-app-banner";
 import { useAuth } from "@/hooks/auth";
 
 
