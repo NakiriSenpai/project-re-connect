@@ -40,36 +40,39 @@ export function BottomNav({ items }: { items: BottomNavItem[] }) {
   return (
     <nav
       aria-label="Navigasi utama"
-      className="fixed inset-x-0 bottom-0 z-40 bg-gradient-to-t from-background via-background/95 to-transparent px-2 pb-[env(safe-area-inset-bottom)] pt-2"
+      className="fixed inset-x-0 bottom-0 z-40 w-full bg-background"
     >
-      <div className="mx-auto mb-1 w-full max-w-5xl rounded-3xl border border-primary/25 bg-card/90 p-1.5 shadow-[0_-4px_40px_-16px_color-mix(in_oklab,var(--primary)_80%,transparent)] backdrop-blur">
-        <ul className="flex items-stretch justify-between gap-1">
-          {items.map((item) => {
-            const active = pathname === item.to || pathname.startsWith(`${item.to}/`);
-            const Icon = item.icon;
-            return (
-              <li key={item.to} className="min-w-0 flex-1">
-                <Link
-                  to={item.to}
-                  className={cn(
-                    "flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-0.5 py-1.5 transition-colors",
-                    active
-                      ? "bg-primary/15 text-primary shadow-[0_0_22px_-8px_color-mix(in_oklab,var(--primary)_90%,transparent)]"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  <Icon
-                    className={cn("size-5", active && "drop-shadow-[0_0_6px_var(--primary)]")}
-                  />
-                  <span className="w-full truncate text-center text-[11px] font-medium leading-none">
-                    {item.label}
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+      <div className="px-2 pt-2">
+        <div className="mx-auto w-full max-w-5xl rounded-3xl border border-primary/25 bg-card/90 p-1.5 shadow-[0_-4px_40px_-16px_color-mix(in_oklab,var(--primary)_80%,transparent)] backdrop-blur">
+          <ul className="flex items-stretch justify-between gap-1">
+            {items.map((item) => {
+              const active = pathname === item.to || pathname.startsWith(`${item.to}/`);
+              const Icon = item.icon;
+              return (
+                <li key={item.to} className="min-w-0 flex-1">
+                  <Link
+                    to={item.to}
+                    className={cn(
+                      "flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-0.5 py-1.5 transition-colors",
+                      active
+                        ? "bg-primary/15 text-primary shadow-[0_0_22px_-8px_color-mix(in_oklab,var(--primary)_90%,transparent)]"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    <Icon
+                      className={cn("size-5", active && "drop-shadow-[0_0_6px_var(--primary)]")}
+                    />
+                    <span className="w-full truncate text-center text-[11px] font-medium leading-none">
+                      {item.label}
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </div>
+      <div aria-hidden="true" className="h-[env(safe-area-inset-bottom)] bg-background" />
     </nav>
   );
 }
