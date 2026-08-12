@@ -51,6 +51,7 @@ export function StudentDashboard() {
         <ShortcutGrid items={LEARNING} />
       </div>
       <StudentLessonProgressPanel />
+      <DownloadAppBanner />
     </section>
   );
 }
