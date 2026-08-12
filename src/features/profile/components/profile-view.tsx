@@ -244,6 +244,25 @@ export function ProfileView() {
         </div>
       </SectionCard>
 
+      {/* Aplikasi */}
+      <SectionCard icon={Smartphone} title="Aplikasi">
+        <Link
+          to="/download"
+          className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-surface-elevated"
+        >
+          <Download className="h-5 w-5 text-muted-foreground" />
+          <span className="min-w-0">
+            <span className="block text-sm font-medium">Download Aplikasi</span>
+            <span className="block text-xs text-muted-foreground">
+              Dapatkan aplikasi I:UM untuk Android
+            </span>
+          </span>
+          <ChevronRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
+        </Link>
+      </SectionCard>
+
+
+
       <Button
         type="button"
         variant="outline"
