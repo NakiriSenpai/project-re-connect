@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as DownloadRouteImport } from './routes/download'
 import { Route as ExamStudioRouteImport } from './routes/exam-studio'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as LessonStudioRouteImport } from './routes/lesson-studio'
@@ -58,6 +59,11 @@ const AdminRoute = AdminRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DownloadRoute = DownloadRouteImport.update({
+  id: '/download',
+  path: '/download',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExamStudioRoute = ExamStudioRouteImport.update({
@@ -227,6 +233,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/dashboard': typeof DashboardRoute
+  '/download': typeof DownloadRoute
   '/exam-studio': typeof ExamStudioRoute
   '/leaderboard': typeof LeaderboardRoute
   '/lesson-studio': typeof LessonStudioRoute
@@ -264,6 +271,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/dashboard': typeof DashboardRoute
+  '/download': typeof DownloadRoute
   '/exam-studio': typeof ExamStudioRoute
   '/leaderboard': typeof LeaderboardRoute
   '/lesson-studio': typeof LessonStudioRoute
@@ -300,6 +308,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/dashboard': typeof DashboardRoute
+  '/download': typeof DownloadRoute
   '/exam-studio': typeof ExamStudioRoute
   '/leaderboard': typeof LeaderboardRoute
   '/lesson-studio': typeof LessonStudioRoute
@@ -339,6 +348,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/dashboard'
+    | '/download'
     | '/exam-studio'
     | '/leaderboard'
     | '/lesson-studio'
@@ -376,6 +386,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/dashboard'
+    | '/download'
     | '/exam-studio'
     | '/leaderboard'
     | '/lesson-studio'
@@ -411,6 +422,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/dashboard'
+    | '/download'
     | '/exam-studio'
     | '/leaderboard'
     | '/lesson-studio'
@@ -449,6 +461,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   DashboardRoute: typeof DashboardRoute
+  DownloadRoute: typeof DownloadRoute
   ExamStudioRoute: typeof ExamStudioRoute
   LeaderboardRoute: typeof LeaderboardRoute
   LessonStudioRoute: typeof LessonStudioRoute
@@ -496,6 +509,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/download': {
+      id: '/download'
+      path: '/download'
+      fullPath: '/download'
+      preLoaderRoute: typeof DownloadRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/exam-studio': {
@@ -762,6 +782,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   DashboardRoute: DashboardRoute,
+  DownloadRoute: DownloadRoute,
   ExamStudioRoute: ExamStudioRoute,
   LeaderboardRoute: LeaderboardRoute,
   LessonStudioRoute: LessonStudioRoute,
