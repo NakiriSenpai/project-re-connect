@@ -26,6 +26,7 @@ import { getAvatarCooldown } from "@/lib/profile/avatar.functions";
 import { ROLE_LABELS, type AppRole } from "@/types/auth";
 import type { Theme } from "@/types/common";
 import { cn } from "@/lib/utils";
+import { useIsStandaloneApp } from "@/lib/utils/app-mode";
 import { AvatarDialog } from "./avatar-dialog";
 import { ChangePasswordDialog } from "./change-password-dialog";
 import { ChangeNameDialog } from "./change-name-dialog";
