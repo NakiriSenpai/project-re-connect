@@ -26,6 +26,7 @@ import { getAvatarCooldown } from "@/lib/profile/avatar.functions";
 import { ROLE_LABELS, type AppRole } from "@/types/auth";
 import type { Theme } from "@/types/common";
 import { cn } from "@/lib/utils";
+import { useIsStandaloneApp } from "@/lib/utils/app-mode";
 import { AvatarDialog } from "./avatar-dialog";
 import { ChangePasswordDialog } from "./change-password-dialog";
 import { ChangeNameDialog } from "./change-name-dialog";
@@ -75,6 +76,7 @@ function SectionCard({
 export function ProfileView() {
   const { user, profile, role, logout } = useAuth();
   const { theme, setTheme } = useTheme();
+  const standalone = useIsStandaloneApp();
   const navigate = useNavigate();
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
@@ -246,21 +248,23 @@ export function ProfileView() {
       </SectionCard>
 
       {/* Aplikasi */}
-      <SectionCard icon={Smartphone} title="Aplikasi">
-        <Link
-          to="/download"
-          className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-surface-elevated"
-        >
-          <Download className="h-5 w-5 text-muted-foreground" />
-          <span className="min-w-0">
-            <span className="block text-sm font-medium">Download Aplikasi</span>
-            <span className="block text-xs text-muted-foreground">
-              Dapatkan aplikasi I:UM untuk Android
+      {standalone ? null : (
+        <SectionCard icon={Smartphone} title="Aplikasi">
+          <Link
+            to="/download"
+            className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-surface-elevated"
+          >
+            <Download className="h-5 w-5 text-muted-foreground" />
+            <span className="min-w-0">
+              <span className="block text-sm font-medium">Download Aplikasi</span>
+              <span className="block text-xs text-muted-foreground">
+                Dapatkan aplikasi I:UM untuk Android
+              </span>
             </span>
-          </span>
-          <ChevronRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
-        </Link>
-      </SectionCard>
+            <ChevronRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
+          </Link>
+        </SectionCard>
+      )}
 
 
 

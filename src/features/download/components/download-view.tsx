@@ -18,6 +18,7 @@ import {
   formatReleaseDate,
 } from "@/lib/config/app-release";
 import { cn } from "@/lib/utils";
+import { useIsStandaloneApp } from "@/lib/utils/app-mode";
 
 type DownloadState = "idle" | "loading" | "error";
 
@@ -26,6 +27,7 @@ export function DownloadView() {
   const navigate = useNavigate();
   const canGoBack = useRouterState({ select: (s) => s.location.state.__TSR_index > 0 });
   const [state, setState] = useState<DownloadState>("idle");
+  const standalone = useIsStandaloneApp();
 
   const availability = apkAvailability();
   const available = availability === "APK_AVAILABLE";
@@ -128,6 +130,11 @@ export function DownloadView() {
             </div>
           </div>
 
+          {standalone ? (
+            <p className="ium-card mt-5 p-4 text-center text-sm font-semibold text-foreground">
+              Anda sudah menggunakan aplikasi I:UM.
+            </p>
+          ) : (
           <button
             type="button"
             onClick={handleDownload}
@@ -145,7 +152,9 @@ export function DownloadView() {
                 ? `Download APK${sizeLabel}`
                 : "APK belum tersedia"}
           </button>
+          )}
 
+          {standalone ? null : (
           <p className="mt-3 flex items-center justify-center gap-2 text-xs text-muted-foreground">
             <Shield className="size-4 text-primary" aria-hidden />
             {state === "error"
@@ -154,6 +163,7 @@ export function DownloadView() {
                 ? "Download resmi dari situs I:UM"
                 : "APK production belum diunggah ke hosting resmi I:UM"}
           </p>
+          )}
         </section>
 
         {/* Installation guide */}

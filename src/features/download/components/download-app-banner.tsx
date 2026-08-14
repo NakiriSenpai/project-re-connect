@@ -2,9 +2,13 @@ import { Link } from "@tanstack/react-router";
 import { Download } from "lucide-react";
 
 import logoUrl from "@/assets/ium-logo.png";
+import { useIsStandaloneApp } from "@/lib/utils/app-mode";
 
-/** Banner ringkas ajakan memakai aplikasi Android I:UM. */
+/** Banner ringkas ajakan memakai aplikasi Android I:UM (hanya di browser). */
 export function DownloadAppBanner() {
+  const standalone = useIsStandaloneApp();
+  if (standalone) return null;
+
   return (
     <Link
       to="/download"
