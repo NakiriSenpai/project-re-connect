@@ -75,6 +75,7 @@ function SectionCard({
 export function ProfileView() {
   const { user, profile, role, logout } = useAuth();
   const { theme, setTheme } = useTheme();
+  const standalone = useIsStandaloneApp();
   const navigate = useNavigate();
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
