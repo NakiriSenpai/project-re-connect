@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { CheckCircle2, CircleSlash, Loader2, RotateCcw, Trophy, XCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { useAttemptResult, useStartAttempt } from "@/hooks/attempt";
 import { formatDurasi } from "@/types/attempt";
 import { formatTanggal } from "@/utils/format";
+import { setNativeOrientation } from "@/lib/twa/orientation-bridge";
 import { WorkspaceShell } from "./workspace-shell";
 
 /** Result — ujian sudah selesai: keluar fullscreen dan kembali portrait. */

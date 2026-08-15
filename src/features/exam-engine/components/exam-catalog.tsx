@@ -36,7 +36,6 @@ import { setNativeOrientation } from "@/lib/twa/orientation-bridge";
 import { OrientationStartDialog } from "./orientation-start-dialog";
 import {
   getExamOrientationPreference,
-  getExamOrientationPreference,
   setExamOrientationPreference,
   type ExamOrientationPreference,
 } from "../workspace/use-orientation";
