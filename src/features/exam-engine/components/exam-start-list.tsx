@@ -14,6 +14,7 @@ import { OrientationStartDialog } from "./orientation-start-dialog";
 import {
   getExamOrientationPreference,
   requestOrientationFromGesture,
+  resumeOrientationFromGesture,
   setExamOrientationPreference,
   type ExamOrientationPreference,
 } from "../workspace/use-orientation";
@@ -60,7 +61,11 @@ export function ExamStartList() {
     start.mutate(examId, {
       onSuccess: (attempt) => {
         setStartTarget(null);
-        void navigate({ to: "/ujian/$attemptId", params: { attemptId: attempt.id } });
+        // Attempt BARU: langsung masuk workspace, tanpa perantara "Lanjutkan Ujian".
+        setContinueTarget(null);
+        void navigate({ to: "/ujian/$attemptId", params: { attemptId: attempt.id } }).catch(() => {
+          window.location.assign(`/ujian/${attempt.id}`);
+        });
       },
       onError: (err) => toast.error(err instanceof Error ? err.message : "Gagal memulai ujian."),
     });
@@ -157,7 +162,8 @@ export function ExamStartList() {
         onOpenChange={(open) => !open && setContinueTarget(null)}
         onConfirm={() => {
           if (!continueTarget) return;
-          void requestOrientationFromGesture(getExamOrientationPreference());
+          // Resume attempt lama: JANGAN request fullscreen lagi (education toast Android).
+          void resumeOrientationFromGesture(getExamOrientationPreference());
           void navigate({ to: "/ujian/$attemptId", params: { attemptId: continueTarget } });
         }}
       />
