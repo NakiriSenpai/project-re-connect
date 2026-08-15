@@ -166,35 +166,60 @@ export function getExamOrientationPreference(): ExamOrientationPreference {
 
 /**
  * Fullscreen HANYA untuk Exam, dan HANYA satu kali dari gesture user
- * ("Mulai Ujian" / "Lanjutkan Ujian" / "Ulangi Ujian").
- * Tidak pernah dipanggil pada mount, visibilitychange, atau fullscreenchange.
+ * saat MEMULAI ujian baru ("Mulai Ujian" / "Ulangi Ujian").
+ * Tidak pernah dipanggil pada mount, visibilitychange, fullscreenchange,
+ * navigasi, maupun saat "Lanjutkan Ujian".
  */
-function requestExamFullscreen(): Promise<boolean> {
+let fullscreenRequestCount = 0;
+let examFullscreenActive = false;
+
+/** Diagnostik jumlah request fullscreen (dipakai untuk audit TWA). */
+export function getExamFullscreenDiagnostics() {
+  return {
+    requestCount: fullscreenRequestCount,
+    examFullscreenActive,
+    fullscreenElement:
+      typeof document === "undefined" ? null : Boolean(document.fullscreenElement),
+  };
+}
+
+function requestExamFullscreen(flow: "start" | "resume"): Promise<boolean> {
   if (typeof document === "undefined") return Promise.resolve(false);
-  if (document.fullscreenElement) return Promise.resolve(true);
+  // Guard mutlak: jangan pernah request ulang bila sudah fullscreen (education toast Android).
+  if (document.fullscreenElement || examFullscreenActive) {
+    console.info("[ExamFullscreen] skip (already fullscreen)", {
+      flow,
+      ...getExamFullscreenDiagnostics(),
+    });
+    return Promise.resolve(true);
+  }
   const element = document.documentElement as HTMLElement & {
     webkitRequestFullscreen?: () => Promise<void> | void;
   };
   try {
     const request = element.requestFullscreen?.bind(element) ?? element.webkitRequestFullscreen;
     if (!request) return Promise.resolve(false);
+    fullscreenRequestCount += 1;
+    console.info("[ExamFullscreen] request", { flow, ...getExamFullscreenDiagnostics() });
     return Promise.resolve(request({ navigationUI: "hide" } as FullscreenOptions))
       .then(() => {
-        console.info("[ExamOrientation] fullscreen granted");
+        examFullscreenActive = true;
+        console.info("[ExamFullscreen] granted", { flow, ...getExamFullscreenDiagnostics() });
         return true;
       })
       .catch((error: unknown) => {
-        console.warn("[ExamOrientation] fullscreen rejected", error);
+        console.warn("[ExamFullscreen] rejected", { flow, error });
         return false;
       });
   } catch (error) {
-    console.warn("[ExamOrientation] fullscreen threw", error);
+    console.warn("[ExamFullscreen] threw", { flow, error });
     return Promise.resolve(false);
   }
 }
 
 /** Keluar dari fullscreen (best-effort, tidak pernah fatal). */
 export function exitExamFullscreen(): Promise<void> {
+  examFullscreenActive = false;
   if (typeof document === "undefined" || !document.fullscreenElement) return Promise.resolve();
   try {
     return Promise.resolve(document.exitFullscreen()).catch(() => undefined);
@@ -204,15 +229,15 @@ export function exitExamFullscreen(): Promise<void> {
 }
 
 /**
- * Dipanggil LANGSUNG dari handler klik user (tanpa await/setTimeout sebelumnya).
- * Urutan: requestFullscreen() → screen.orientation.lock(pref) → verifikasi aktual.
- * Kegagalan salah satu langkah TIDAK memblokir ujian.
+ * START FLOW — dipanggil LANGSUNG dari tap "Mulai Ujian"/"Ulangi Ujian".
+ * Urutan: requestFullscreen() sekali → screen.orientation.lock(pref).
+ * Tidak pernah memblokir/menunda mutation atau navigasi (fire-and-forget di caller).
  */
 export function requestOrientationFromGesture(pref: ExamOrientationPreference): Promise<boolean> {
   if (typeof window === "undefined") return Promise.resolve(false);
   if (!window.matchMedia("(max-width: 1024px)").matches) return Promise.resolve(true);
   // Fullscreen dulu (sinkron dari gesture) supaya TWA/Chrome mengizinkan orientation lock.
-  const fullscreen = requestExamFullscreen();
+  const fullscreen = requestExamFullscreen("start");
   // Lock juga dipanggil langsung agar tetap punya user activation bila fullscreen ditolak.
   const immediate = callLock(pref, "gesture");
   return fullscreen.then((ok) =>
@@ -226,9 +251,24 @@ export function requestOrientationFromGesture(pref: ExamOrientationPreference): 
   );
 }
 
+/**
+ * RESUME FLOW — "Lanjutkan Ujian" pada attempt lama.
+ * TIDAK pernah meminta fullscreen (menghindari education toast kedua);
+ * hanya melanjutkan orientation lock sesuai preferensi tersimpan.
+ */
+export function resumeOrientationFromGesture(
+  pref: ExamOrientationPreference,
+): Promise<boolean> {
+  if (typeof window === "undefined") return Promise.resolve(false);
+  if (!window.matchMedia("(max-width: 1024px)").matches) return Promise.resolve(true);
+  console.info("[ExamFullscreen] resume (no request)", getExamFullscreenDiagnostics());
+  return callLock(pref, "resume-gesture");
+}
+
 export function requestLandscapeFromGesture(): Promise<boolean> {
   return requestOrientationFromGesture("landscape");
 }
+
 
 /**
  * Mencoba mengunci orientasi dan MEMVERIFIKASI orientasi sebenarnya.
