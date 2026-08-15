@@ -10,6 +10,7 @@ import { EXAM_DIFFICULTY_LABELS } from "@/features/exam/exam.constants";
 import { useAvailableExams, useMyAttempts, useStartAttempt } from "@/hooks/attempt";
 import type { ExamRow } from "@/types/exam";
 import { ContinueExamDialog, StartExamDialog } from "./exam-dialogs";
+import { requestLandscapeFromGesture } from "../workspace/use-orientation";
 
 /**
  * Daftar ujian published.
@@ -45,6 +46,9 @@ export function ExamStartList() {
   );
 
   const handleStart = (examId: string) => {
+    // Lock landscape LANGSUNG dari gesture user (klik konfirmasi) — sebelum navigasi,
+    // supaya transient user activation masih valid saat screen.orientation.lock() dipanggil.
+    void requestLandscapeFromGesture();
     start.mutate(examId, {
       onSuccess: (attempt) => {
         setStartTarget(null);
