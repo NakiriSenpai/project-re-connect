@@ -1,7 +1,7 @@
 /**
  * I:UM TWA Orientation Bridge
  *
- * Jembatan PostMessage antara web (PWA/TWA) dan native Android I:UM.
+ * Jembatan antara web (PWA/TWA/Native WebView) dan native Android I:UM.
  * Native Activity yang melakukan physical orientation change — web hanya mengirim
  * command. TIDAK ada Fullscreen API dan TIDAK ada screen.orientation.lock di sini.
  *
@@ -13,6 +13,14 @@ export type NativeOrientation = "portrait" | "landscape";
 const TWA_ORIGIN = "android-app://com.ium.ium";
 const COMMAND_TYPE = "IUM_SET_ORIENTATION";
 const LOG_PREFIX = "[I:UM TWA Bridge]";
+
+declare global {
+  interface Window {
+    AndroidOrientation?: {
+      setOrientation: (orientation: NativeOrientation) => void;
+    };
+  }
+}
 
 type OrientationCommand = {
   type: typeof COMMAND_TYPE;
@@ -67,12 +75,25 @@ export function initOrientationBridge(): void {
 
 /**
  * Kirim perintah orientasi ke native Android.
- * Bila channel belum siap, command di-queue dan dikirim saat handshake tiba.
+ * Prioritas: WebView JS bridge -> TWA MessagePort -> no-op.
+ * Bila channel TWA belum siap, command di-queue dan dikirim saat handshake tiba.
  * Di browser biasa command hanya mengendap di queue (no-op, tanpa efek samping).
  */
 export function setNativeOrientation(orientation: NativeOrientation): void {
   if (typeof window === "undefined") return;
   if (orientation !== "portrait" && orientation !== "landscape") return;
+
+  // Native WebView JS bridge (I:UM WebView 2.0+)
+  const webViewBridge = window.AndroidOrientation;
+  if (webViewBridge && typeof webViewBridge.setOrientation === "function") {
+    try {
+      webViewBridge.setOrientation(orientation);
+      log("WebView orientation command sent", orientation);
+      return;
+    } catch {
+      // Fall back ke TWA MessagePort bila JS bridge error.
+    }
+  }
 
   initOrientationBridge();
 
@@ -81,15 +102,15 @@ export function setNativeOrientation(orientation: NativeOrientation): void {
   if (!port) {
     // Simpan hanya command terakhir agar tidak menumpuk / looping.
     queue = [command];
-    log("orientation command queued", orientation);
+    log("TWA orientation command queued", orientation);
     return;
   }
 
   try {
     port.postMessage(command);
-    log("orientation command sent", orientation);
+    log("TWA orientation command sent", orientation);
   } catch {
     queue = [command];
-    log("orientation command queued", orientation);
+    log("TWA orientation command queued", orientation);
   }
 }
