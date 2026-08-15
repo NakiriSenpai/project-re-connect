@@ -21,20 +21,13 @@ export function isOrientationLockSupported() {
 /**
  * Mencoba mengunci landscape dan MEMVERIFIKASI orientasi sebenarnya.
  *
- * Sebagian besar peramban mobile (Android/Chrome) HANYA mengizinkan
- * `screen.orientation.lock()` ketika dokumen berada dalam fullscreen. Karena
- * itu fullscreen diminta lebih dulu — tetap dalam gesture user yang sama.
+ * CATATAN (Sprint 21): Fullscreen API TIDAK PERNAH dipanggil di sini.
+ * Pada Android/TWA, `requestFullscreen()` memicu system education toast
+ * ("To exit full screen, drag from the top..."). Bila peramban menolak
+ * orientation lock, user diminta memutar perangkat secara manual.
  */
 export async function lockLandscape(): Promise<boolean> {
   if (window.matchMedia("(orientation: landscape)").matches) return true;
-
-  if (!document.fullscreenElement) {
-    try {
-      await document.documentElement.requestFullscreen();
-    } catch {
-      /* fullscreen ditolak — tetap coba lock di bawah */
-    }
-  }
 
   const orientation = getOrientation();
   if (orientation && typeof orientation.lock === "function") {
