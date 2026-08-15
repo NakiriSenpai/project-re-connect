@@ -9,8 +9,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { EXAM_DIFFICULTY_LABELS } from "@/features/exam/exam.constants";
 import { useAvailableExams, useMyAttempts, useStartAttempt } from "@/hooks/attempt";
 import type { ExamRow } from "@/types/exam";
-import { ContinueExamDialog, StartExamDialog } from "./exam-dialogs";
-import { requestLandscapeFromGesture } from "../workspace/use-orientation";
+import { ContinueExamDialog } from "./exam-dialogs";
+import { OrientationStartDialog } from "./orientation-start-dialog";
+import {
+  requestLandscapeFromGesture,
+  requestOrientationFromGesture,
+  setExamOrientationPreference,
+  type ExamOrientationPreference,
+} from "../workspace/use-orientation";
 
 /**
  * Daftar ujian published.
@@ -45,10 +51,12 @@ export function ExamStartList() {
       .map((a) => a.exam_id),
   );
 
-  const handleStart = (examId: string) => {
-    // Lock landscape LANGSUNG dari gesture user (klik konfirmasi) — sebelum navigasi,
+  const handleStart = (examId: string, preference: ExamOrientationPreference) => {
+    // Lock orientasi LANGSUNG dari gesture user (klik konfirmasi) — sebelum navigasi,
     // supaya transient user activation masih valid saat screen.orientation.lock() dipanggil.
-    void requestLandscapeFromGesture();
+    // Lock yang gagal (mis. TWA) tidak memblokir ujian — hanya fallback UX di workspace.
+    setExamOrientationPreference(preference);
+    void requestOrientationFromGesture(preference);
     start.mutate(examId, {
       onSuccess: (attempt) => {
         setStartTarget(null);
@@ -136,12 +144,12 @@ export function ExamStartList() {
         </div>
       )}
 
-      <StartExamDialog
-        exam={startTarget}
+      <OrientationStartDialog
         open={Boolean(startTarget)}
+        examTitle={startTarget?.title ?? "ujian ini"}
         pending={start.isPending}
         onOpenChange={(open) => !open && setStartTarget(null)}
-        onConfirm={() => startTarget && handleStart(startTarget.id)}
+        onConfirm={(preference) => startTarget && handleStart(startTarget.id, preference)}
       />
 
       <ContinueExamDialog

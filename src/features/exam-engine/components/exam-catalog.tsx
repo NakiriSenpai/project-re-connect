@@ -31,8 +31,14 @@ import { cn } from "@/lib/utils";
 import type { ExamRow } from "@/types/exam";
 import motivationArt from "@/assets/exam-motivation.png";
 import progressArt from "@/assets/exam-progress.png";
-import { ContinueExamDialog, StartExamDialog } from "./exam-dialogs";
-import { requestLandscapeFromGesture } from "../workspace/use-orientation";
+import { ContinueExamDialog } from "./exam-dialogs";
+import { OrientationStartDialog } from "./orientation-start-dialog";
+import {
+  requestLandscapeFromGesture,
+  requestOrientationFromGesture,
+  setExamOrientationPreference,
+  type ExamOrientationPreference,
+} from "../workspace/use-orientation";
 import { ExamInfoDialog, ExamStatsDialog } from "./exam-catalog-dialogs";
 
 const PAGE_SIZE = 10;
@@ -216,10 +222,12 @@ export function ExamCatalog() {
   const currentPage = Math.min(page, totalPages);
   const visible = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-  const handleStart = (examId: string) => {
-    // Lock landscape LANGSUNG dari gesture user (klik konfirmasi) — sebelum navigasi,
+  const handleStart = (examId: string, preference: ExamOrientationPreference) => {
+    // Lock orientasi LANGSUNG dari gesture user (klik konfirmasi) — sebelum navigasi,
     // supaya transient user activation masih valid saat screen.orientation.lock() dipanggil.
-    void requestLandscapeFromGesture();
+    // Lock yang gagal (mis. TWA) tidak memblokir ujian — hanya fallback UX di workspace.
+    setExamOrientationPreference(preference);
+    void requestOrientationFromGesture(preference);
     start.mutate(examId, {
       onSuccess: (attempt) => {
         setStartTarget(null);
@@ -482,12 +490,12 @@ export function ExamCatalog() {
       <ExamInfoDialog open={infoOpen} onOpenChange={setInfoOpen} />
       <ExamStatsDialog open={statsOpen} onOpenChange={setStatsOpen} stats={stats} />
 
-      <StartExamDialog
-        exam={startTarget}
+      <OrientationStartDialog
         open={Boolean(startTarget)}
+        examTitle={startTarget?.title ?? "ujian ini"}
         pending={start.isPending}
         onOpenChange={(open) => !open && setStartTarget(null)}
-        onConfirm={() => startTarget && handleStart(startTarget.id)}
+        onConfirm={(preference) => startTarget && handleStart(startTarget.id, preference)}
       />
 
       <ContinueExamDialog
