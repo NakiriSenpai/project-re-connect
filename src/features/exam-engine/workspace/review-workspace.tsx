@@ -26,7 +26,6 @@ import { QuestionListDialog, type PaletteGroup, type PaletteItem } from "./quest
 import { AnswerShell, QuestionStem } from "./question-stem";
 import { useAntiCopy } from "./use-anti-copy";
 import { useOrientation } from "./use-orientation";
-import { WorkspaceGate } from "./workspace-gate";
 import { WorkspaceBody, WorkspaceShell } from "./workspace-shell";
 
 /** Review memakai Workspace yang sama dengan Exam, ditambah pembahasan. */
@@ -41,12 +40,10 @@ export function ReviewWorkspace({ attemptId }: { attemptId: string }) {
 function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
   const navigate = useNavigate();
   const { data, isLoading, isError, error } = useAttemptReview(attemptId);
-  const orientation = useOrientation();
+  useOrientation();
   useAntiCopy();
   const [activeIndex, setActiveIndex] = useState(0);
   const [listOpen, setListOpen] = useState(false);
-  const [gatePending, setGatePending] = useState(false);
-  const [gateDismissed, setGateDismissed] = useState(false);
   const [lessonDialog, setLessonDialog] = useState<{ id: string; title: string } | null>(null);
 
   const questions = useMemo(() => data?.snapshot.questions ?? [], [data]);
@@ -138,24 +135,6 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
   return (
     <>
       <WorkspaceShell
-        gate={
-          orientation.needsRotate && !gateDismissed ? (
-            <WorkspaceGate
-              needsRotate
-              lockSupported={orientation.lockSupported}
-              pending={gatePending}
-              onEnter={() => {
-                setGatePending(true);
-                void orientation
-                  .lock()
-                  .then((ok) => {
-                    if (!ok) setGateDismissed(true);
-                  })
-                  .finally(() => setGatePending(false));
-              }}
-            />
-          ) : null
-        }
         header={
           <>
             <Button

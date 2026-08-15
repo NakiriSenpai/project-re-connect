@@ -192,6 +192,13 @@ export async function restoreOrientation(): Promise<void> {
   }
 }
 
+/**
+ * Orientation state untuk workspace ujian.
+ *
+ * TIDAK ADA orientation gate: lock hanya best-effort. Bila `screen.orientation.lock()`
+ * ditolak (TWA/browser), ujian tetap berjalan dengan layout sesuai preferensi user —
+ * tanpa modal "Putar Perangkat", tanpa tombol "Kunci Landscape", tanpa violation.
+ */
 export function useOrientation(preference?: ExamOrientationPreference) {
   const [isLandscape, setIsLandscape] = useState(true);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
@@ -215,33 +222,21 @@ export function useOrientation(preference?: ExamOrientationPreference) {
     };
   }, []);
 
-  // Fallback auto-lock saat workspace ujian dibuka (browser & TWA), tanpa fullscreen.
+  // Best-effort auto-lock saat workspace dibuka. Kegagalan diabaikan diam-diam.
   useEffect(() => {
-    let active = true;
     if (window.matchMedia("(max-width: 1024px)").matches) {
-      void lockOrientation(pref, "mount").then((ok) => {
-        if (active && ok) setIsLandscape(pref === "landscape");
-      });
+      void lockOrientation(pref, "mount");
     }
     return () => {
-      active = false;
       void restoreOrientation();
     };
-  }, [pref]);
-
-  const lock = useCallback(async () => {
-    const ok = await lockOrientation(pref, "gate");
-    setIsLandscape(isLandscapeNow());
-    return ok;
   }, [pref]);
 
   return {
     /** Orientasi nyata perangkat. */
     isLandscape,
     isSmallScreen,
-    /** Fallback ringan: user memilih landscape tetapi perangkat masih portrait. */
-    needsRotate: pref === "landscape" && isSmallScreen && !isLandscape,
-    lockSupported: isOrientationLockSupported(),
-    lock,
+    /** Preferensi yang dipilih user di modal "Pilih Orientasi Ujian". */
+    preference: pref,
   };
 }

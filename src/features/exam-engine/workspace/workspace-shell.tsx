@@ -9,15 +9,12 @@ import { type ReactNode } from "react";
 export function WorkspaceShell({
   header,
   footer,
-  gate,
   overlay,
   contentBlurred,
   children,
 }: {
   header: ReactNode;
   footer?: ReactNode;
-  /** Overlay orientation fallback (non-fatal). */
-  gate?: ReactNode;
   /** Overlay secure mode. */
   overlay?: ReactNode;
   contentBlurred?: boolean;
@@ -50,7 +47,6 @@ export function WorkspaceShell({
         </footer>
       ) : null}
 
-      {gate}
       {overlay}
     </div>
   );
