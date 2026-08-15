@@ -1,13 +1,23 @@
 import { useCallback, useEffect, useState } from "react";
 
+import { isStandaloneApp } from "@/lib/utils/app-mode";
+
 /**
- * ORIENTATION STATE (Sprint 11 FINAL) — terpisah dari fullscreen & exam lifecycle.
+ * ORIENTATION STATE (Sprint 21.1) — tanpa Fullscreen API sama sekali.
  *
  * - `isLandscape` selalu diverifikasi dari orientasi NYATA (matchMedia), bukan state React.
- * - `lock()` benar-benar memanggil Screen Orientation API lalu memverifikasi hasilnya.
- * - Perangkat besar (desktop/tablet lebar) tidak pernah dianggap butuh rotasi.
+ * - `lock()` memanggil Screen Orientation API lalu memverifikasi hasilnya.
+ * - Exam Workspace mencoba lock landscape OTOMATIS saat mount (browser & TWA).
+ * - Saat workspace unmount, orientasi dikembalikan ke portrait (standalone) / di-unlock (browser).
+ *
+ * CATATAN TWA: `screen.orientation.lock()` hanya berhasil bila Activity Android tidak
+ * dikunci. PWABuilder membaca `orientation` dari manifest → manifest HARUS "any",
+ * bukan "portrait", agar lock landscape per-halaman bisa bekerja.
  */
-type OrientationApi = ScreenOrientation & { lock?: (o: string) => Promise<void> };
+type OrientationApi = ScreenOrientation & {
+  lock?: (o: string) => Promise<void>;
+  unlock?: () => void;
+};
 
 function getOrientation(): OrientationApi | undefined {
   if (typeof window === "undefined") return undefined;
@@ -18,27 +28,44 @@ export function isOrientationLockSupported() {
   return typeof getOrientation()?.lock === "function";
 }
 
+async function tryLock(type: "landscape" | "portrait"): Promise<void> {
+  const orientation = getOrientation();
+  if (!orientation || typeof orientation.lock !== "function") return;
+  try {
+    await orientation.lock(type);
+  } catch {
+    /* ditolak peramban/perangkat — caller memverifikasi hasil nyata */
+  }
+}
+
 /**
  * Mencoba mengunci landscape dan MEMVERIFIKASI orientasi sebenarnya.
- *
- * CATATAN (Sprint 21): Fullscreen API TIDAK PERNAH dipanggil di sini.
- * Pada Android/TWA, `requestFullscreen()` memicu system education toast
- * ("To exit full screen, drag from the top..."). Bila peramban menolak
- * orientation lock, user diminta memutar perangkat secara manual.
+ * Fullscreen API TIDAK PERNAH dipanggil (memicu system education toast di Android/TWA).
  */
 export async function lockLandscape(): Promise<boolean> {
   if (window.matchMedia("(orientation: landscape)").matches) return true;
-
-  const orientation = getOrientation();
-  if (orientation && typeof orientation.lock === "function") {
-    try {
-      await orientation.lock("landscape");
-    } catch {
-      /* ditolak peramban/perangkat — jatuh ke verifikasi manual di bawah */
-    }
-  }
+  await tryLock("landscape");
   await new Promise((resolve) => setTimeout(resolve, 200));
+  if (window.matchMedia("(orientation: landscape)").matches) return true;
+  // TWA kadang butuh percobaan kedua setelah Activity siap.
+  await tryLock("landscape");
+  await new Promise((resolve) => setTimeout(resolve, 350));
   return window.matchMedia("(orientation: landscape)").matches;
+}
+
+/** Kembalikan orientasi setelah keluar dari workspace ujian. */
+export async function restoreOrientation(): Promise<void> {
+  const orientation = getOrientation();
+  if (!orientation) return;
+  if (isStandaloneApp()) {
+    await tryLock("portrait");
+    return;
+  }
+  try {
+    orientation.unlock?.();
+  } catch {
+    /* diabaikan */
+  }
 }
 
 export function useOrientation() {
@@ -60,6 +87,20 @@ export function useOrientation() {
       landscapeQuery.removeEventListener("change", sync);
       smallQuery.removeEventListener("change", sync);
       window.removeEventListener("resize", sync);
+    };
+  }, []);
+
+  // Auto-lock landscape saat workspace ujian dibuka (browser & TWA), tanpa fullscreen.
+  useEffect(() => {
+    let active = true;
+    if (window.matchMedia("(max-width: 1024px)").matches) {
+      void lockLandscape().then((ok) => {
+        if (active && ok) setIsLandscape(true);
+      });
+    }
+    return () => {
+      active = false;
+      void restoreOrientation();
     };
   }, []);
 
