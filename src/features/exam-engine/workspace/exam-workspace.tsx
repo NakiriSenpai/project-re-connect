@@ -22,7 +22,7 @@ import { ExamAttemptExpiredError } from "@/services/attempt";
 import type { AnswerLabel } from "@/types/exam";
 import type { AttemptAnswerRow } from "@/types/attempt";
 import { ATTEMPT_STATUS_LABELS } from "@/types/attempt";
-import { LeaveExamDialog, SubmitExamDialog } from "../components/exam-dialogs";
+import { SubmitExamDialog } from "../components/exam-dialogs";
 import { AudioButton, AudioManagerProvider, useAudioManager } from "./audio-manager";
 import { CATEGORY_LABELS } from "@/features/exam/exam.constants";
 import { cn } from "@/lib/utils";
@@ -132,17 +132,20 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
     if (isRunning && timerReady && remaining <= 0) void finish("time_up");
   }, [isRunning, timerReady, remaining, finish]);
 
-  // Secure Mode: hitung pelanggaran saat aplikasi/tab masuk background.
+  // Secure Mode: satu-satunya mekanisme keluar dari ujian (tidak ada exit dialog lama).
   const security = useExamSecurity({
     enabled: Boolean(isRunning) && !submitting,
     onLimitReached: () => void finish("manual"),
-    onViolation: () => undefined,
   });
+  const registerViolation = security.registerViolation;
 
-  // Guard navigasi (browser back / link) — attempt TIDAK pernah disubmit karena ini.
-  const blocker = useBlocker({
-    shouldBlockFn: () => Boolean(isRunning) && !submittingRef.current,
-    withResolver: true,
+  // Android back / browser back / navigasi ke route lain → 1 violation, user tetap di ujian.
+  useBlocker({
+    shouldBlockFn: () => {
+      if (!isRunning || submittingRef.current) return false;
+      registerViolation();
+      return true;
+    },
     enableBeforeUnload: false,
   });
 
