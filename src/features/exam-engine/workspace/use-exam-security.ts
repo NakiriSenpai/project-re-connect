@@ -11,7 +11,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * - Overlay TIDAK PERNAH hilang otomatis; hanya `resume()` yang menutupnya.
  * - `visibilitychange === "hidden"` adalah sinyal utama; `pagehide`/`freeze` fallback.
  * - `blur`/`focus`/`document.hasFocus()` TIDAK PERNAH membatalkan violation.
- * - Counter dipersist per attempt di sessionStorage (namespace khusus, tanpa clear global).
+ * - Counter + status block dipersist per attempt di sessionStorage.
  *
  * TIDAK dihitung: rotasi layar, dialog internal, kontrol audio, navigasi antar soal.
  */
@@ -23,23 +23,56 @@ function storageKey(attemptId?: string) {
   return attemptId ? `${STORAGE_PREFIX}${attemptId}` : null;
 }
 
-function readPersisted(attemptId?: string) {
+type PersistedSecurityState = {
+  violations: number;
+  securityBlocked: boolean;
+  pendingViolation: boolean;
+};
+
+const EMPTY_SECURITY_STATE: PersistedSecurityState = {
+  violations: 0,
+  securityBlocked: false,
+  pendingViolation: false,
+};
+
+function readPersisted(attemptId?: string): PersistedSecurityState {
   const key = storageKey(attemptId);
-  if (!key || typeof window === "undefined") return 0;
+  if (!key || typeof window === "undefined") return EMPTY_SECURITY_STATE;
   try {
     const raw = window.sessionStorage.getItem(key);
-    const value = raw ? Number.parseInt(raw, 10) : 0;
-    return Number.isFinite(value) && value > 0 ? Math.min(value, MAX_EXAM_VIOLATIONS) : 0;
+    if (!raw) return EMPTY_SECURITY_STATE;
+
+    // Backward compatibility untuk value lama yang hanya berupa angka counter.
+    if (!raw.trim().startsWith("{")) {
+      const legacyCount = Number.parseInt(raw, 10);
+      return {
+        ...EMPTY_SECURITY_STATE,
+        violations: Number.isFinite(legacyCount)
+          ? Math.max(0, Math.min(legacyCount, MAX_EXAM_VIOLATIONS))
+          : 0,
+      };
+    }
+
+    const parsed = JSON.parse(raw) as Partial<PersistedSecurityState>;
+    const parsedCount = Number(parsed.violations);
+    const violations = Number.isFinite(parsedCount)
+      ? Math.max(0, Math.min(parsedCount, MAX_EXAM_VIOLATIONS))
+      : 0;
+    return {
+      violations,
+      securityBlocked: parsed.securityBlocked === true,
+      pendingViolation: parsed.pendingViolation === true,
+    };
   } catch {
-    return 0;
+    return EMPTY_SECURITY_STATE;
   }
 }
 
-function persist(attemptId: string | undefined, value: number) {
+function persist(attemptId: string | undefined, state: PersistedSecurityState) {
   const key = storageKey(attemptId);
   if (!key || typeof window === "undefined") return;
   try {
-    window.sessionStorage.setItem(key, String(value));
+    window.sessionStorage.setItem(key, JSON.stringify(state));
   } catch {
     /* diabaikan */
   }
@@ -54,12 +87,17 @@ export function useExamSecurity({
   attemptId?: string;
   onLimitReached: () => void;
 }) {
-  const [violations, setViolations] = useState(() => readPersisted(attemptId));
+  const initialState = useRef(readPersisted(attemptId));
+  const [violations, setViolations] = useState(initialState.current.violations);
   /** Overlay security sedang memblokir ujian (UI state, bukan ref). */
-  const [securityBlocked, setSecurityBlocked] = useState(false);
+  const [securityBlocked, setSecurityBlocked] = useState(initialState.current.securityBlocked);
   /** Violation tercatat saat aplikasi di background dan belum diakui user. */
-  const [pendingViolation, setPendingViolation] = useState(false);
-  const [limitReached, setLimitReached] = useState(false);
+  const [pendingViolation, setPendingViolation] = useState(
+    initialState.current.pendingViolation,
+  );
+  const [limitReached, setLimitReached] = useState(
+    initialState.current.violations >= MAX_EXAM_VIOLATIONS,
+  );
 
   const limitRef = useRef(onLimitReached);
   limitRef.current = onLimitReached;
@@ -67,16 +105,21 @@ export function useExamSecurity({
   enabledRef.current = enabled;
   const attemptRef = useRef(attemptId);
   attemptRef.current = attemptId;
-  const countRef = useRef(violations);
+  const countRef = useRef(initialState.current.violations);
   /** Latch de-duplikasi: true = episode baru boleh dicatat. */
-  const episodeActiveRef = useRef(true);
+  const episodeActiveRef = useRef(!initialState.current.securityBlocked);
+  const limitHandledRef = useRef(false);
 
-  // Restore counter bila attempt berubah (mis. recovery setelah refresh).
+  // Restore seluruh state bila attempt berubah (termasuk remount/recovery Activity Android).
   useEffect(() => {
     const stored = readPersisted(attemptId);
-    countRef.current = stored;
-    setViolations(stored);
-    if (stored >= MAX_EXAM_VIOLATIONS) setLimitReached(true);
+    countRef.current = stored.violations;
+    episodeActiveRef.current = !stored.securityBlocked;
+    limitHandledRef.current = false;
+    setViolations(stored.violations);
+    setSecurityBlocked(stored.securityBlocked);
+    setPendingViolation(stored.pendingViolation);
+    setLimitReached(stored.violations >= MAX_EXAM_VIOLATIONS);
   }, [attemptId]);
 
   const registerViolation = useCallback(() => {
@@ -87,16 +130,28 @@ export function useExamSecurity({
 
     countRef.current += 1;
     const next = countRef.current;
-    persist(attemptRef.current, next);
+    persist(attemptRef.current, {
+      violations: next,
+      securityBlocked: true,
+      pendingViolation: true,
+    });
     setViolations(next);
     setPendingViolation(true);
     setSecurityBlocked(true);
 
     if (next >= MAX_EXAM_VIOLATIONS) {
       setLimitReached(true);
+      limitHandledRef.current = true;
       limitRef.current();
     }
   }, []);
+
+  // Persisted 3/3 juga harus memakai submit architecture existing setelah remount.
+  useEffect(() => {
+    if (!enabled || violations < MAX_EXAM_VIOLATIONS || limitHandledRef.current) return;
+    limitHandledRef.current = true;
+    limitRef.current();
+  }, [enabled, violations]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -115,18 +170,37 @@ export function useExamSecurity({
       // pending violation; hanya tombol "Kembali ke Ujian" yang menutupnya.
     };
 
+    const onBlur = () => {
+      // Fallback Android/TWA ketika visibilitychange terlambat atau tidak dikirim.
+      // Latch memastikan blur + hidden + pagehide + freeze tetap satu episode.
+      registerViolation();
+    };
+
+    const onFocus = () => {
+      // Hanya sinyal bahwa user kembali. Security block sengaja tidak diubah.
+    };
+
     document.addEventListener("visibilitychange", onVisibility);
     document.addEventListener("freeze", onHidden);
     window.addEventListener("pagehide", onHidden);
+    window.addEventListener("blur", onBlur);
+    window.addEventListener("focus", onFocus);
     return () => {
       document.removeEventListener("visibilitychange", onVisibility);
       document.removeEventListener("freeze", onHidden);
       window.removeEventListener("pagehide", onHidden);
+      window.removeEventListener("blur", onBlur);
+      window.removeEventListener("focus", onFocus);
     };
   }, [enabled, registerViolation]);
 
   /** Hanya dipanggil dari tombol "Kembali ke Ujian". */
   const resume = useCallback(() => {
+    persist(attemptRef.current, {
+      violations: countRef.current,
+      securityBlocked: false,
+      pendingViolation: false,
+    });
     setSecurityBlocked(false);
     setPendingViolation(false);
     episodeActiveRef.current = true;
