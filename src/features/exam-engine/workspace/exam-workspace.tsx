@@ -437,18 +437,10 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
         pending={submitting}
       />
 
-      <ExitFullscreenDialog
-        open={fullscreen.isExitRequested && !submitting}
-        pending={submitting}
-        onStay={() => fullscreen.cancelExit()}
-        onExit={() => void finish("manual")}
-      />
-
       <LeaveExamDialog
         open={blocker.status === "blocked"}
         onStay={() => blocker.reset?.()}
         onLeave={() => {
-          fullscreen.release();
           blocker.proceed?.();
         }}
       />
