@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { useAttemptResult, useStartAttempt } from "@/hooks/attempt";
 import { formatDurasi } from "@/types/attempt";
 import { formatTanggal } from "@/utils/format";
-import { useOrientation } from "./use-orientation";
+import { requestLandscapeFromGesture, useOrientation } from "./use-orientation";
 import { WorkspaceGate } from "./workspace-gate";
 import { WorkspaceShell } from "./workspace-shell";
 
@@ -63,6 +63,8 @@ export function ResultWorkspace({ attemptId }: { attemptId: string }) {
   };
 
   const tryAgain = () => {
+    // Lock landscape langsung dari gesture user (tombol "Ulangi Ujian").
+    void requestLandscapeFromGesture();
     startAttempt.mutate(data.exam_id, {
       onSuccess: (attempt) =>
         void navigate({ to: "/ujian/$attemptId", params: { attemptId: attempt.id } }),
