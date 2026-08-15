@@ -44,6 +44,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const { role, isAuthenticated } = useAuth();
   const { config, isFeatureEnabled, version } = useAppConfig();
   const isFullscreen = useIsFullscreen();
+  usePortraitPolicy();
+
 
   const navItems = (role ? NAV_BY_ROLE[role] : NAV_BY_ROLE.siswa).filter(
     (item) => !item.flag || isFeatureEnabled(item.flag),
