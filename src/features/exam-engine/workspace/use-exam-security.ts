@@ -1,137 +1,142 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
- * Secure Mode Exam (final — single source of truth).
+ * Secure Mode Exam — state machine (final).
  *
- * Satu "exit episode" = SATU violation, walaupun browser mengirim beberapa event
- * sekaligus (`visibilitychange` → `blur` → `pagehide` → `freeze`).
+ * ACTIVE → EXIT_DETECTED → SECURITY_BLOCKED → (tombol "Kembali ke Ujian") → ACTIVE
  *
- * Sumber violation:
- * 1. Aplikasi/tab masuk background (visibilitychange hidden, pagehide, freeze,
- *    atau blur yang benar-benar kehilangan fokus dokumen).
- * 2. Percobaan meninggalkan route ujian (Android back / browser back / navigasi),
- *    dilaporkan pemanggil lewat `registerViolation()`.
+ * Aturan:
+ * - REF hanya dipakai sebagai latch de-duplikasi event (satu exit episode = satu violation).
+ * - React STATE adalah satu-satunya sumber kebenaran untuk UI overlay & counter.
+ * - Overlay TIDAK PERNAH hilang otomatis; hanya `resume()` yang menutupnya.
+ * - `visibilitychange === "hidden"` adalah sinyal utama; `pagehide`/`freeze` fallback.
+ * - `blur`/`focus`/`document.hasFocus()` TIDAK PERNAH membatalkan violation.
+ * - Counter dipersist per attempt di sessionStorage (namespace khusus, tanpa clear global).
  *
- * TIDAK dihitung: rotasi layar, orientation lock/selection, dialog internal
- * (Daftar Soal, submit, tandai soal), kontrol audio, navigasi antar soal.
- * Fullscreen API tidak dipakai sama sekali. Timer & attempt logic tidak disentuh.
- *
- * Overlay tidak bisa tampil saat aplikasi masih di background, jadi violation
- * yang terjadi ketika hidden disimpan sebagai "pending" lalu ditampilkan saat
- * user kembali (visibilitychange → visible).
+ * TIDAK dihitung: rotasi layar, dialog internal, kontrol audio, navigasi antar soal.
  */
 export const MAX_EXAM_VIOLATIONS = 3;
 
+const STORAGE_PREFIX = "ium-exam-security:";
+
+function storageKey(attemptId?: string) {
+  return attemptId ? `${STORAGE_PREFIX}${attemptId}` : null;
+}
+
+function readPersisted(attemptId?: string) {
+  const key = storageKey(attemptId);
+  if (!key || typeof window === "undefined") return 0;
+  try {
+    const raw = window.sessionStorage.getItem(key);
+    const value = raw ? Number.parseInt(raw, 10) : 0;
+    return Number.isFinite(value) && value > 0 ? Math.min(value, MAX_EXAM_VIOLATIONS) : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function persist(attemptId: string | undefined, value: number) {
+  const key = storageKey(attemptId);
+  if (!key || typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(key, String(value));
+  } catch {
+    /* diabaikan */
+  }
+}
+
 export function useExamSecurity({
   enabled,
+  attemptId,
   onLimitReached,
 }: {
   enabled: boolean;
+  attemptId?: string;
   onLimitReached: () => void;
 }) {
-  const [violations, setViolations] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const [violations, setViolations] = useState(() => readPersisted(attemptId));
+  /** Overlay security sedang memblokir ujian (UI state, bukan ref). */
+  const [securityBlocked, setSecurityBlocked] = useState(false);
+  /** Violation tercatat saat aplikasi di background dan belum diakui user. */
+  const [pendingViolation, setPendingViolation] = useState(false);
   const [limitReached, setLimitReached] = useState(false);
+
   const limitRef = useRef(onLimitReached);
   limitRef.current = onLimitReached;
   const enabledRef = useRef(enabled);
   enabledRef.current = enabled;
-  const countRef = useRef(0);
-  /** Latch: true selama satu exit episode masih berlangsung (anti double count). */
-  const episodeRef = useRef(false);
-  /** Violation tercatat saat hidden, overlay ditampilkan saat user kembali. */
-  const pendingRef = useRef(false);
+  const attemptRef = useRef(attemptId);
+  attemptRef.current = attemptId;
+  const countRef = useRef(violations);
+  /** Latch de-duplikasi: true = episode baru boleh dicatat. */
+  const episodeActiveRef = useRef(true);
+
+  // Restore counter bila attempt berubah (mis. recovery setelah refresh).
+  useEffect(() => {
+    const stored = readPersisted(attemptId);
+    countRef.current = stored;
+    setViolations(stored);
+    if (stored >= MAX_EXAM_VIOLATIONS) setLimitReached(true);
+  }, [attemptId]);
 
   const registerViolation = useCallback(() => {
-    if (!enabledRef.current || countRef.current >= MAX_EXAM_VIOLATIONS) return;
-    if (episodeRef.current) return; // satu episode = satu violation
-    episodeRef.current = true;
+    if (!enabledRef.current) return;
+    if (countRef.current >= MAX_EXAM_VIOLATIONS) return;
+    if (!episodeActiveRef.current) return; // satu exit episode = satu violation
+    episodeActiveRef.current = false;
 
     countRef.current += 1;
     const next = countRef.current;
+    persist(attemptRef.current, next);
     setViolations(next);
+    setPendingViolation(true);
+    setSecurityBlocked(true);
 
-    const visible = typeof document === "undefined" || document.visibilityState === "visible";
     if (next >= MAX_EXAM_VIOLATIONS) {
-      setPaused(true);
       setLimitReached(true);
       limitRef.current();
-      return;
-    }
-    if (visible) {
-      setPaused(true);
-      episodeRef.current = false; // episode navigasi selesai seketika
-    } else {
-      pendingRef.current = true; // tampilkan overlay saat kembali
     }
   }, []);
 
   useEffect(() => {
     if (!enabled) return;
 
-    let blurTimer: ReturnType<typeof setTimeout> | undefined;
-
     const onHidden = () => {
-      if (blurTimer) clearTimeout(blurTimer);
+      if (typeof document !== "undefined" && document.visibilityState === "visible") return;
       registerViolation();
     };
 
     const onVisibility = () => {
       if (document.visibilityState === "hidden") {
-        onHidden();
+        registerViolation();
         return;
       }
-      // Kembali ke aplikasi: tutup episode, proses pending violation sekali saja.
-      episodeRef.current = false;
-      if (pendingRef.current) {
-        pendingRef.current = false;
-        setPaused(true);
-      }
-    };
-
-    const onBlur = () => {
-      // `blur` juga muncul untuk fokus internal; hanya hitung bila dokumen
-      // benar-benar kehilangan fokus/visibility sesaat kemudian.
-      blurTimer = setTimeout(() => {
-        if (document.visibilityState === "hidden" || !document.hasFocus()) registerViolation();
-      }, 400);
-    };
-
-    const onFocus = () => {
-      if (blurTimer) clearTimeout(blurTimer);
-      if (document.visibilityState === "visible") {
-        episodeRef.current = false;
-        if (pendingRef.current) {
-          pendingRef.current = false;
-          setPaused(true);
-        }
-      }
+      // Kembali ke aplikasi: JANGAN reset apa pun. Overlay tetap terbuka bila ada
+      // pending violation; hanya tombol "Kembali ke Ujian" yang menutupnya.
     };
 
     document.addEventListener("visibilitychange", onVisibility);
     document.addEventListener("freeze", onHidden);
     window.addEventListener("pagehide", onHidden);
-    window.addEventListener("blur", onBlur);
-    window.addEventListener("focus", onFocus);
     return () => {
-      if (blurTimer) clearTimeout(blurTimer);
       document.removeEventListener("visibilitychange", onVisibility);
       document.removeEventListener("freeze", onHidden);
       window.removeEventListener("pagehide", onHidden);
-      window.removeEventListener("blur", onBlur);
-      window.removeEventListener("focus", onFocus);
     };
   }, [enabled, registerViolation]);
 
+  /** Hanya dipanggil dari tombol "Kembali ke Ujian". */
   const resume = useCallback(() => {
-    episodeRef.current = false;
-    pendingRef.current = false;
-    setPaused(false);
+    setSecurityBlocked(false);
+    setPendingViolation(false);
+    episodeActiveRef.current = true;
   }, []);
 
   return {
     violations,
-    paused,
+    /** Overlay tampil & konten ujian diblokir. */
+    paused: securityBlocked,
+    pendingViolation,
     limitReached,
     resume,
     registerViolation,

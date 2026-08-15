@@ -132,6 +132,7 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
   // Secure Mode: satu-satunya mekanisme keluar dari ujian (tidak ada exit dialog lama).
   const security = useExamSecurity({
     enabled: Boolean(isRunning) && !submitting,
+    attemptId,
     onLimitReached: () => void finish("manual"),
   });
   const registerViolation = security.registerViolation;
