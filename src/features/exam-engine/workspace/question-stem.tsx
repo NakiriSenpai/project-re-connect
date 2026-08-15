@@ -1,6 +1,5 @@
 import { memo, type ReactNode } from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { AudioButton } from "./audio-manager";
 
@@ -27,20 +26,24 @@ export const QuestionStem = memo(function QuestionStem({
   right?: ReactNode;
 }) {
   return (
-    <div className="space-y-2.5 rounded-2xl border border-border bg-card p-3 sm:p-4">
+    <div className="space-y-4 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
       <div className="flex items-center justify-between gap-2">
-        <Badge variant="outline" className="shrink-0 bg-primary-muted text-foreground">
-          Soal {number} dari {total}
-        </Badge>
+        <span className="shrink-0 rounded-lg bg-primary-muted px-3 py-1.5 text-sm font-semibold text-primary">
+          Soal {number}
+        </span>
         {right}
       </div>
       {sectionTitle ? (
         <p className="text-xs leading-relaxed text-muted-foreground">
           <span className="font-semibold text-foreground/80">{sectionTitle}</span>
           {sectionInstruction ? ` — ${sectionInstruction}` : ""}
+          <span className="sr-only">
+            {" "}
+            Soal {number} dari {total}
+          </span>
         </p>
       ) : null}
-      <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-foreground sm:text-base">
+      <p className="whitespace-pre-wrap text-base leading-relaxed text-foreground sm:text-lg">
         {text}
       </p>
       {imageUrl ? (
@@ -49,7 +52,7 @@ export const QuestionStem = memo(function QuestionStem({
           alt={`Gambar soal nomor ${number}`}
           loading="lazy"
           draggable={false}
-          className="max-h-40 w-auto max-w-[min(100%,20rem)] rounded-xl border border-border object-contain sm:max-h-48"
+          className="max-h-44 w-auto max-w-[min(100%,22rem)] rounded-xl border border-border object-contain sm:max-h-56"
         />
       ) : null}
 
@@ -89,28 +92,28 @@ export function AnswerShell({
   children: ReactNode;
 }) {
   const className = cn(
-    "flex w-full items-start gap-3 rounded-2xl border p-3 text-left transition-all duration-150",
+    "flex w-full items-center gap-3.5 rounded-2xl border bg-card p-3.5 text-left transition-all duration-150 sm:p-4",
     tone === "correct"
-      ? "border-success bg-success/12"
+      ? "border-success bg-success/10"
       : tone === "wrong"
-        ? "border-destructive bg-destructive/12"
+        ? "border-destructive bg-destructive/10"
         : selected
-          ? "border-primary bg-primary-muted glow-primary"
-          : "border-border bg-card",
+          ? "border-primary bg-primary-muted"
+          : "border-border",
     onClick && "hover:border-primary/60 disabled:cursor-not-allowed disabled:opacity-60",
   );
   const inner = (
     <>
       <span
         className={cn(
-          "flex size-7 shrink-0 items-center justify-center rounded-full border text-xs font-bold tabular-nums",
+          "flex size-9 shrink-0 items-center justify-center rounded-xl text-sm font-bold tabular-nums",
           tone === "correct"
-            ? "border-success bg-success text-success-foreground"
+            ? "bg-success text-success-foreground"
             : tone === "wrong"
-              ? "border-destructive bg-destructive text-destructive-foreground"
+              ? "bg-destructive text-destructive-foreground"
               : selected
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border text-muted-foreground",
+                ? "bg-primary text-primary-foreground"
+                : "bg-primary-muted text-primary",
         )}
       >
         {index + 1}
