@@ -362,16 +362,19 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
 
             <span
               className={cn(
-                "hidden shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold sm:flex",
+                "flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold leading-tight",
                 security.violations > 0
                   ? "bg-warning/15 text-warning"
                   : "bg-success/15 text-success",
               )}
             >
-              <ShieldCheck className="size-4" />
-              {security.violations > 0
-                ? `Pelanggaran ${security.violations}/${security.max}`
-                : "Mode Secure Aktif"}
+              <ShieldCheck className="size-4 shrink-0" />
+              <span className="flex flex-col">
+                <span>Mode Secure</span>
+                <span className="tabular-nums opacity-90">
+                  Aktif · {security.violations}/{security.max}
+                </span>
+              </span>
             </span>
 
             <span
