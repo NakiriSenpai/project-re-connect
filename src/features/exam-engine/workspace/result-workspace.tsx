@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { CheckCircle2, CircleSlash, Loader2, RotateCcw, Trophy, XCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -13,17 +13,21 @@ import { formatTanggal } from "@/utils/format";
 import {
   getExamOrientationPreference,
   requestOrientationFromGesture,
-  useOrientation,
+  restoreOrientation,
 } from "./use-orientation";
 
 import { WorkspaceShell } from "./workspace-shell";
 
-/** Result — tetap fullscreen & landscape, hanya MEMBACA hasil yang tersimpan. */
+/** Result — ujian sudah selesai: keluar fullscreen dan kembali portrait. */
 export function ResultWorkspace({ attemptId }: { attemptId: string }) {
   const navigate = useNavigate();
   const { data, isLoading, isError, error } = useAttemptResult(attemptId);
   const startAttempt = useStartAttempt();
-  useOrientation();
+
+  useEffect(() => {
+    void restoreOrientation();
+  }, []);
+
 
   if (isLoading) {
     return (

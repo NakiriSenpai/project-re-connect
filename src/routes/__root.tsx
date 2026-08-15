@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -17,6 +18,7 @@ import { registerServiceWorker } from "@/lib/pwa/register-sw";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/auth/auth-context";
 import { AppConfigProvider } from "@/contexts/config/app-config-context";
+import { applyPortraitPolicy } from "@/features/exam-engine/workspace/use-orientation";
 
 function NotFoundComponent() {
   return (
@@ -135,12 +137,27 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * Orientation policy global: semua halaman NON-EXAM dikunci portrait (best-effort).
+ * Hanya workspace ujian (runner & review) yang boleh landscape sesuai pilihan user.
+ */
+const EXAM_WORKSPACE_PATTERN = /^\/ujian\/(review\/)?[^/]+\/?$/;
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => {
     void registerServiceWorker();
   }, []);
+
+  useEffect(() => {
+    const isExamWorkspace =
+      EXAM_WORKSPACE_PATTERN.test(pathname) && !pathname.startsWith("/ujian/hasil");
+    if (isExamWorkspace) return;
+    applyPortraitPolicy(`route:${pathname}`);
+  }, [pathname]);
+
 
   return (
     <QueryClientProvider client={queryClient}>
