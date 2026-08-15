@@ -53,7 +53,6 @@ function fallbackLabel(category: string) {
   return CATEGORY_LABELS[category] ?? category.charAt(0).toUpperCase() + category.slice(1);
 }
 
-
 function ExamIcon({ exam }: { exam: ExamRow }) {
   const category = exam.category.toLowerCase();
   const listening = category.includes("listening") || category.includes("dengar");
@@ -196,7 +195,6 @@ export function ExamCatalog() {
     };
   }, [results, examList, categoryLabel]);
 
-
   const totalSets = examList.length;
   const progressPercent = totalSets === 0 ? 0 : Math.round((stats.completedSets / totalSets) * 100);
 
@@ -204,12 +202,14 @@ export function ExamCatalog() {
     const used = new Set(examList.map((exam) => exam.category));
     const fromDb = (categoryRows ?? []).filter((row) => used.has(row.slug));
     const known = new Set(fromDb.map((row) => row.slug));
-    const extras = [...used].filter((slug) => !known.has(slug)).map((slug) => ({
-      slug,
-      label: fallbackLabel(slug),
-    }));
-    return [...fromDb.map((row) => ({ slug: row.slug, label: row.label })), ...extras].sort((a, b) =>
-      a.label.localeCompare(b.label),
+    const extras = [...used]
+      .filter((slug) => !known.has(slug))
+      .map((slug) => ({
+        slug,
+        label: fallbackLabel(slug),
+      }));
+    return [...fromDb.map((row) => ({ slug: row.slug, label: row.label })), ...extras].sort(
+      (a, b) => a.label.localeCompare(b.label),
     );
   }, [examList, categoryRows]);
 
@@ -484,8 +484,6 @@ export function ExamCatalog() {
           />
         </div>
       </section>
-
-
 
       <ExamInfoDialog open={infoOpen} onOpenChange={setInfoOpen} />
       <ExamStatsDialog open={statsOpen} onOpenChange={setStatsOpen} stats={stats} />

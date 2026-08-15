@@ -134,9 +134,7 @@ export function getExamOrientationPreference(): ExamOrientationPreference {
  * Dipanggil LANGSUNG dari handler klik user (tanpa await/setTimeout sebelumnya).
  * Mengembalikan promise; caller boleh mengabaikannya agar navigasi tidak tertunda.
  */
-export function requestOrientationFromGesture(
-  pref: ExamOrientationPreference,
-): Promise<boolean> {
+export function requestOrientationFromGesture(pref: ExamOrientationPreference): Promise<boolean> {
   if (typeof window === "undefined") return Promise.resolve(false);
   if (!window.matchMedia("(max-width: 1024px)").matches) return Promise.resolve(true);
   if (pref === "landscape" ? isLandscapeNow() : !isLandscapeNow()) return Promise.resolve(true);
@@ -238,4 +236,3 @@ export function useOrientation(preference?: ExamOrientationPreference) {
     lock,
   };
 }
-

@@ -26,11 +26,7 @@ import { LeaveExamDialog, SubmitExamDialog } from "../components/exam-dialogs";
 import { AudioButton, AudioManagerProvider, useAudioManager } from "./audio-manager";
 import { CATEGORY_LABELS } from "@/features/exam/exam.constants";
 import { cn } from "@/lib/utils";
-import {
-  QuestionListDialog,
-  type PaletteGroup,
-  type PaletteItem,
-} from "./question-list-dialog";
+import { QuestionListDialog, type PaletteGroup, type PaletteItem } from "./question-list-dialog";
 import { AnswerShell, QuestionStem } from "./question-stem";
 import { useExamTimer } from "../hooks/use-exam-timer";
 import { useAntiCopy } from "./use-anti-copy";
@@ -173,8 +169,7 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
     return groups;
   }, [snapshot, questions, local]);
 
-  const needGate =
-    Boolean(isRunning) && !submitting && orientation.needsRotate && !gateDismissed;
+  const needGate = Boolean(isRunning) && !submitting && orientation.needsRotate && !gateDismissed;
 
   const enterExamMode = useCallback(async () => {
     setGatePending(true);

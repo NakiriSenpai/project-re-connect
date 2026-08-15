@@ -22,11 +22,7 @@ import type { AnswerLabel } from "@/types/exam";
 import { OpenLessonDialog } from "../components/open-lesson-dialog";
 import { AudioButton, AudioManagerProvider } from "./audio-manager";
 import { CATEGORY_LABELS } from "@/features/exam/exam.constants";
-import {
-  QuestionListDialog,
-  type PaletteGroup,
-  type PaletteItem,
-} from "./question-list-dialog";
+import { QuestionListDialog, type PaletteGroup, type PaletteItem } from "./question-list-dialog";
 import { AnswerShell, QuestionStem } from "./question-stem";
 import { useAntiCopy } from "./use-anti-copy";
 import { useOrientation } from "./use-orientation";
