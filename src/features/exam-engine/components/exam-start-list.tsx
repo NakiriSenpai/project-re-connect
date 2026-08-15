@@ -10,8 +10,10 @@ import { EXAM_DIFFICULTY_LABELS } from "@/features/exam/exam.constants";
 import { useAvailableExams, useMyAttempts, useStartAttempt } from "@/hooks/attempt";
 import type { ExamRow } from "@/types/exam";
 import { ContinueExamDialog } from "./exam-dialogs";
+import { setNativeOrientation } from "@/lib/twa/orientation-bridge";
 import { OrientationStartDialog } from "./orientation-start-dialog";
 import {
+  getExamOrientationPreference,
   setExamOrientationPreference,
   type ExamOrientationPreference,
 } from "../workspace/use-orientation";
@@ -50,9 +52,10 @@ export function ExamStartList() {
   );
 
   const handleStart = (examId: string, preference: ExamOrientationPreference) => {
-    // Preferensi hanya menentukan LAYOUT ujian. Tidak ada fullscreen dan tidak ada
-    // orientation lock — rotasi fisik perangkat tidak pernah dipaksa.
+    // Preferensi menentukan LAYOUT ujian + dikirim ke native Android via TWA bridge.
+    // Tidak ada fullscreen dan tidak ada screen.orientation.lock.
     setExamOrientationPreference(preference);
+    setNativeOrientation(preference);
     start.mutate(examId, {
       onSuccess: (attempt) => {
         setStartTarget(null);
@@ -155,6 +158,7 @@ export function ExamStartList() {
         onOpenChange={(open) => !open && setContinueTarget(null)}
         onConfirm={() => {
           if (!continueTarget) return;
+          setNativeOrientation(getExamOrientationPreference());
           void navigate({ to: "/ujian/$attemptId", params: { attemptId: continueTarget } });
         }}
       />

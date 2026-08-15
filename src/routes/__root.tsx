@@ -19,6 +19,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/auth/auth-context";
 import { AppConfigProvider } from "@/contexts/config/app-config-context";
 import { applyPortraitPolicy } from "@/features/exam-engine/workspace/use-orientation";
+import { initOrientationBridge, setNativeOrientation } from "@/lib/twa/orientation-bridge";
 
 function NotFoundComponent() {
   return (
@@ -149,6 +150,12 @@ function RootComponent() {
 
   useEffect(() => {
     void registerServiceWorker();
+  }, []);
+
+  // TWA bridge: pasang listener handshake sekali, lalu satu kali portrait di startup.
+  useEffect(() => {
+    initOrientationBridge();
+    setNativeOrientation("portrait");
   }, []);
 
   useEffect(() => {
