@@ -32,7 +32,6 @@ import { useExamTimer } from "../hooks/use-exam-timer";
 import { useAntiCopy } from "./use-anti-copy";
 import { useExamSecurity } from "./use-exam-security";
 import { useOrientation } from "./use-orientation";
-import { WorkspaceGate } from "./workspace-gate";
 import { WorkspaceBody, WorkspaceShell } from "./workspace-shell";
 
 type LocalAnswer = { label: AnswerLabel | null; flagged: boolean };
@@ -75,8 +74,6 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [local, setLocal] = useState<Record<string, LocalAnswer>>({});
   const [listOpen, setListOpen] = useState(false);
-  const [gatePending, setGatePending] = useState(false);
-  const [gateDismissed, setGateDismissed] = useState(false);
   const [confirmSubmit, setConfirmSubmit] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
@@ -171,18 +168,6 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
     if (rest.length > 0) groups.push({ id: "lainnya", title: "Lainnya", items: rest });
     return groups;
   }, [snapshot, questions, local]);
-
-  const needGate = Boolean(isRunning) && !submitting && orientation.needsRotate && !gateDismissed;
-
-  const enterExamMode = useCallback(async () => {
-    setGatePending(true);
-    try {
-      const ok = await orientation.lock();
-      if (!ok) setGateDismissed(true);
-    } finally {
-      setGatePending(false);
-    }
-  }, [orientation]);
 
   const openQuestionList = () => setListOpen(true);
 
@@ -327,16 +312,6 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
                 )}
               </div>
             </div>
-          ) : null
-        }
-        gate={
-          needGate ? (
-            <WorkspaceGate
-              needsRotate={orientation.needsRotate}
-              lockSupported={orientation.lockSupported}
-              pending={gatePending}
-              onEnter={() => void enterExamMode()}
-            />
           ) : null
         }
         header={

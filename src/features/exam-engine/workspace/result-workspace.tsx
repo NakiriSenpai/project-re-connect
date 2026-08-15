@@ -11,7 +11,6 @@ import { useAttemptResult, useStartAttempt } from "@/hooks/attempt";
 import { formatDurasi } from "@/types/attempt";
 import { formatTanggal } from "@/utils/format";
 import { requestLandscapeFromGesture, useOrientation } from "./use-orientation";
-import { WorkspaceGate } from "./workspace-gate";
 import { WorkspaceShell } from "./workspace-shell";
 
 /** Result — tetap fullscreen & landscape, hanya MEMBACA hasil yang tersimpan. */
@@ -19,22 +18,7 @@ export function ResultWorkspace({ attemptId }: { attemptId: string }) {
   const navigate = useNavigate();
   const { data, isLoading, isError, error } = useAttemptResult(attemptId);
   const startAttempt = useStartAttempt();
-  const orientation = useOrientation();
-  const [gatePending, setGatePending] = useState(false);
-  const [gateDismissed, setGateDismissed] = useState(false);
-
-  const lockLandscapeNow = async () => {
-    setGatePending(true);
-    try {
-      const ok = await orientation.lock();
-      if (!ok) {
-        setGateDismissed(true);
-        toast.info("Perangkat ini tidak dapat mengunci orientasi. Putar perangkat secara manual.");
-      }
-    } finally {
-      setGatePending(false);
-    }
-  };
+  useOrientation();
 
   if (isLoading) {
     return (
@@ -86,16 +70,6 @@ export function ResultWorkspace({ attemptId }: { attemptId: string }) {
 
   return (
     <WorkspaceShell
-      gate={
-        orientation.needsRotate && !gateDismissed ? (
-          <WorkspaceGate
-            needsRotate
-            lockSupported={orientation.lockSupported}
-            pending={gatePending}
-            onEnter={() => void lockLandscapeNow()}
-          />
-        ) : null
-      }
       header={
         <>
           <div className="min-w-0 flex-1">
