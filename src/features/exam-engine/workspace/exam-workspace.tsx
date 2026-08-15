@@ -510,14 +510,6 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
         onConfirm={() => void finish("manual")}
         pending={submitting}
       />
-
-      <LeaveExamDialog
-        open={blocker.status === "blocked"}
-        onStay={() => blocker.reset?.()}
-        onLeave={() => {
-          blocker.proceed?.();
-        }}
-      />
     </>
   );
 }
