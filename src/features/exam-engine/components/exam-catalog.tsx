@@ -32,6 +32,7 @@ import type { ExamRow } from "@/types/exam";
 import motivationArt from "@/assets/exam-motivation.png";
 import progressArt from "@/assets/exam-progress.png";
 import { ContinueExamDialog, StartExamDialog } from "./exam-dialogs";
+import { requestLandscapeFromGesture } from "../workspace/use-orientation";
 import { ExamInfoDialog, ExamStatsDialog } from "./exam-catalog-dialogs";
 
 const PAGE_SIZE = 10;
@@ -216,6 +217,9 @@ export function ExamCatalog() {
   const visible = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const handleStart = (examId: string) => {
+    // Lock landscape LANGSUNG dari gesture user (klik konfirmasi) — sebelum navigasi,
+    // supaya transient user activation masih valid saat screen.orientation.lock() dipanggil.
+    void requestLandscapeFromGesture();
     start.mutate(examId, {
       onSuccess: (attempt) => {
         setStartTarget(null);
@@ -491,6 +495,7 @@ export function ExamCatalog() {
         onOpenChange={(open) => !open && setContinueTarget(null)}
         onConfirm={() => {
           if (!continueTarget) return;
+          void requestLandscapeFromGesture();
           void navigate({ to: "/ujian/$attemptId", params: { attemptId: continueTarget } });
         }}
       />
