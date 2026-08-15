@@ -34,7 +34,7 @@ import progressArt from "@/assets/exam-progress.png";
 import { ContinueExamDialog } from "./exam-dialogs";
 import { OrientationStartDialog } from "./orientation-start-dialog";
 import {
-  requestLandscapeFromGesture,
+  getExamOrientationPreference,
   requestOrientationFromGesture,
   setExamOrientationPreference,
   type ExamOrientationPreference,
@@ -501,7 +501,7 @@ export function ExamCatalog() {
         onOpenChange={(open) => !open && setContinueTarget(null)}
         onConfirm={() => {
           if (!continueTarget) return;
-          void requestLandscapeFromGesture();
+          void requestOrientationFromGesture(getExamOrientationPreference());
           void navigate({ to: "/ujian/$attemptId", params: { attemptId: continueTarget } });
         }}
       />
