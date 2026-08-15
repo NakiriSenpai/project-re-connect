@@ -27,13 +27,13 @@ export type OrientationLockDiagnostics = {
   source: string;
   supported: boolean;
   locked: boolean;
-  errorName?: string;
-  errorMessage?: string;
-  type?: string;
-  angle?: number;
+  errorName?: string | undefined;
+  errorMessage?: string | undefined;
+  type?: string | undefined;
+  angle?: number | undefined;
   standalone: boolean;
   displayModeStandalone: boolean;
-  userActivation?: boolean;
+  userActivation?: boolean | undefined;
 };
 
 let lastDiagnostics: OrientationLockDiagnostics | null = null;
