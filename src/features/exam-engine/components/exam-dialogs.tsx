@@ -9,14 +9,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-type Props = {
-  exam: ExamRow | null;
-  questionCount?: number | undefined;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
-  pending?: boolean;
-};
 
 /** Dialog konfirmasi melanjutkan attempt aktif (BUG 16). */
 export function ContinueExamDialog({
