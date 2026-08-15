@@ -35,8 +35,8 @@ export function getRememberedIdentifier(): string {
  */
 export function shouldDropSessionOnBoot(): boolean {
   if (typeof window === "undefined") return false;
-  const remembered = window.localStorage.getItem(REMEMBER_KEY) !== "0";
-  const tabAlive = window.sessionStorage.getItem(TAB_KEY) === "1";
-  window.sessionStorage.setItem(TAB_KEY, "1");
+  const remembered = window.localStorage.getItem(REMEMBER_KEY()) !== "0";
+  const tabAlive = window.sessionStorage.getItem(TAB_KEY()) === "1";
+  window.sessionStorage.setItem(TAB_KEY(), "1");
   return !remembered && !tabAlive;
 }
