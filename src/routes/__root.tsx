@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -17,6 +18,7 @@ import { registerServiceWorker } from "@/lib/pwa/register-sw";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/auth/auth-context";
 import { AppConfigProvider } from "@/contexts/config/app-config-context";
+import { applyPortraitPolicy } from "@/features/exam-engine/workspace/use-orientation";
 
 function NotFoundComponent() {
   return (
