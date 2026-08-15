@@ -9,7 +9,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-
 /** Dialog konfirmasi melanjutkan attempt aktif (BUG 16). */
 export function ContinueExamDialog({
   open,

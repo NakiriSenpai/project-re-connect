@@ -293,7 +293,9 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
                 </span>
                 {security.limitReached ? (
                   <div className="space-y-1.5">
-                    <h2 className="text-lg font-bold text-foreground">Batas Pelanggaran Tercapai</h2>
+                    <h2 className="text-lg font-bold text-foreground">
+                      Batas Pelanggaran Tercapai
+                    </h2>
                     <p className="text-sm text-muted-foreground">
                       Anda telah meninggalkan mode ujian sebanyak {security.max} kali. Ujian akan
                       dikumpulkan secara otomatis.
