@@ -87,8 +87,8 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
     setLocal(restored);
   }, [data]);
 
-  // Fullscreen lifecycle: satu sumber kebenaran.
-  const fullscreen = useExamFullscreen({ enabled: Boolean(isRunning) && !submitting });
+  // Sprint 21: Fullscreen API tidak lagi dipakai (memicu system education toast di Android/TWA).
+  // Exam Workspace memenuhi viewport aplikasi lewat layout (fixed inset-0), bukan fullscreen.
 
   const finish = useCallback(
     async (reason: "manual" | "time_up") => {
@@ -96,10 +96,8 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
       submittingRef.current = true;
       setSubmitting(true);
       setConfirmSubmit(false);
-      fullscreen.beginSubmit();
       try {
         await submit.mutateAsync({ attemptId, reason });
-        fullscreen.finish();
         toast.success(
           reason === "time_up"
             ? "Waktu habis. Ujian dikumpulkan otomatis."
@@ -109,13 +107,12 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
       } catch (submitError) {
         submittingRef.current = false;
         setSubmitting(false);
-        void fullscreen.request();
         toast.error(
           submitError instanceof Error ? submitError.message : "Gagal mengumpulkan ujian.",
         );
       }
     },
-    [attemptId, fullscreen, navigate, submit],
+    [attemptId, navigate, submit],
   );
 
   const {
