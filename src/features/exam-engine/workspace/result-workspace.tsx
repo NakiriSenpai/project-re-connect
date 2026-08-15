@@ -10,8 +10,12 @@ import { Separator } from "@/components/ui/separator";
 import { useAttemptResult, useStartAttempt } from "@/hooks/attempt";
 import { formatDurasi } from "@/types/attempt";
 import { formatTanggal } from "@/utils/format";
-import { getExamOrientationPreference,
-  requestOrientationFromGesture, useOrientation } from "./use-orientation";
+import {
+  getExamOrientationPreference,
+  requestOrientationFromGesture,
+  useOrientation,
+} from "./use-orientation";
+
 import { WorkspaceShell } from "./workspace-shell";
 
 /** Result — tetap fullscreen & landscape, hanya MEMBACA hasil yang tersimpan. */
