@@ -279,21 +279,50 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
         contentBlurred={security.paused}
         overlay={
           security.paused ? (
-            <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/85 p-6 backdrop-blur-sm">
-              <div className="w-full max-w-sm space-y-4 rounded-3xl border border-warning/40 bg-card p-6 text-center shadow-lg">
-                <span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-warning/15 text-warning">
+            <div className="absolute inset-0 z-50 flex items-center justify-center bg-foreground/60 p-6 backdrop-blur-md">
+              <div className="w-full max-w-sm space-y-4 rounded-3xl border border-border bg-card p-6 text-center shadow-2xl">
+                <span
+                  className={cn(
+                    "mx-auto flex size-14 items-center justify-center rounded-2xl",
+                    security.limitReached
+                      ? "bg-destructive/15 text-destructive"
+                      : "bg-warning/15 text-warning",
+                  )}
+                >
                   <ShieldAlert className="size-7" />
                 </span>
-                <div className="space-y-1.5">
-                  <h2 className="text-lg font-bold text-foreground">Mode Secure Terpicu</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Anda meninggalkan layar ujian. Pelanggaran {security.violations} dari{" "}
-                    {security.max}. Pada pelanggaran ke-{security.max} ujian dikumpulkan otomatis.
-                  </p>
-                </div>
-                <Button className="h-11 w-full rounded-xl" onClick={security.resume}>
-                  Lanjutkan Ujian
-                </Button>
+                {security.limitReached ? (
+                  <div className="space-y-1.5">
+                    <h2 className="text-lg font-bold text-foreground">Batas Pelanggaran Tercapai</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Anda telah meninggalkan mode ujian sebanyak {security.max} kali. Ujian akan
+                      dikumpulkan secara otomatis.
+                    </p>
+                    <p className="flex items-center justify-center gap-2 pt-2 text-sm font-semibold text-foreground">
+                      <Loader2 className="size-4 animate-spin" /> Mengumpulkan ujian…
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-1.5">
+                      <h2 className="text-lg font-bold text-foreground">
+                        Mode Ujian Terdeteksi Keluar
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        Anda telah meninggalkan halaman ujian.
+                      </p>
+                      <p className="text-sm font-semibold text-warning">
+                        Peringatan {security.violations} dari {security.max}
+                      </p>
+                    </div>
+                    <Button
+                      className="h-11 w-full rounded-xl font-semibold"
+                      onClick={security.resume}
+                    >
+                      Kembali ke Ujian
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           ) : null
