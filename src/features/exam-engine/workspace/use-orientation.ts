@@ -165,14 +165,65 @@ export function getExamOrientationPreference(): ExamOrientationPreference {
 }
 
 /**
+ * Fullscreen HANYA untuk Exam, dan HANYA satu kali dari gesture user
+ * ("Mulai Ujian" / "Lanjutkan Ujian" / "Ulangi Ujian").
+ * Tidak pernah dipanggil pada mount, visibilitychange, atau fullscreenchange.
+ */
+function requestExamFullscreen(): Promise<boolean> {
+  if (typeof document === "undefined") return Promise.resolve(false);
+  if (document.fullscreenElement) return Promise.resolve(true);
+  const element = document.documentElement as HTMLElement & {
+    webkitRequestFullscreen?: () => Promise<void> | void;
+  };
+  try {
+    const request = element.requestFullscreen?.bind(element) ?? element.webkitRequestFullscreen;
+    if (!request) return Promise.resolve(false);
+    return Promise.resolve(request({ navigationUI: "hide" } as FullscreenOptions))
+      .then(() => {
+        console.info("[ExamOrientation] fullscreen granted");
+        return true;
+      })
+      .catch((error: unknown) => {
+        console.warn("[ExamOrientation] fullscreen rejected", error);
+        return false;
+      });
+  } catch (error) {
+    console.warn("[ExamOrientation] fullscreen threw", error);
+    return Promise.resolve(false);
+  }
+}
+
+/** Keluar dari fullscreen (best-effort, tidak pernah fatal). */
+export function exitExamFullscreen(): Promise<void> {
+  if (typeof document === "undefined" || !document.fullscreenElement) return Promise.resolve();
+  try {
+    return Promise.resolve(document.exitFullscreen()).catch(() => undefined);
+  } catch {
+    return Promise.resolve();
+  }
+}
+
+/**
  * Dipanggil LANGSUNG dari handler klik user (tanpa await/setTimeout sebelumnya).
- * Mengembalikan promise; caller boleh mengabaikannya agar navigasi tidak tertunda.
+ * Urutan: requestFullscreen() → screen.orientation.lock(pref) → verifikasi aktual.
+ * Kegagalan salah satu langkah TIDAK memblokir ujian.
  */
 export function requestOrientationFromGesture(pref: ExamOrientationPreference): Promise<boolean> {
   if (typeof window === "undefined") return Promise.resolve(false);
   if (!window.matchMedia("(max-width: 1024px)").matches) return Promise.resolve(true);
-  if (pref === "landscape" ? isLandscapeNow() : !isLandscapeNow()) return Promise.resolve(true);
-  return callLock(pref, "gesture");
+  // Fullscreen dulu (sinkron dari gesture) supaya TWA/Chrome mengizinkan orientation lock.
+  const fullscreen = requestExamFullscreen();
+  // Lock juga dipanggil langsung agar tetap punya user activation bila fullscreen ditolak.
+  const immediate = callLock(pref, "gesture");
+  return fullscreen.then((ok) =>
+    immediate.then((locked) => {
+      if (locked || !ok) {
+        report(`gesture-verify:${pref}`, locked, undefined, pref);
+        return locked;
+      }
+      return callLock(pref, "gesture-after-fullscreen");
+    }),
+  );
 }
 
 export function requestLandscapeFromGesture(): Promise<boolean> {
@@ -181,7 +232,7 @@ export function requestLandscapeFromGesture(): Promise<boolean> {
 
 /**
  * Mencoba mengunci orientasi dan MEMVERIFIKASI orientasi sebenarnya.
- * Fullscreen API TIDAK PERNAH dipanggil. Kegagalan lock TIDAK pernah fatal.
+ * Tidak pernah meminta fullscreen. Kegagalan lock TIDAK pernah fatal.
  */
 export async function lockOrientation(
   pref: ExamOrientationPreference,
@@ -202,20 +253,27 @@ export function lockLandscape(source = "mount") {
   return lockOrientation("landscape", source);
 }
 
-/** Kembalikan orientasi setelah keluar dari workspace ujian. */
+/**
+ * Kembalikan aplikasi ke keadaan non-Exam:
+ * keluar fullscreen → kunci portrait (best-effort).
+ */
 export async function restoreOrientation(): Promise<void> {
+  await exitExamFullscreen();
   const orientation = getOrientation();
   if (!orientation) return;
-  if (isStandaloneApp()) {
-    await callLock("portrait", "restore");
-    return;
-  }
-  try {
-    orientation.unlock?.();
-  } catch {
-    /* diabaikan */
-  }
+  await callLock("portrait", "restore");
 }
+
+/**
+ * Kebijakan orientasi halaman NON-EXAM: selalu portrait (best-effort),
+ * tanpa fullscreen dan tanpa UI gate. Dipakai di app shell.
+ */
+export function applyPortraitPolicy(source = "app"): void {
+  if (typeof window === "undefined") return;
+  if (!window.matchMedia("(max-width: 1024px)").matches) return;
+  void callLock("portrait", source);
+}
+
 
 /**
  * Orientation state untuk workspace ujian.
