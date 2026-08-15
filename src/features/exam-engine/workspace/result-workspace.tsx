@@ -13,11 +13,15 @@ import { formatTanggal } from "@/utils/format";
 import { setNativeOrientation } from "@/lib/twa/orientation-bridge";
 import { WorkspaceShell } from "./workspace-shell";
 
-/** Result — ujian sudah selesai: keluar fullscreen dan kembali portrait. */
+/** Result — ujian sudah selesai: minta native Android kembali portrait. */
 export function ResultWorkspace({ attemptId }: { attemptId: string }) {
   const navigate = useNavigate();
   const { data, isLoading, isError, error } = useAttemptResult(attemptId);
   const startAttempt = useStartAttempt();
+
+  useEffect(() => {
+    setNativeOrientation("portrait");
+  }, []);
 
   if (isLoading) {
     return (
