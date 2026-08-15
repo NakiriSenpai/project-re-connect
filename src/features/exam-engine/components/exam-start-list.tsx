@@ -12,9 +12,6 @@ import type { ExamRow } from "@/types/exam";
 import { ContinueExamDialog } from "./exam-dialogs";
 import { OrientationStartDialog } from "./orientation-start-dialog";
 import {
-  getExamOrientationPreference,
-  requestOrientationFromGesture,
-  resumeOrientationFromGesture,
   setExamOrientationPreference,
   type ExamOrientationPreference,
 } from "../workspace/use-orientation";
@@ -53,19 +50,15 @@ export function ExamStartList() {
   );
 
   const handleStart = (examId: string, preference: ExamOrientationPreference) => {
-    // Lock orientasi LANGSUNG dari gesture user (klik konfirmasi) — sebelum navigasi,
-    // supaya transient user activation masih valid saat screen.orientation.lock() dipanggil.
-    // Lock yang gagal (mis. TWA) tidak memblokir ujian — hanya fallback UX di workspace.
+    // Preferensi hanya menentukan LAYOUT ujian. Tidak ada fullscreen dan tidak ada
+    // orientation lock — rotasi fisik perangkat tidak pernah dipaksa.
     setExamOrientationPreference(preference);
-    void requestOrientationFromGesture(preference);
     start.mutate(examId, {
       onSuccess: (attempt) => {
         setStartTarget(null);
         // Attempt BARU: langsung masuk workspace, tanpa perantara "Lanjutkan Ujian".
         setContinueTarget(null);
-        void navigate({ to: "/ujian/$attemptId", params: { attemptId: attempt.id } }).catch(() => {
-          window.location.assign(`/ujian/${attempt.id}`);
-        });
+        void navigate({ to: "/ujian/$attemptId", params: { attemptId: attempt.id } });
       },
       onError: (err) => toast.error(err instanceof Error ? err.message : "Gagal memulai ujian."),
     });
@@ -162,8 +155,6 @@ export function ExamStartList() {
         onOpenChange={(open) => !open && setContinueTarget(null)}
         onConfirm={() => {
           if (!continueTarget) return;
-          // Resume attempt lama: JANGAN request fullscreen lagi (education toast Android).
-          void resumeOrientationFromGesture(getExamOrientationPreference());
           void navigate({ to: "/ujian/$attemptId", params: { attemptId: continueTarget } });
         }}
       />

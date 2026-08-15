@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { CheckCircle2, CircleSlash, Loader2, RotateCcw, Trophy, XCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -10,12 +10,6 @@ import { Separator } from "@/components/ui/separator";
 import { useAttemptResult, useStartAttempt } from "@/hooks/attempt";
 import { formatDurasi } from "@/types/attempt";
 import { formatTanggal } from "@/utils/format";
-import {
-  getExamOrientationPreference,
-  requestOrientationFromGesture,
-  restoreOrientation,
-} from "./use-orientation";
-
 import { WorkspaceShell } from "./workspace-shell";
 
 /** Result — ujian sudah selesai: keluar fullscreen dan kembali portrait. */
@@ -23,11 +17,6 @@ export function ResultWorkspace({ attemptId }: { attemptId: string }) {
   const navigate = useNavigate();
   const { data, isLoading, isError, error } = useAttemptResult(attemptId);
   const startAttempt = useStartAttempt();
-
-  useEffect(() => {
-    void restoreOrientation();
-  }, []);
-
 
   if (isLoading) {
     return (
@@ -51,13 +40,10 @@ export function ResultWorkspace({ attemptId }: { attemptId: string }) {
   }
 
   const exitWorkspace = () => {
-    if (document.fullscreenElement) void document.exitFullscreen().catch(() => undefined);
     void navigate({ to: "/ujian" });
   };
 
   const tryAgain = () => {
-    // Lock landscape langsung dari gesture user (tombol "Ulangi Ujian").
-    void requestOrientationFromGesture(getExamOrientationPreference());
     startAttempt.mutate(data.exam_id, {
       onSuccess: (attempt) =>
         void navigate({ to: "/ujian/$attemptId", params: { attemptId: attempt.id } }),

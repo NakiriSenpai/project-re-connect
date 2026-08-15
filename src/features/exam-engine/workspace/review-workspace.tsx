@@ -116,7 +116,6 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
   const lessonTitle = question.lesson_id ? lessonTitles?.[question.lesson_id] : undefined;
 
   const exitWorkspace = (to: "hasil" | "ujian") => {
-    if (document.fullscreenElement) void document.exitFullscreen().catch(() => undefined);
     if (to === "hasil") {
       void navigate({ to: "/ujian/hasil/$attemptId", params: { attemptId } });
     } else {
@@ -128,7 +127,6 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
     if (!lessonDialog) return;
     const lessonId = lessonDialog.id;
     setLessonDialog(null);
-    if (document.fullscreenElement) void document.exitFullscreen().catch(() => undefined);
     void navigate({ to: "/materi/lesson/$lessonId", params: { lessonId } });
   };
 
