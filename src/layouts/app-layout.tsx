@@ -1,10 +1,8 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { useRouterState } from "@tanstack/react-router";
 
 import { MaintenanceGate } from "@/components/common/maintenance-gate";
 import { AppHeader } from "@/features/shell/components/app-header";
 import { BottomNav, NAV_BY_ROLE } from "@/features/shell/components/bottom-nav";
-import { applyPortraitPolicy } from "@/features/exam-engine/workspace/use-orientation";
 import { useAuth } from "@/hooks/auth";
 import { useAppConfig } from "@/hooks/config";
 
@@ -21,22 +19,6 @@ function useIsFullscreen() {
 }
 
 /**
- * Orientation policy global: semua halaman NON-EXAM dikunci portrait (best-effort).
- * Hanya workspace ujian (runner & review) yang boleh landscape sesuai pilihan user.
- */
-const EXAM_WORKSPACE_PATTERN = /^\/ujian\/(review\/)?[^/]+$/;
-
-function usePortraitPolicy() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  useEffect(() => {
-    if (pathname === "/ujian" || pathname === "/ujian/") return;
-    if (EXAM_WORKSPACE_PATTERN.test(pathname) && !pathname.startsWith("/ujian/hasil")) return;
-    applyPortraitPolicy(`route:${pathname}`);
-  }, [pathname]);
-}
-
-
-/**
  * App shell global: header branding tenant + konten + bottom navigation role-aware.
  * Halaman tidak boleh menduplikasi header/bottom nav.
  */
@@ -44,7 +26,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const { role, isAuthenticated } = useAuth();
   const { config, isFeatureEnabled, version } = useAppConfig();
   const isFullscreen = useIsFullscreen();
-  usePortraitPolicy();
 
 
   const navItems = (role ? NAV_BY_ROLE[role] : NAV_BY_ROLE.siswa).filter(
