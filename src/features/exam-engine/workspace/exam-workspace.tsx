@@ -70,6 +70,7 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
   const [listOpen, setListOpen] = useState(false);
   const [asideOpen, setAsideOpen] = useState(false);
   const [gatePending, setGatePending] = useState(false);
+  const [gateDismissed, setGateDismissed] = useState(false);
   const [confirmSubmit, setConfirmSubmit] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
