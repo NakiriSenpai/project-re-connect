@@ -13,11 +13,7 @@ import { ExamAttemptExpiredError } from "@/services/attempt";
 import type { AnswerLabel } from "@/types/exam";
 import type { AttemptAnswerRow } from "@/types/attempt";
 import { ATTEMPT_STATUS_LABELS } from "@/types/attempt";
-import {
-  ExitFullscreenDialog,
-  LeaveExamDialog,
-  SubmitExamDialog,
-} from "../components/exam-dialogs";
+import { LeaveExamDialog, SubmitExamDialog } from "../components/exam-dialogs";
 import { AudioButton, AudioManagerProvider, useAudioManager } from "./audio-manager";
 import {
   QuestionListDialog,
@@ -27,7 +23,6 @@ import {
 } from "./question-list-dialog";
 import { AnswerShell, QuestionStem } from "./question-stem";
 import { useExamTimer } from "../hooks/use-exam-timer";
-import { useExamFullscreen } from "./use-exam-fullscreen";
 import { useAntiCopy } from "./use-anti-copy";
 import { useOrientation } from "./use-orientation";
 import { WorkspaceGate } from "./workspace-gate";
