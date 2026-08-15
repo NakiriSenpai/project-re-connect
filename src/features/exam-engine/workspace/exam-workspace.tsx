@@ -156,20 +156,17 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
   }, [snapshot, questions, local]);
 
   const needGate =
-    Boolean(isRunning) &&
-    !submitting &&
-    !fullscreen.isExitRequested &&
-    (orientation.needsRotate || !fullscreen.isActive);
+    Boolean(isRunning) && !submitting && orientation.needsRotate && !gateDismissed;
 
   const enterExamMode = useCallback(async () => {
     setGatePending(true);
     try {
-      if (orientation.needsRotate) await orientation.lock();
-      await fullscreen.request();
+      const ok = await orientation.lock();
+      if (!ok) setGateDismissed(true);
     } finally {
       setGatePending(false);
     }
-  }, [fullscreen, orientation]);
+  }, [orientation]);
 
   const openQuestionList = () => {
     if (orientation.isSmallScreen) setListOpen(true);
