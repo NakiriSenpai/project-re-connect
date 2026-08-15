@@ -247,15 +247,19 @@ export function useOrientation(preference?: ExamOrientationPreference) {
     };
   }, []);
 
-  // Best-effort auto-lock saat workspace dibuka. Kegagalan diabaikan diam-diam.
+  // Best-effort auto-lock saat workspace dibuka. Kegagalan diabaikan diam-diam,
+  // tetapi hasil AKTUAL selalu diverifikasi & dicatat untuk diagnostik TWA.
   useEffect(() => {
     if (window.matchMedia("(max-width: 1024px)").matches) {
-      void lockOrientation(pref, "mount");
+      void lockOrientation(pref, "mount").then((ok) => {
+        report(`verify:${pref}`, ok, undefined, pref);
+      });
     }
     return () => {
       void restoreOrientation();
     };
   }, [pref]);
+
 
   return {
     /** Orientasi nyata perangkat. */
