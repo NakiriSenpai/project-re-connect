@@ -1,143 +1,30 @@
-import { useCallback, useEffect, useState } from "react";
-
-import { isStandaloneApp } from "@/lib/utils/app-mode";
+import { useEffect, useState } from "react";
 
 /**
- * ORIENTATION STATE (Sprint 21.2) — tanpa Fullscreen API sama sekali.
+ * ORIENTATION (Sprint 21.3) — TANPA Fullscreen API dan TANPA orientation lock untuk ujian.
  *
- * Perbedaan penting dari versi sebelumnya:
- * - `screen.orientation.lock()` bisa dipanggil LANGSUNG dari user gesture
- *   (tombol "Mulai Ujian"/"Lanjutkan Ujian") lewat `requestLandscapeFromGesture()`,
- *   sehingga transient user activation masih valid saat lock dijalankan.
- *   Di Chrome/TWA lock ditolak (`NotSupportedError`/`SecurityError`) bila dipanggil
- *   setelah navigasi + mount karena aktivasi sudah hilang.
- * - Auto-lock saat mount tetap dipertahankan sebagai fallback (berhasil di browser desktop/Chrome
- *   Android yang mengizinkan lock tanpa gesture).
- * - Error asli SELALU dicatat ke console dengan diagnostik, bukan ditelan diam-diam.
- *
- * CATATAN TWA: `screen.orientation.lock()` hanya berhasil bila Activity Android tidak
- * dikunci. PWABuilder membaca `orientation` dari manifest → manifest HARUS "any".
+ * Keputusan final setelah audit APK/TWA:
+ * - `screen.orientation.lock()` pada TWA perangkat target hanya bekerja bila fullscreen aktif,
+ *   dan fullscreen memicu education notification Android serta mengganggu Start Exam.
+ * - Karena itu ujian TIDAK PERNAH meminta fullscreen maupun memaksa rotasi fisik.
+ *   Preferensi orientasi user hanya menentukan LAYOUT ujian.
+ * - Satu-satunya pemakaian lock tersisa adalah kebijakan portrait untuk halaman NON-EXAM,
+ *   supaya app shell tidak ikut sensor bebas saat auto-rotate perangkat menyala.
  */
+
 type OrientationApi = ScreenOrientation & {
   lock?: (o: string) => Promise<void>;
-  unlock?: () => void;
 };
-
-export type OrientationLockDiagnostics = {
-  source: string;
-  requested?: string | undefined;
-  supported: boolean;
-  locked: boolean;
-  errorName?: string | undefined;
-  errorMessage?: string | undefined;
-  type?: string | undefined;
-  angle?: number | undefined;
-  innerWidth?: number | undefined;
-  innerHeight?: number | undefined;
-  actualLandscape?: boolean | undefined;
-  standalone: boolean;
-  displayModeStandalone: boolean;
-  userActivation?: boolean | undefined;
-};
-
-let lastDiagnostics: OrientationLockDiagnostics | null = null;
-
-/** Diagnostik lock terakhir (dipakai untuk pelaporan/debug, tanpa data sensitif). */
-export function getLastOrientationDiagnostics() {
-  return lastDiagnostics;
-}
 
 function getOrientation(): OrientationApi | undefined {
   if (typeof window === "undefined") return undefined;
   return (window.screen as (Screen & { orientation?: OrientationApi }) | undefined)?.orientation;
 }
 
-export function isOrientationLockSupported() {
-  return typeof getOrientation()?.lock === "function";
-}
-
-/**
- * Landscape dianggap benar hanya bila viewport benar-benar lebih lebar dari tinggi
- * DAN (bila tersedia) `screen.orientation.type` menunjukkan landscape.
- * Promise `lock()` yang resolve TIDAK dianggap sukses.
- */
 function isLandscapeNow() {
   if (typeof window === "undefined") return false;
-  const byViewport = window.innerWidth > window.innerHeight;
-  const type = getOrientation()?.type;
-  if (!type) return byViewport;
-  return byViewport && type.startsWith("landscape");
+  return window.innerWidth > window.innerHeight;
 }
-
-function report(source: string, locked: boolean, error?: unknown, requested?: string) {
-  const orientation = getOrientation();
-  const activation = (navigator as Navigator & { userActivation?: { isActive: boolean } })
-    .userActivation;
-  const diagnostics: OrientationLockDiagnostics = {
-    source,
-    requested,
-    supported: isOrientationLockSupported(),
-    locked,
-    errorName: error instanceof Error ? error.name : undefined,
-    errorMessage: error instanceof Error ? error.message : undefined,
-    type: orientation?.type,
-    angle: orientation?.angle,
-    innerWidth: typeof window !== "undefined" ? window.innerWidth : undefined,
-    innerHeight: typeof window !== "undefined" ? window.innerHeight : undefined,
-    actualLandscape: isLandscapeNow(),
-    standalone: isStandaloneApp(),
-    displayModeStandalone:
-      typeof window !== "undefined" && window.matchMedia("(display-mode: standalone)").matches,
-    userActivation: activation?.isActive,
-  };
-  lastDiagnostics = diagnostics;
-  if (error) console.error("[ExamOrientation] lock failed", diagnostics);
-  else console.info("[ExamOrientation] lock", diagnostics);
-}
-
-/**
- * Memanggil `lock()` SECARA SINKRON (tanpa await sebelumnya) supaya user activation
- * tetap utuh saat dipanggil dari event handler klik.
- * Fallback ke varian `-primary` hanya bila varian generik ditolak.
- */
-function callLock(type: "landscape" | "portrait", source: string): Promise<boolean> {
-  const orientation = getOrientation();
-  if (!orientation || typeof orientation.lock !== "function") {
-    report(`${source}:${type}`, false, undefined, type);
-    return Promise.resolve(false);
-  }
-  try {
-    return orientation
-      .lock(type)
-      .then(() => {
-        report(`${source}:${type}`, true, undefined, type);
-        return true;
-      })
-      .catch((error: unknown) => {
-        report(`${source}:${type}`, false, error, type);
-        // Beberapa WebView/TWA menolak nilai generik; coba varian primary sekali.
-        try {
-          return orientation
-            .lock!(`${type}-primary`)
-            .then(() => {
-              report(`${source}:${type}-primary`, true, undefined, `${type}-primary`);
-              return true;
-            })
-            .catch((err: unknown) => {
-              report(`${source}:${type}-primary`, false, err, `${type}-primary`);
-              return false;
-            });
-        } catch (err) {
-          report(`${source}:${type}-primary`, false, err, `${type}-primary`);
-          return false;
-        }
-      });
-  } catch (error) {
-    report(`${source}:${type}`, false, error, type);
-    return Promise.resolve(false);
-  }
-}
-
 
 /** Preferensi orientasi yang dipilih user di modal "Pilih Orientasi Ujian". */
 export type ExamOrientationPreference = "portrait" | "landscape";
@@ -165,162 +52,25 @@ export function getExamOrientationPreference(): ExamOrientationPreference {
 }
 
 /**
- * Fullscreen HANYA untuk Exam, dan HANYA satu kali dari gesture user
- * saat MEMULAI ujian baru ("Mulai Ujian" / "Ulangi Ujian").
- * Tidak pernah dipanggil pada mount, visibilitychange, fullscreenchange,
- * navigasi, maupun saat "Lanjutkan Ujian".
+ * Kebijakan orientasi halaman NON-EXAM: portrait (best-effort), tanpa fullscreen,
+ * tanpa UI gate, tanpa error bila ditolak. Tidak dipakai di flow ujian.
  */
-let fullscreenRequestCount = 0;
-let examFullscreenActive = false;
-
-/** Diagnostik jumlah request fullscreen (dipakai untuk audit TWA). */
-export function getExamFullscreenDiagnostics() {
-  return {
-    requestCount: fullscreenRequestCount,
-    examFullscreenActive,
-    fullscreenElement:
-      typeof document === "undefined" ? null : Boolean(document.fullscreenElement),
-  };
-}
-
-function requestExamFullscreen(flow: "start" | "resume"): Promise<boolean> {
-  if (typeof document === "undefined") return Promise.resolve(false);
-  // Guard mutlak: jangan pernah request ulang bila sudah fullscreen (education toast Android).
-  if (document.fullscreenElement || examFullscreenActive) {
-    console.info("[ExamFullscreen] skip (already fullscreen)", {
-      flow,
-      ...getExamFullscreenDiagnostics(),
-    });
-    return Promise.resolve(true);
-  }
-  const element = document.documentElement as HTMLElement & {
-    webkitRequestFullscreen?: () => Promise<void> | void;
-  };
-  try {
-    const request = element.requestFullscreen?.bind(element) ?? element.webkitRequestFullscreen;
-    if (!request) return Promise.resolve(false);
-    fullscreenRequestCount += 1;
-    console.info("[ExamFullscreen] request", { flow, ...getExamFullscreenDiagnostics() });
-    return Promise.resolve(request({ navigationUI: "hide" } as FullscreenOptions))
-      .then(() => {
-        examFullscreenActive = true;
-        console.info("[ExamFullscreen] granted", { flow, ...getExamFullscreenDiagnostics() });
-        return true;
-      })
-      .catch((error: unknown) => {
-        console.warn("[ExamFullscreen] rejected", { flow, error });
-        return false;
-      });
-  } catch (error) {
-    console.warn("[ExamFullscreen] threw", { flow, error });
-    return Promise.resolve(false);
-  }
-}
-
-/** Keluar dari fullscreen (best-effort, tidak pernah fatal). */
-export function exitExamFullscreen(): Promise<void> {
-  examFullscreenActive = false;
-  if (typeof document === "undefined" || !document.fullscreenElement) return Promise.resolve();
-  try {
-    return Promise.resolve(document.exitFullscreen()).catch(() => undefined);
-  } catch {
-    return Promise.resolve();
-  }
-}
-
-/**
- * START FLOW — dipanggil LANGSUNG dari tap "Mulai Ujian"/"Ulangi Ujian".
- * Urutan: requestFullscreen() sekali → screen.orientation.lock(pref).
- * Tidak pernah memblokir/menunda mutation atau navigasi (fire-and-forget di caller).
- */
-export function requestOrientationFromGesture(pref: ExamOrientationPreference): Promise<boolean> {
-  if (typeof window === "undefined") return Promise.resolve(false);
-  if (!window.matchMedia("(max-width: 1024px)").matches) return Promise.resolve(true);
-  // Fullscreen dulu (sinkron dari gesture) supaya TWA/Chrome mengizinkan orientation lock.
-  const fullscreen = requestExamFullscreen("start");
-  // Lock juga dipanggil langsung agar tetap punya user activation bila fullscreen ditolak.
-  const immediate = callLock(pref, "gesture");
-  return fullscreen.then((ok) =>
-    immediate.then((locked) => {
-      if (locked || !ok) {
-        report(`gesture-verify:${pref}`, locked, undefined, pref);
-        return locked;
-      }
-      return callLock(pref, "gesture-after-fullscreen");
-    }),
-  );
-}
-
-/**
- * RESUME FLOW — "Lanjutkan Ujian" pada attempt lama.
- * TIDAK pernah meminta fullscreen (menghindari education toast kedua);
- * hanya melanjutkan orientation lock sesuai preferensi tersimpan.
- */
-export function resumeOrientationFromGesture(
-  pref: ExamOrientationPreference,
-): Promise<boolean> {
-  if (typeof window === "undefined") return Promise.resolve(false);
-  if (!window.matchMedia("(max-width: 1024px)").matches) return Promise.resolve(true);
-  console.info("[ExamFullscreen] resume (no request)", getExamFullscreenDiagnostics());
-  return callLock(pref, "resume-gesture");
-}
-
-export function requestLandscapeFromGesture(): Promise<boolean> {
-  return requestOrientationFromGesture("landscape");
-}
-
-
-/**
- * Mencoba mengunci orientasi dan MEMVERIFIKASI orientasi sebenarnya.
- * Tidak pernah meminta fullscreen. Kegagalan lock TIDAK pernah fatal.
- */
-export async function lockOrientation(
-  pref: ExamOrientationPreference,
-  source = "mount",
-): Promise<boolean> {
-  const matches = () => (pref === "landscape" ? isLandscapeNow() : !isLandscapeNow());
-  if (matches()) return true;
-  await callLock(pref, source);
-  await new Promise((resolve) => setTimeout(resolve, 200));
-  if (matches()) return true;
-  // TWA kadang butuh percobaan kedua setelah Activity siap.
-  await callLock(pref, `${source}-retry`);
-  await new Promise((resolve) => setTimeout(resolve, 350));
-  return matches();
-}
-
-export function lockLandscape(source = "mount") {
-  return lockOrientation("landscape", source);
-}
-
-/**
- * Kembalikan aplikasi ke keadaan non-Exam:
- * keluar fullscreen → kunci portrait (best-effort).
- */
-export async function restoreOrientation(): Promise<void> {
-  await exitExamFullscreen();
-  const orientation = getOrientation();
-  if (!orientation) return;
-  await callLock("portrait", "restore");
-}
-
-/**
- * Kebijakan orientasi halaman NON-EXAM: selalu portrait (best-effort),
- * tanpa fullscreen dan tanpa UI gate. Dipakai di app shell.
- */
-export function applyPortraitPolicy(source = "app"): void {
+export function applyPortraitPolicy(_source = "app"): void {
   if (typeof window === "undefined") return;
   if (!window.matchMedia("(max-width: 1024px)").matches) return;
-  void callLock("portrait", source);
+  const orientation = getOrientation();
+  if (!orientation || typeof orientation.lock !== "function") return;
+  try {
+    void orientation.lock("portrait").catch(() => undefined);
+  } catch {
+    /* diabaikan */
+  }
 }
 
-
 /**
- * Orientation state untuk workspace ujian.
- *
- * TIDAK ADA orientation gate: lock hanya best-effort. Bila `screen.orientation.lock()`
- * ditolak (TWA/browser), ujian tetap berjalan dengan layout sesuai preferensi user —
- * tanpa modal "Putar Perangkat", tanpa tombol "Kunci Landscape", tanpa violation.
+ * Orientation state untuk workspace ujian — READ ONLY.
+ * Tidak ada lock, tidak ada fullscreen, tidak ada gate. Hanya melaporkan
+ * orientasi nyata + preferensi user agar layout bisa menyesuaikan.
  */
 export function useOrientation(preference?: ExamOrientationPreference) {
   const [isLandscape, setIsLandscape] = useState(true);
@@ -344,20 +94,6 @@ export function useOrientation(preference?: ExamOrientationPreference) {
       window.removeEventListener("resize", sync);
     };
   }, []);
-
-  // Best-effort auto-lock saat workspace dibuka. Kegagalan diabaikan diam-diam,
-  // tetapi hasil AKTUAL selalu diverifikasi & dicatat untuk diagnostik TWA.
-  useEffect(() => {
-    if (window.matchMedia("(max-width: 1024px)").matches) {
-      void lockOrientation(pref, "mount").then((ok) => {
-        report(`verify:${pref}`, ok, undefined, pref);
-      });
-    }
-    return () => {
-      void restoreOrientation();
-    };
-  }, [pref]);
-
 
   return {
     /** Orientasi nyata perangkat. */
