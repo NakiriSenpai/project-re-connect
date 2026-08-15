@@ -2,9 +2,14 @@
  * "Ingat saya" hanya mengatur umur sesi di perangkat ini.
  * Tidak mengubah mekanisme Supabase Auth: kredensial tidak pernah disimpan.
  */
-const REMEMBER_KEY = "ium.remember";
-const IDENTIFIER_KEY = "ium.remember.identifier";
-const TAB_KEY = "ium.session-alive";
+import { isStandaloneApp } from "@/lib/utils/app-mode";
+
+// Preferensi disimpan per environment agar browser dan aplikasi standalone
+// (APK/TWA) tidak saling menimpa session-nya.
+const scope = () => (isStandaloneApp() ? "app" : "browser");
+const REMEMBER_KEY = () => `ium.remember.${scope()}`;
+const IDENTIFIER_KEY = () => `ium.remember.identifier.${scope()}`;
+const TAB_KEY = () => `ium.session-alive.${scope()}`;
 
 export function setRememberPreference(remember: boolean, identifier?: string) {
   if (typeof window === "undefined") return;
