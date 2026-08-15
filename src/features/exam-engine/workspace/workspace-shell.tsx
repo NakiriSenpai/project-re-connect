@@ -25,27 +25,31 @@ export function WorkspaceShell({
       className="fixed inset-0 z-50 flex w-full select-none flex-col overflow-hidden bg-background text-foreground"
       style={{ WebkitUserSelect: "none", WebkitTouchCallout: "none" } as React.CSSProperties}
     >
-      <header className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-border bg-card px-3 py-2.5 sm:px-4">
-        {header}
-      </header>
-
-      <main
+      <div
         className={
-          "min-w-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4 " +
-          (contentBlurred ? "pointer-events-none blur-md" : "")
+          "flex min-h-0 flex-1 flex-col " +
+          (contentBlurred ? "pointer-events-none select-none blur-md" : "")
         }
+        aria-hidden={contentBlurred || undefined}
+        inert={contentBlurred || undefined}
       >
-        {children}
-      </main>
+        <header className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-border bg-card px-3 py-2.5 sm:px-4">
+          {header}
+        </header>
 
-      {footer ? (
-        <footer
-          className="grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-2 border-t border-border bg-card px-3 py-2.5 sm:px-4"
-          style={{ paddingBottom: "calc(0.625rem + env(safe-area-inset-bottom))" }}
-        >
-          {footer}
-        </footer>
-      ) : null}
+        <main className="min-w-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4">
+          {children}
+        </main>
+
+        {footer ? (
+          <footer
+            className="grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-2 border-t border-border bg-card px-3 py-2.5 sm:px-4"
+            style={{ paddingBottom: "calc(0.625rem + env(safe-area-inset-bottom))" }}
+          >
+            {footer}
+          </footer>
+        ) : null}
+      </div>
 
       {overlay}
     </div>
