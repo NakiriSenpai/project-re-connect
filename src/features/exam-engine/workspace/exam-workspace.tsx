@@ -13,11 +13,7 @@ import { ExamAttemptExpiredError } from "@/services/attempt";
 import type { AnswerLabel } from "@/types/exam";
 import type { AttemptAnswerRow } from "@/types/attempt";
 import { ATTEMPT_STATUS_LABELS } from "@/types/attempt";
-import {
-  ExitFullscreenDialog,
-  LeaveExamDialog,
-  SubmitExamDialog,
-} from "../components/exam-dialogs";
+import { LeaveExamDialog, SubmitExamDialog } from "../components/exam-dialogs";
 import { AudioButton, AudioManagerProvider, useAudioManager } from "./audio-manager";
 import {
   QuestionListDialog,
@@ -27,7 +23,6 @@ import {
 } from "./question-list-dialog";
 import { AnswerShell, QuestionStem } from "./question-stem";
 import { useExamTimer } from "../hooks/use-exam-timer";
-import { useExamFullscreen } from "./use-exam-fullscreen";
 import { useAntiCopy } from "./use-anti-copy";
 import { useOrientation } from "./use-orientation";
 import { WorkspaceGate } from "./workspace-gate";
@@ -75,6 +70,7 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
   const [listOpen, setListOpen] = useState(false);
   const [asideOpen, setAsideOpen] = useState(false);
   const [gatePending, setGatePending] = useState(false);
+  const [gateDismissed, setGateDismissed] = useState(false);
   const [confirmSubmit, setConfirmSubmit] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
@@ -92,8 +88,8 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
     setLocal(restored);
   }, [data]);
 
-  // Fullscreen lifecycle: satu sumber kebenaran.
-  const fullscreen = useExamFullscreen({ enabled: Boolean(isRunning) && !submitting });
+  // Sprint 21: Fullscreen API tidak lagi dipakai (memicu system education toast di Android/TWA).
+  // Exam Workspace memenuhi viewport aplikasi lewat layout (fixed inset-0), bukan fullscreen.
 
   const finish = useCallback(
     async (reason: "manual" | "time_up") => {
@@ -101,10 +97,8 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
       submittingRef.current = true;
       setSubmitting(true);
       setConfirmSubmit(false);
-      fullscreen.beginSubmit();
       try {
         await submit.mutateAsync({ attemptId, reason });
-        fullscreen.finish();
         toast.success(
           reason === "time_up"
             ? "Waktu habis. Ujian dikumpulkan otomatis."
@@ -114,13 +108,12 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
       } catch (submitError) {
         submittingRef.current = false;
         setSubmitting(false);
-        void fullscreen.request();
         toast.error(
           submitError instanceof Error ? submitError.message : "Gagal mengumpulkan ujian.",
         );
       }
     },
-    [attemptId, fullscreen, navigate, submit],
+    [attemptId, navigate, submit],
   );
 
   const {
@@ -164,20 +157,17 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
   }, [snapshot, questions, local]);
 
   const needGate =
-    Boolean(isRunning) &&
-    !submitting &&
-    !fullscreen.isExitRequested &&
-    (orientation.needsRotate || !fullscreen.isActive);
+    Boolean(isRunning) && !submitting && orientation.needsRotate && !gateDismissed;
 
   const enterExamMode = useCallback(async () => {
     setGatePending(true);
     try {
-      if (orientation.needsRotate) await orientation.lock();
-      await fullscreen.request();
+      const ok = await orientation.lock();
+      if (!ok) setGateDismissed(true);
     } finally {
       setGatePending(false);
     }
-  }, [fullscreen, orientation]);
+  }, [orientation]);
 
   const openQuestionList = () => {
     if (orientation.isSmallScreen) setListOpen(true);
@@ -448,18 +438,10 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
         pending={submitting}
       />
 
-      <ExitFullscreenDialog
-        open={fullscreen.isExitRequested && !submitting}
-        pending={submitting}
-        onStay={() => fullscreen.cancelExit()}
-        onExit={() => void finish("manual")}
-      />
-
       <LeaveExamDialog
         open={blocker.status === "blocked"}
         onStay={() => blocker.reset?.()}
         onLeave={() => {
-          fullscreen.release();
           blocker.proceed?.();
         }}
       />
