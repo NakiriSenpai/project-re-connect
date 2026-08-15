@@ -25,12 +25,16 @@ type OrientationApi = ScreenOrientation & {
 
 export type OrientationLockDiagnostics = {
   source: string;
+  requested?: string | undefined;
   supported: boolean;
   locked: boolean;
   errorName?: string | undefined;
   errorMessage?: string | undefined;
   type?: string | undefined;
   angle?: number | undefined;
+  innerWidth?: number | undefined;
+  innerHeight?: number | undefined;
+  actualLandscape?: boolean | undefined;
   standalone: boolean;
   displayModeStandalone: boolean;
   userActivation?: boolean | undefined;
@@ -65,54 +69,75 @@ function isLandscapeNow() {
   return byViewport && type.startsWith("landscape");
 }
 
-function report(source: string, locked: boolean, error?: unknown) {
+function report(source: string, locked: boolean, error?: unknown, requested?: string) {
   const orientation = getOrientation();
   const activation = (navigator as Navigator & { userActivation?: { isActive: boolean } })
     .userActivation;
   const diagnostics: OrientationLockDiagnostics = {
     source,
+    requested,
     supported: isOrientationLockSupported(),
     locked,
     errorName: error instanceof Error ? error.name : undefined,
     errorMessage: error instanceof Error ? error.message : undefined,
     type: orientation?.type,
     angle: orientation?.angle,
+    innerWidth: typeof window !== "undefined" ? window.innerWidth : undefined,
+    innerHeight: typeof window !== "undefined" ? window.innerHeight : undefined,
+    actualLandscape: isLandscapeNow(),
     standalone: isStandaloneApp(),
     displayModeStandalone:
       typeof window !== "undefined" && window.matchMedia("(display-mode: standalone)").matches,
     userActivation: activation?.isActive,
   };
   lastDiagnostics = diagnostics;
-  if (error) console.error("[ExamOrientation] landscape lock failed", diagnostics);
-  else console.info("[ExamOrientation] landscape lock", diagnostics);
+  if (error) console.error("[ExamOrientation] lock failed", diagnostics);
+  else console.info("[ExamOrientation] lock", diagnostics);
 }
 
 /**
  * Memanggil `lock()` SECARA SINKRON (tanpa await sebelumnya) supaya user activation
  * tetap utuh saat dipanggil dari event handler klik.
+ * Fallback ke varian `-primary` hanya bila varian generik ditolak.
  */
 function callLock(type: "landscape" | "portrait", source: string): Promise<boolean> {
   const orientation = getOrientation();
   if (!orientation || typeof orientation.lock !== "function") {
-    report(`${source}:${type}`, false);
+    report(`${source}:${type}`, false, undefined, type);
     return Promise.resolve(false);
   }
   try {
     return orientation
       .lock(type)
       .then(() => {
-        report(`${source}:${type}`, true);
+        report(`${source}:${type}`, true, undefined, type);
         return true;
       })
       .catch((error: unknown) => {
-        report(`${source}:${type}`, false, error);
-        return false;
+        report(`${source}:${type}`, false, error, type);
+        // Beberapa WebView/TWA menolak nilai generik; coba varian primary sekali.
+        try {
+          return orientation
+            .lock!(`${type}-primary`)
+            .then(() => {
+              report(`${source}:${type}-primary`, true, undefined, `${type}-primary`);
+              return true;
+            })
+            .catch((err: unknown) => {
+              report(`${source}:${type}-primary`, false, err, `${type}-primary`);
+              return false;
+            });
+        } catch (err) {
+          report(`${source}:${type}-primary`, false, err, `${type}-primary`);
+          return false;
+        }
       });
   } catch (error) {
-    report(`${source}:${type}`, false, error);
+    report(`${source}:${type}`, false, error, type);
     return Promise.resolve(false);
   }
 }
+
 
 /** Preferensi orientasi yang dipilih user di modal "Pilih Orientasi Ujian". */
 export type ExamOrientationPreference = "portrait" | "landscape";
