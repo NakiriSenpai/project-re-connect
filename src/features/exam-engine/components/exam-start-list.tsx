@@ -12,7 +12,7 @@ import type { ExamRow } from "@/types/exam";
 import { ContinueExamDialog } from "./exam-dialogs";
 import { OrientationStartDialog } from "./orientation-start-dialog";
 import {
-  requestLandscapeFromGesture,
+  getExamOrientationPreference,
   requestOrientationFromGesture,
   setExamOrientationPreference,
   type ExamOrientationPreference,
@@ -157,7 +157,7 @@ export function ExamStartList() {
         onOpenChange={(open) => !open && setContinueTarget(null)}
         onConfirm={() => {
           if (!continueTarget) return;
-          void requestLandscapeFromGesture();
+          void requestOrientationFromGesture(getExamOrientationPreference());
           void navigate({ to: "/ujian/$attemptId", params: { attemptId: continueTarget } });
         }}
       />

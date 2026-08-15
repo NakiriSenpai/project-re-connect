@@ -10,7 +10,8 @@ import { Separator } from "@/components/ui/separator";
 import { useAttemptResult, useStartAttempt } from "@/hooks/attempt";
 import { formatDurasi } from "@/types/attempt";
 import { formatTanggal } from "@/utils/format";
-import { requestLandscapeFromGesture, useOrientation } from "./use-orientation";
+import { getExamOrientationPreference,
+  requestOrientationFromGesture, useOrientation } from "./use-orientation";
 import { WorkspaceShell } from "./workspace-shell";
 
 /** Result — tetap fullscreen & landscape, hanya MEMBACA hasil yang tersimpan. */
@@ -48,7 +49,7 @@ export function ResultWorkspace({ attemptId }: { attemptId: string }) {
 
   const tryAgain = () => {
     // Lock landscape langsung dari gesture user (tombol "Ulangi Ujian").
-    void requestLandscapeFromGesture();
+    void requestOrientationFromGesture(getExamOrientationPreference());
     startAttempt.mutate(data.exam_id, {
       onSuccess: (attempt) =>
         void navigate({ to: "/ujian/$attemptId", params: { attemptId: attempt.id } }),
