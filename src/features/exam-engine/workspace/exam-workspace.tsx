@@ -68,7 +68,7 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
   const setFlagMutation = useSetFlag();
   const submit = useSubmitAttempt();
   const { busy: audioBusy } = useAudioManager();
-  const orientation = useOrientation();
+  useOrientation();
   useAntiCopy();
 
   const [activeIndex, setActiveIndex] = useState(0);
