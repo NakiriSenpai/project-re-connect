@@ -105,30 +105,67 @@ function callLock(type: "landscape" | "portrait", source: string): Promise<boole
   }
 }
 
+/** Preferensi orientasi yang dipilih user di modal "Pilih Orientasi Ujian". */
+export type ExamOrientationPreference = "portrait" | "landscape";
+
+const PREFERENCE_KEY = "ium-exam-orientation";
+
+export function setExamOrientationPreference(pref: ExamOrientationPreference) {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(PREFERENCE_KEY, pref);
+  } catch {
+    /* diabaikan */
+  }
+}
+
+export function getExamOrientationPreference(): ExamOrientationPreference {
+  if (typeof window === "undefined") return "portrait";
+  try {
+    const value = window.sessionStorage.getItem(PREFERENCE_KEY);
+    if (value === "portrait" || value === "landscape") return value;
+  } catch {
+    /* diabaikan */
+  }
+  return isLandscapeNow() ? "landscape" : "portrait";
+}
+
 /**
  * Dipanggil LANGSUNG dari handler klik user (tanpa await/setTimeout sebelumnya).
  * Mengembalikan promise; caller boleh mengabaikannya agar navigasi tidak tertunda.
  */
-export function requestLandscapeFromGesture(): Promise<boolean> {
+export function requestOrientationFromGesture(pref: ExamOrientationPreference): Promise<boolean> {
   if (typeof window === "undefined") return Promise.resolve(false);
   if (!window.matchMedia("(max-width: 1024px)").matches) return Promise.resolve(true);
-  if (isLandscapeNow()) return Promise.resolve(true);
-  return callLock("landscape", "gesture");
+  if (pref === "landscape" ? isLandscapeNow() : !isLandscapeNow()) return Promise.resolve(true);
+  return callLock(pref, "gesture");
+}
+
+export function requestLandscapeFromGesture(): Promise<boolean> {
+  return requestOrientationFromGesture("landscape");
 }
 
 /**
- * Mencoba mengunci landscape dan MEMVERIFIKASI orientasi sebenarnya.
- * Fullscreen API TIDAK PERNAH dipanggil.
+ * Mencoba mengunci orientasi dan MEMVERIFIKASI orientasi sebenarnya.
+ * Fullscreen API TIDAK PERNAH dipanggil. Kegagalan lock TIDAK pernah fatal.
  */
-export async function lockLandscape(source = "mount"): Promise<boolean> {
-  if (isLandscapeNow()) return true;
-  await callLock("landscape", source);
+export async function lockOrientation(
+  pref: ExamOrientationPreference,
+  source = "mount",
+): Promise<boolean> {
+  const matches = () => (pref === "landscape" ? isLandscapeNow() : !isLandscapeNow());
+  if (matches()) return true;
+  await callLock(pref, source);
   await new Promise((resolve) => setTimeout(resolve, 200));
-  if (isLandscapeNow()) return true;
+  if (matches()) return true;
   // TWA kadang butuh percobaan kedua setelah Activity siap.
-  await callLock("landscape", `${source}-retry`);
+  await callLock(pref, `${source}-retry`);
   await new Promise((resolve) => setTimeout(resolve, 350));
-  return isLandscapeNow();
+  return matches();
+}
+
+export function lockLandscape(source = "mount") {
+  return lockOrientation("landscape", source);
 }
 
 /** Kembalikan orientasi setelah keluar dari workspace ujian. */
@@ -146,9 +183,10 @@ export async function restoreOrientation(): Promise<void> {
   }
 }
 
-export function useOrientation() {
+export function useOrientation(preference?: ExamOrientationPreference) {
   const [isLandscape, setIsLandscape] = useState(true);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const pref = preference ?? "landscape";
 
   useEffect(() => {
     const landscapeQuery = window.matchMedia("(orientation: landscape)");
@@ -172,28 +210,28 @@ export function useOrientation() {
   useEffect(() => {
     let active = true;
     if (window.matchMedia("(max-width: 1024px)").matches) {
-      void lockLandscape("mount").then((ok) => {
-        if (active && ok) setIsLandscape(true);
+      void lockOrientation(pref, "mount").then((ok) => {
+        if (active && ok) setIsLandscape(pref === "landscape");
       });
     }
     return () => {
       active = false;
       void restoreOrientation();
     };
-  }, []);
+  }, [pref]);
 
   const lock = useCallback(async () => {
-    const ok = await lockLandscape("gate");
-    setIsLandscape(ok || isLandscapeNow());
+    const ok = await lockOrientation(pref, "gate");
+    setIsLandscape(isLandscapeNow());
     return ok;
-  }, []);
+  }, [pref]);
 
   return {
     /** Orientasi nyata perangkat. */
     isLandscape,
     isSmallScreen,
-    /** Perlu gate rotasi hanya untuk layar kecil yang masih portrait. */
-    needsRotate: isSmallScreen && !isLandscape,
+    /** Fallback ringan: user memilih landscape tetapi perangkat masih portrait. */
+    needsRotate: pref === "landscape" && isSmallScreen && !isLandscape,
     lockSupported: isOrientationLockSupported(),
     lock,
   };

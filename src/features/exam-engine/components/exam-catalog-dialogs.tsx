@@ -1,15 +1,5 @@
 import { BarChart3, CheckCircle2, HelpCircle, X } from "lucide-react";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  Cell,
-  Pie,
-  PieChart,
-
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, XAxis, YAxis } from "recharts";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -150,7 +140,10 @@ export function ExamStatsDialog({
         {/* SUMMARY */}
         <div className="grid grid-cols-2 gap-2 sm:gap-3">
           {summary.map((row) => (
-            <div key={row.label} className="min-w-0 rounded-xl border border-border bg-muted/30 p-3">
+            <div
+              key={row.label}
+              className="min-w-0 rounded-xl border border-border bg-muted/30 p-3"
+            >
               <p className="truncate text-xs text-muted-foreground">{row.label}</p>
               <p className="mt-1 text-xl font-bold tabular-nums text-foreground">{row.value}</p>
             </div>
@@ -211,7 +204,13 @@ export function ExamStatsDialog({
               <ChartContainer config={statusConfig} className="h-[150px] w-full">
                 <PieChart>
                   <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel />} />
-                  <Pie data={statusData} dataKey="value" nameKey="name" innerRadius={38} strokeWidth={2}>
+                  <Pie
+                    data={statusData}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={38}
+                    strokeWidth={2}
+                  >
                     {statusData.map((item) => (
                       <Cell key={item.key} fill={item.fill} />
                     ))}
@@ -270,4 +269,3 @@ export function ExamStatsDialog({
     </Dialog>
   );
 }
-

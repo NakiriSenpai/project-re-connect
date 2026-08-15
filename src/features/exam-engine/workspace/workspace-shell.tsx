@@ -1,74 +1,64 @@
 import { type ReactNode } from "react";
 
-import { cn } from "@/lib/utils";
-
 /**
- * Shell Exam Workspace (Sprint 11.2 — UNIFIED LAYOUT).
+ * Shell Exam/Review Workspace (Sprint 22 — redesign UI).
  *
- * SATU parent page flow: HEADER → CONTENT → NAVIGATION.
- * Hanya container terluar yang menjadi page scroll; tidak ada panel
- * dengan tinggi viewport sendiri, tidak ada overlay/fixed pada layout utama.
+ * Struktur: HEADER → CONTENT (scroll) → BOTTOM ACTIONS.
+ * Tidak ada panel samping; Daftar Soal selalu berupa modal terpusat.
  */
 export function WorkspaceShell({
   header,
   footer,
-  aside,
-  asideOpen = false,
   gate,
+  overlay,
+  contentBlurred,
   children,
 }: {
   header: ReactNode;
   footer?: ReactNode;
-  /** Panel Daftar Soal kiri (desktop/tablet). */
-  aside?: ReactNode;
-  asideOpen?: boolean;
-  /** Overlay orientation/fullscreen gate. */
+  /** Overlay orientation fallback (non-fatal). */
   gate?: ReactNode;
+  /** Overlay secure mode. */
+  overlay?: ReactNode;
+  contentBlurred?: boolean;
   children: ReactNode;
 }) {
   return (
     <div
-      className="fixed inset-0 z-50 w-full select-none overflow-y-auto overscroll-contain bg-background text-foreground"
+      className="fixed inset-0 z-50 flex w-full select-none flex-col overflow-hidden bg-background text-foreground"
       style={{ WebkitUserSelect: "none", WebkitTouchCallout: "none" } as React.CSSProperties}
     >
-      <div
-        className={cn(
-          "grid min-h-full w-full transition-[grid-template-columns] duration-300 ease-out",
-          aside && asideOpen ? "grid-cols-[260px_minmax(0,1fr)]" : "grid-cols-[0px_minmax(0,1fr)]",
-        )}
+      <header className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-border bg-card px-3 py-2.5 sm:px-4">
+        {header}
+      </header>
+
+      <main
+        className={
+          "min-w-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4 " +
+          (contentBlurred ? "pointer-events-none blur-md" : "")
+        }
       >
-        {aside ? (
-          <div className="min-w-0 overflow-hidden border-border bg-background-elevated [&:not(:empty)]:border-r">
-            <div className="w-[260px] p-3">{asideOpen ? aside : null}</div>
-          </div>
-        ) : (
-          <div />
-        )}
+        {children}
+      </main>
 
-        <div className="flex min-w-0 flex-col">
-          <header className="flex min-h-14 shrink-0 flex-wrap items-center gap-2 border-b border-border bg-background-elevated px-3 py-2">
-            {header}
-          </header>
-
-          <main className="min-w-0 flex-1 p-2 sm:p-3">{children}</main>
-
-          {footer ? (
-            <footer className="grid min-h-16 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-2 border-t border-border bg-background-elevated px-3 py-2">
-              {footer}
-            </footer>
-          ) : null}
-        </div>
-      </div>
+      {footer ? (
+        <footer
+          className="grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-2 border-t border-border bg-card px-3 py-2.5 sm:px-4"
+          style={{ paddingBottom: "calc(0.625rem + env(safe-area-inset-bottom))" }}
+        >
+          {footer}
+        </footer>
+      ) : null}
 
       {gate}
+      {overlay}
     </div>
   );
 }
 
 /**
- * Body: SATU row Question + Answer (dua kolom sejajar, tinggi mengikuti konten
- * terbesar). `explanation` (Review) berada SETELAH row tersebut, tetap di
- * document flow yang sama.
+ * Body: portrait = satu kolom (soal lalu jawaban);
+ * landscape/desktop = dua kolom (soal kiri lebih lebar, jawaban kanan).
  */
 export function WorkspaceBody({
   question,
@@ -80,8 +70,8 @@ export function WorkspaceBody({
   explanation?: ReactNode;
 }) {
   return (
-    <div className="flex w-full min-w-0 flex-col gap-2 sm:gap-3">
-      <div className="grid min-w-0 grid-cols-1 items-start gap-2 sm:gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] landscape:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+    <div className="mx-auto flex w-full min-w-0 max-w-6xl flex-col gap-3 sm:gap-4">
+      <div className="grid min-w-0 grid-cols-1 items-start gap-3 sm:gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] landscape:max-lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
         <div className="min-w-0">{question}</div>
         <div className="min-w-0">{answers}</div>
       </div>

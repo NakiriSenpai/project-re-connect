@@ -1,9 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useBlocker, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, Flag, List, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Flag,
+  List,
+  Loader2,
+  ShieldAlert,
+  ShieldCheck,
+} from "lucide-react";
 import { toast } from "sonner";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/auth";
@@ -15,15 +24,13 @@ import type { AttemptAnswerRow } from "@/types/attempt";
 import { ATTEMPT_STATUS_LABELS } from "@/types/attempt";
 import { LeaveExamDialog, SubmitExamDialog } from "../components/exam-dialogs";
 import { AudioButton, AudioManagerProvider, useAudioManager } from "./audio-manager";
-import {
-  QuestionListDialog,
-  QuestionListPanel,
-  type PaletteGroup,
-  type PaletteItem,
-} from "./question-list-dialog";
+import { CATEGORY_LABELS } from "@/features/exam/exam.constants";
+import { cn } from "@/lib/utils";
+import { QuestionListDialog, type PaletteGroup, type PaletteItem } from "./question-list-dialog";
 import { AnswerShell, QuestionStem } from "./question-stem";
 import { useExamTimer } from "../hooks/use-exam-timer";
 import { useAntiCopy } from "./use-anti-copy";
+import { useExamSecurity } from "./use-exam-security";
 import { useOrientation } from "./use-orientation";
 import { WorkspaceGate } from "./workspace-gate";
 import { WorkspaceBody, WorkspaceShell } from "./workspace-shell";
@@ -68,7 +75,6 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [local, setLocal] = useState<Record<string, LocalAnswer>>({});
   const [listOpen, setListOpen] = useState(false);
-  const [asideOpen, setAsideOpen] = useState(false);
   const [gatePending, setGatePending] = useState(false);
   const [gateDismissed, setGateDismissed] = useState(false);
   const [confirmSubmit, setConfirmSubmit] = useState(false);
@@ -126,6 +132,13 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
     if (isRunning && timerReady && remaining <= 0) void finish("time_up");
   }, [isRunning, timerReady, remaining, finish]);
 
+  // Secure Mode: hitung pelanggaran saat aplikasi/tab masuk background.
+  const security = useExamSecurity({
+    enabled: Boolean(isRunning) && !submitting,
+    onLimitReached: () => void finish("manual"),
+    onViolation: () => undefined,
+  });
+
   // Guard navigasi (browser back / link) — attempt TIDAK pernah disubmit karena ini.
   const blocker = useBlocker({
     shouldBlockFn: () => Boolean(isRunning) && !submittingRef.current,
@@ -156,8 +169,7 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
     return groups;
   }, [snapshot, questions, local]);
 
-  const needGate =
-    Boolean(isRunning) && !submitting && orientation.needsRotate && !gateDismissed;
+  const needGate = Boolean(isRunning) && !submitting && orientation.needsRotate && !gateDismissed;
 
   const enterExamMode = useCallback(async () => {
     setGatePending(true);
@@ -169,10 +181,7 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
     }
   }, [orientation]);
 
-  const openQuestionList = () => {
-    if (orientation.isSmallScreen) setListOpen(true);
-    else setAsideOpen((value) => !value);
-  };
+  const openQuestionList = () => setListOpen(true);
 
   const answeredCount = Object.values(local).filter((a) => a.label).length;
   const locked = audioBusy;
@@ -264,15 +273,27 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
   return (
     <>
       <WorkspaceShell
-        asideOpen={asideOpen && !orientation.isSmallScreen}
-        aside={
-          <QuestionListPanel
-            groups={paletteGroups}
-            activeIndex={activeIndex}
-            mode="exam"
-            columns="compact"
-            onJump={setActiveIndex}
-          />
+        contentBlurred={security.paused}
+        overlay={
+          security.paused ? (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/85 p-6 backdrop-blur-sm">
+              <div className="w-full max-w-sm space-y-4 rounded-3xl border border-warning/40 bg-card p-6 text-center shadow-lg">
+                <span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-warning/15 text-warning">
+                  <ShieldAlert className="size-7" />
+                </span>
+                <div className="space-y-1.5">
+                  <h2 className="text-lg font-bold text-foreground">Mode Secure Terpicu</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Anda meninggalkan layar ujian. Pelanggaran {security.violations} dari{" "}
+                    {security.max}. Pada pelanggaran ke-{security.max} ujian dikumpulkan otomatis.
+                  </p>
+                </div>
+                <Button className="h-11 w-full rounded-xl" onClick={security.resume}>
+                  Lanjutkan Ujian
+                </Button>
+              </div>
+            </div>
+          ) : null
         }
         gate={
           needGate ? (
@@ -286,29 +307,76 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
         }
         header={
           <>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              aria-label="Kembali"
+              className="size-9 shrink-0 rounded-xl"
+              onClick={() => void navigate({ to: "/ujian" })}
+            >
+              <ArrowLeft className="size-5" />
+            </Button>
+
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-foreground">
+              <p className="truncate text-sm font-bold text-foreground sm:text-base">
                 {snapshot.exam.title}
-                {section ? <span className="text-muted-foreground"> · {section.title}</span> : null}
               </p>
-              <p className="text-[11px] text-muted-foreground">
-                {answeredCount}/{questions.length} terjawab · Auto Save aktif
+              <p className="truncate text-[11px] text-muted-foreground">
+                {CATEGORY_LABELS[snapshot.exam.category] ?? snapshot.exam.category}
+                {section ? ` · ${section.title}` : ""}
               </p>
             </div>
-            <Badge
-              variant={remaining <= 60 ? "destructive" : "secondary"}
-              className="shrink-0 tabular-nums text-sm"
+
+            <span
+              className={cn(
+                "hidden shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold sm:flex",
+                security.violations > 0
+                  ? "bg-warning/15 text-warning"
+                  : "bg-success/15 text-success",
+              )}
             >
+              <ShieldCheck className="size-4" />
+              {security.violations > 0
+                ? `Pelanggaran ${security.violations}/${security.max}`
+                : "Mode Secure Aktif"}
+            </span>
+
+            <span
+              className={cn(
+                "flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm font-bold tabular-nums",
+                remaining <= 60
+                  ? "bg-destructive text-destructive-foreground"
+                  : "bg-primary-muted text-primary",
+              )}
+            >
+              <Clock className="size-4" />
               {timerLabel}
-            </Badge>
+            </span>
+
             <Button
               size="sm"
+              className="shrink-0 rounded-xl"
               variant="destructive"
               disabled={locked}
               onClick={() => setConfirmSubmit(true)}
             >
               Submit
             </Button>
+
+            <div className="flex w-full min-w-0 items-center gap-3">
+              <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-primary-muted">
+                <div
+                  className="h-full rounded-full bg-primary transition-all"
+                  style={{
+                    width: `${questions.length ? (answeredCount / questions.length) * 100 : 0}%`,
+                  }}
+                />
+              </div>
+              <span className="shrink-0 text-[11px] font-semibold tabular-nums text-muted-foreground">
+                {answeredCount}/{questions.length} terjawab
+              </span>
+            </div>
           </>
         }
         footer={
@@ -318,6 +386,7 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
                 type="button"
                 size="sm"
                 variant="outline"
+                className="rounded-xl"
                 disabled={locked || activeIndex === 0}
                 onClick={() => setActiveIndex((i) => Math.max(0, i - 1))}
               >
@@ -329,7 +398,7 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
               size="sm"
               disabled={locked}
               onClick={openQuestionList}
-              className="px-6"
+              className="rounded-xl px-5"
             >
               <List className="mr-1.5 size-4" /> Daftar Soal ({questions.length})
             </Button>
@@ -337,6 +406,7 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
               <Button
                 type="button"
                 size="sm"
+                className="rounded-xl"
                 disabled={locked || activeIndex >= questions.length - 1}
                 onClick={() => setActiveIndex((i) => Math.min(questions.length - 1, i + 1))}
               >

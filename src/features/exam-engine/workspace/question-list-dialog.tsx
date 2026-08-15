@@ -26,7 +26,7 @@ export type PaletteGroup = {
 };
 
 const statusClass: Record<PaletteStatus, string> = {
-  unanswered: "border-border bg-surface text-foreground",
+  unanswered: "border-border bg-card text-foreground",
   answered: "border-primary bg-primary text-primary-foreground",
   correct: "border-success bg-success text-success-foreground",
   wrong: "border-destructive bg-destructive text-destructive-foreground",
@@ -35,40 +35,46 @@ const statusClass: Record<PaletteStatus, string> = {
 function Legend({ className, text }: { className: string; text: string }) {
   return (
     <span className="flex items-center gap-1.5">
-      <span className={cn("size-3 rounded", className)} /> {text}
+      <span className={cn("size-3.5 rounded-[4px]", className)} /> {text}
     </span>
   );
 }
 
 function PaletteLegend({ mode }: { mode: "exam" | "review" }) {
   return (
-    <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-[11px] text-muted-foreground">
+    <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-muted-foreground">
       {mode === "exam" ? (
         <>
-          <Legend className="bg-primary" text="Sudah dijawab" />
-          <Legend className="border border-border bg-surface" text="Belum dijawab" />
+          <Legend className="bg-primary" text="Terjawab" />
+          <Legend className="border border-border bg-card" text="Belum Terjawab" />
         </>
       ) : (
         <>
           <Legend className="bg-success" text="Benar" />
           <Legend className="bg-destructive" text="Salah" />
-          <Legend className="border border-border bg-surface" text="Tidak dijawab" />
+          <Legend className="border border-border bg-card" text="Tidak Dijawab" />
         </>
       )}
       <span className="flex items-center gap-1.5">
-        <Flag className="size-3 text-warning" /> Ditandai
+        <Flag className="size-3.5 text-destructive" /> Ditandai
       </span>
     </div>
   );
 }
 
-/** Grid nomor soal dikelompokkan per bagian — dipakai panel kiri dan popup. */
+function groupLabel(group: PaletteGroup) {
+  const first = group.items[0];
+  const last = group.items[group.items.length - 1];
+  if (!first || !last) return group.title.toUpperCase();
+  return `${group.title.toUpperCase()} (${first.index + 1} - ${last.index + 1})`;
+}
+
+/** Grid nomor soal (kotak) dikelompokkan per bagian — semua soal tampil sekaligus. */
 export function QuestionListPanel({
   groups,
   activeIndex,
   mode,
   onJump,
-  columns = "auto",
 }: {
   groups: PaletteGroup[];
   activeIndex: number;
@@ -76,27 +82,16 @@ export function QuestionListPanel({
   onJump: (index: number) => void;
   columns?: "auto" | "compact";
 }) {
-  const total = groups.reduce((sum, group) => sum + group.items.length, 0);
   return (
-    <div className="space-y-3">
-      <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-        Soal (1–{total})
-      </p>
+    <div className="space-y-5">
       <PaletteLegend mode={mode} />
-      <div className="space-y-4">
+      <div className="space-y-5">
         {groups.map((group) => (
-          <section key={group.id} className="space-y-2">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-              {group.title}
+          <section key={group.id} className="space-y-2.5">
+            <p className="text-xs font-bold uppercase tracking-wider text-primary">
+              {groupLabel(group)}
             </p>
-            <div
-              className={cn(
-                "grid gap-1.5",
-                columns === "compact"
-                  ? "grid-cols-5"
-                  : "grid-cols-5 sm:grid-cols-8 md:grid-cols-10",
-              )}
-            >
+            <div className="grid grid-cols-5 gap-2 sm:grid-cols-8 md:grid-cols-10">
               {group.items.map((item) => (
                 <button
                   key={item.questionId}
@@ -105,15 +100,14 @@ export function QuestionListPanel({
                   aria-current={item.index === activeIndex}
                   onClick={() => onJump(item.index)}
                   className={cn(
-                    "relative flex h-9 min-w-0 items-center justify-center rounded-md border text-xs font-semibold transition-colors",
+                    "relative flex h-10 min-w-0 items-center justify-center rounded-lg border text-sm font-semibold tabular-nums transition-colors",
                     statusClass[item.status],
-                    item.index === activeIndex &&
-                      "ring-2 ring-ring ring-offset-2 ring-offset-background",
+                    item.index === activeIndex && "ring-2 ring-primary ring-offset-0",
                   )}
                 >
                   {item.index + 1}
                   {item.flagged ? (
-                    <Flag className="absolute -right-0.5 -top-0.5 size-3 fill-warning text-warning" />
+                    <Flag className="absolute -right-1 -top-1 size-3.5 fill-destructive text-destructive" />
                   ) : null}
                 </button>
               ))}
@@ -125,7 +119,7 @@ export function QuestionListPanel({
   );
 }
 
-/** Daftar Soal sebagai popup terpusat (mobile/tablet). */
+/** Daftar Soal sebagai popup terpusat pada semua ukuran layar. */
 export function QuestionListDialog({
   open,
   onOpenChange,
@@ -143,9 +137,9 @@ export function QuestionListDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85dvh] w-[calc(100vw-2rem)] max-w-2xl overflow-y-auto overscroll-contain">
+      <DialogContent className="max-h-[85dvh] w-[calc(100vw-2rem)] max-w-3xl overflow-y-auto overscroll-contain rounded-3xl p-5 sm:p-6">
         <DialogHeader>
-          <DialogTitle>Daftar Soal</DialogTitle>
+          <DialogTitle className="text-center text-lg font-bold">Daftar Soal</DialogTitle>
           <DialogDescription className="sr-only">
             Pilih nomor soal untuk berpindah.
           </DialogDescription>
@@ -161,7 +155,11 @@ export function QuestionListDialog({
           }}
         />
 
-        <Button variant="outline" className="w-full" onClick={() => onOpenChange(false)}>
+        <Button
+          variant="secondary"
+          className="h-11 w-full rounded-xl font-semibold text-primary"
+          onClick={() => onOpenChange(false)}
+        >
           Tutup
         </Button>
       </DialogContent>

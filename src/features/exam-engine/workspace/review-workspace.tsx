@@ -7,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleSlash,
+  ArrowLeft,
   List,
   Loader2,
   XCircle,
@@ -20,12 +21,8 @@ import { listLessonTitles } from "@/services/lesson";
 import type { AnswerLabel } from "@/types/exam";
 import { OpenLessonDialog } from "../components/open-lesson-dialog";
 import { AudioButton, AudioManagerProvider } from "./audio-manager";
-import {
-  QuestionListDialog,
-  QuestionListPanel,
-  type PaletteGroup,
-  type PaletteItem,
-} from "./question-list-dialog";
+import { CATEGORY_LABELS } from "@/features/exam/exam.constants";
+import { QuestionListDialog, type PaletteGroup, type PaletteItem } from "./question-list-dialog";
 import { AnswerShell, QuestionStem } from "./question-stem";
 import { useAntiCopy } from "./use-anti-copy";
 import { useOrientation } from "./use-orientation";
@@ -48,7 +45,6 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
   useAntiCopy();
   const [activeIndex, setActiveIndex] = useState(0);
   const [listOpen, setListOpen] = useState(false);
-  const [asideOpen, setAsideOpen] = useState(false);
   const [gatePending, setGatePending] = useState(false);
   const [gateDismissed, setGateDismissed] = useState(false);
   const [lessonDialog, setLessonDialog] = useState<{ id: string; title: string } | null>(null);
@@ -142,16 +138,6 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
   return (
     <>
       <WorkspaceShell
-        asideOpen={asideOpen && !orientation.isSmallScreen}
-        aside={
-          <QuestionListPanel
-            groups={paletteGroups}
-            activeIndex={activeIndex}
-            mode="review"
-            columns="compact"
-            onJump={setActiveIndex}
-          />
-        }
         gate={
           orientation.needsRotate && !gateDismissed ? (
             <WorkspaceGate
@@ -172,22 +158,34 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
         }
         header={
           <>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              aria-label="Kembali"
+              className="size-9 shrink-0 rounded-xl"
+              onClick={() => exitWorkspace("hasil")}
+            >
+              <ArrowLeft className="size-5" />
+            </Button>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-foreground">
+              <p className="truncate text-sm font-bold text-foreground sm:text-base">
                 {snapshot.exam.title}
-                {section ? <span className="text-muted-foreground"> · {section.title}</span> : null}
               </p>
-              <p className="text-[11px] text-muted-foreground">
-                Review Jawaban · {questions.length} soal
+              <p className="truncate text-[11px] text-muted-foreground">
+                {CATEGORY_LABELS[snapshot.exam.category] ?? snapshot.exam.category}
+                {section ? ` · ${section.title}` : ""} · {questions.length} soal
               </p>
             </div>
-            <Badge variant="secondary" className="shrink-0">
+            <Badge variant="secondary" className="shrink-0 rounded-full">
               Review Jawaban
             </Badge>
-            <Button size="sm" variant="outline" onClick={() => exitWorkspace("hasil")}>
-              Hasil
-            </Button>
-            <Button size="sm" variant="secondary" onClick={() => exitWorkspace("ujian")}>
+            <Button
+              size="sm"
+              variant="outline"
+              className="shrink-0 rounded-xl"
+              onClick={() => exitWorkspace("ujian")}
+            >
               Keluar
             </Button>
           </>
@@ -200,6 +198,7 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
                 type="button"
                 size="sm"
                 variant="outline"
+                className="rounded-xl"
                 disabled={activeIndex === 0}
                 onClick={() => setActiveIndex((i) => Math.max(0, i - 1))}
               >
@@ -209,10 +208,9 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
             <Button
               type="button"
               size="sm"
-              className="px-6"
+              className="rounded-xl px-5"
               onClick={() => {
-                if (orientation.isSmallScreen) setListOpen(true);
-                else setAsideOpen((value) => !value);
+                setListOpen(true);
               }}
             >
               <List className="mr-1.5 size-4" /> Daftar Soal ({questions.length})
@@ -221,6 +219,7 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
               <Button
                 type="button"
                 size="sm"
+                className="rounded-xl"
                 disabled={activeIndex >= questions.length - 1}
                 onClick={() => setActiveIndex((i) => Math.min(questions.length - 1, i + 1))}
               >
@@ -309,11 +308,11 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
             </div>
           }
           explanation={
-            <section className="rounded-xl border border-border bg-surface">
-              <p className="border-b border-border px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <section className="rounded-2xl border border-border bg-card shadow-sm">
+              <p className="border-b border-border px-4 py-3 text-xs font-bold uppercase tracking-wider text-primary">
                 Pembahasan
               </p>
-              <div className="space-y-3 p-3 text-sm">
+              <div className="space-y-3 p-4 text-sm">
                 <p className="whitespace-pre-wrap text-foreground">
                   {question.explanation?.trim() ? question.explanation : "Belum ada pembahasan."}
                 </p>
