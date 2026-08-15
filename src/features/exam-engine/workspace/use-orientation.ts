@@ -52,8 +52,17 @@ export function isOrientationLockSupported() {
   return typeof getOrientation()?.lock === "function";
 }
 
+/**
+ * Landscape dianggap benar hanya bila viewport benar-benar lebih lebar dari tinggi
+ * DAN (bila tersedia) `screen.orientation.type` menunjukkan landscape.
+ * Promise `lock()` yang resolve TIDAK dianggap sukses.
+ */
 function isLandscapeNow() {
-  return typeof window !== "undefined" && window.matchMedia("(orientation: landscape)").matches;
+  if (typeof window === "undefined") return false;
+  const byViewport = window.innerWidth > window.innerHeight;
+  const type = getOrientation()?.type;
+  if (!type) return byViewport;
+  return byViewport && type.startsWith("landscape");
 }
 
 function report(source: string, locked: boolean, error?: unknown) {
@@ -186,7 +195,7 @@ export async function restoreOrientation(): Promise<void> {
 export function useOrientation(preference?: ExamOrientationPreference) {
   const [isLandscape, setIsLandscape] = useState(true);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
-  const pref = preference ?? "landscape";
+  const pref = preference ?? getExamOrientationPreference();
 
   useEffect(() => {
     const landscapeQuery = window.matchMedia("(orientation: landscape)");

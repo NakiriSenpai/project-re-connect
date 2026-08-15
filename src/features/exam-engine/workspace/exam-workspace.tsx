@@ -22,7 +22,7 @@ import { ExamAttemptExpiredError } from "@/services/attempt";
 import type { AnswerLabel } from "@/types/exam";
 import type { AttemptAnswerRow } from "@/types/attempt";
 import { ATTEMPT_STATUS_LABELS } from "@/types/attempt";
-import { LeaveExamDialog, SubmitExamDialog } from "../components/exam-dialogs";
+import { SubmitExamDialog } from "../components/exam-dialogs";
 import { AudioButton, AudioManagerProvider, useAudioManager } from "./audio-manager";
 import { CATEGORY_LABELS } from "@/features/exam/exam.constants";
 import { cn } from "@/lib/utils";
@@ -132,17 +132,20 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
     if (isRunning && timerReady && remaining <= 0) void finish("time_up");
   }, [isRunning, timerReady, remaining, finish]);
 
-  // Secure Mode: hitung pelanggaran saat aplikasi/tab masuk background.
+  // Secure Mode: satu-satunya mekanisme keluar dari ujian (tidak ada exit dialog lama).
   const security = useExamSecurity({
     enabled: Boolean(isRunning) && !submitting,
     onLimitReached: () => void finish("manual"),
-    onViolation: () => undefined,
   });
+  const registerViolation = security.registerViolation;
 
-  // Guard navigasi (browser back / link) — attempt TIDAK pernah disubmit karena ini.
-  const blocker = useBlocker({
-    shouldBlockFn: () => Boolean(isRunning) && !submittingRef.current,
-    withResolver: true,
+  // Android back / browser back / navigasi ke route lain → 1 violation, user tetap di ujian.
+  useBlocker({
+    shouldBlockFn: () => {
+      if (!isRunning || submittingRef.current) return false;
+      registerViolation();
+      return true;
+    },
     enableBeforeUnload: false,
   });
 
@@ -276,21 +279,52 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
         contentBlurred={security.paused}
         overlay={
           security.paused ? (
-            <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/85 p-6 backdrop-blur-sm">
-              <div className="w-full max-w-sm space-y-4 rounded-3xl border border-warning/40 bg-card p-6 text-center shadow-lg">
-                <span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-warning/15 text-warning">
+            <div className="absolute inset-0 z-50 flex items-center justify-center bg-foreground/60 p-6 backdrop-blur-md">
+              <div className="w-full max-w-sm space-y-4 rounded-3xl border border-border bg-card p-6 text-center shadow-2xl">
+                <span
+                  className={cn(
+                    "mx-auto flex size-14 items-center justify-center rounded-2xl",
+                    security.limitReached
+                      ? "bg-destructive/15 text-destructive"
+                      : "bg-warning/15 text-warning",
+                  )}
+                >
                   <ShieldAlert className="size-7" />
                 </span>
-                <div className="space-y-1.5">
-                  <h2 className="text-lg font-bold text-foreground">Mode Secure Terpicu</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Anda meninggalkan layar ujian. Pelanggaran {security.violations} dari{" "}
-                    {security.max}. Pada pelanggaran ke-{security.max} ujian dikumpulkan otomatis.
-                  </p>
-                </div>
-                <Button className="h-11 w-full rounded-xl" onClick={security.resume}>
-                  Lanjutkan Ujian
-                </Button>
+                {security.limitReached ? (
+                  <div className="space-y-1.5">
+                    <h2 className="text-lg font-bold text-foreground">
+                      Batas Pelanggaran Tercapai
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      Anda telah meninggalkan mode ujian sebanyak {security.max} kali. Ujian akan
+                      dikumpulkan secara otomatis.
+                    </p>
+                    <p className="flex items-center justify-center gap-2 pt-2 text-sm font-semibold text-foreground">
+                      <Loader2 className="size-4 animate-spin" /> Mengumpulkan ujian…
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-1.5">
+                      <h2 className="text-lg font-bold text-foreground">
+                        Mode Ujian Terdeteksi Keluar
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        Anda telah meninggalkan halaman ujian.
+                      </p>
+                      <p className="text-sm font-semibold text-warning">
+                        Peringatan {security.violations} dari {security.max}
+                      </p>
+                    </div>
+                    <Button
+                      className="h-11 w-full rounded-xl font-semibold"
+                      onClick={security.resume}
+                    >
+                      Kembali ke Ujian
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           ) : null
@@ -330,16 +364,19 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
 
             <span
               className={cn(
-                "hidden shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold sm:flex",
+                "flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold leading-tight",
                 security.violations > 0
                   ? "bg-warning/15 text-warning"
                   : "bg-success/15 text-success",
               )}
             >
-              <ShieldCheck className="size-4" />
-              {security.violations > 0
-                ? `Pelanggaran ${security.violations}/${security.max}`
-                : "Mode Secure Aktif"}
+              <ShieldCheck className="size-4 shrink-0" />
+              <span className="flex flex-col">
+                <span>Mode Secure</span>
+                <span className="tabular-nums opacity-90">
+                  Aktif · {security.violations}/{security.max}
+                </span>
+              </span>
             </span>
 
             <span
@@ -506,14 +543,6 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
         onOpenChange={setConfirmSubmit}
         onConfirm={() => void finish("manual")}
         pending={submitting}
-      />
-
-      <LeaveExamDialog
-        open={blocker.status === "blocked"}
-        onStay={() => blocker.reset?.()}
-        onLeave={() => {
-          blocker.proceed?.();
-        }}
       />
     </>
   );
