@@ -160,10 +160,13 @@ export function ExamStartList() {
         onOpenChange={(open) => !open && setContinueTarget(null)}
         onConfirm={() => {
           if (!continueTarget) return;
-          setNativeOrientation(getExamOrientationPreference());
+          const pref = getExamOrientationPreference();
+          setNativeOrientation(pref);
+          if (pref === "landscape" && openExamLandscape(continueTarget)) return;
           void navigate({ to: "/ujian/$attemptId", params: { attemptId: continueTarget } });
         }}
       />
+
     </div>
   );
 }
