@@ -73,22 +73,13 @@ export function ExamRulesDialog({
           />
           <RuleSection
             icon={<MonitorSmartphone className="size-6" />}
-            title="4. Ganti Tampilan Layar"
+            title="4. Tampilan Landscape"
             items={[
-              "Tampilan ujian dapat diubah antara Portrait dan Landscape.",
-              "Pergantian dapat dilakukan kapan saja selama ujian berlangsung.",
+              "Ingin menggunakan tampilan Landscape? Setelah masuk ke halaman ujian, cukup miringkan perangkat secara horizontal.",
+              "Tampilan Landscape hanya aktif selama mengerjakan ujian. Halaman aplikasi lainnya tetap Portrait.",
             ]}
-            footer={
-              <div className="flex items-center gap-3 rounded-xl border border-border bg-background p-3">
-                <p className="min-w-0 flex-1 text-xs leading-relaxed text-muted-foreground">
-                  Tombol ganti tampilan ada di pojok kiri bawah halaman ujian.
-                </p>
-                <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-border bg-card text-primary shadow-sm">
-                  <MonitorSmartphone className="size-5" />
-                </span>
-              </div>
-            }
           />
+
         </div>
 
         <div className="flex items-start gap-3 rounded-2xl bg-primary-muted p-3.5">
