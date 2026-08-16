@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -25,7 +25,7 @@ import { CATEGORY_LABELS } from "@/features/exam/exam.constants";
 import { QuestionListDialog, type PaletteGroup, type PaletteItem } from "./question-list-dialog";
 import { AnswerShell, QuestionStem } from "./question-stem";
 import { useAntiCopy } from "./use-anti-copy";
-import { useOrientation } from "./use-orientation";
+import { applyPortraitPolicy } from "./use-orientation";
 import { WorkspaceBody, WorkspaceShell } from "./workspace-shell";
 
 /** Review memakai Workspace yang sama dengan Exam, ditambah pembahasan. */
@@ -40,7 +40,9 @@ export function ReviewWorkspace({ attemptId }: { attemptId: string }) {
 function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
   const navigate = useNavigate();
   const { data, isLoading, isError, error } = useAttemptReview(attemptId);
-  useOrientation();
+  useEffect(() => {
+    applyPortraitPolicy("review");
+  }, []);
   useAntiCopy();
   const [activeIndex, setActiveIndex] = useState(0);
   const [listOpen, setListOpen] = useState(false);

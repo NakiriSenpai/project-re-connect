@@ -37,18 +37,18 @@ export function WorkspaceShell({
         {/* SATU scroll container: header sticky di dalamnya, konten + pagination ikut scroll. */}
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain scroll-smooth">
           <header
-            className="sticky top-0 z-30 flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-border bg-card px-3 pb-2.5 sm:px-4"
-            style={{ paddingTop: "calc(0.625rem + env(safe-area-inset-top))" }}
+            className="sticky top-0 z-30 flex flex-wrap items-center gap-x-2 gap-y-1.5 border-b border-border bg-card px-2.5 pb-2 sm:px-3.5"
+            style={{ paddingTop: "calc(0.5rem + env(safe-area-inset-top))" }}
           >
             {header}
           </header>
 
-          <main className="min-w-0 p-3 sm:p-4">{children}</main>
+          <main className="min-w-0 p-2.5 sm:p-3.5">{children}</main>
 
           {footer ? (
             <div
-              className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 pt-1 sm:px-4"
-              style={{ paddingBottom: "calc(2rem + env(safe-area-inset-bottom))" }}
+              className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-2.5 pt-0.5 sm:px-3.5"
+              style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
             >
               {footer}
             </div>
@@ -84,12 +84,12 @@ export function WorkspaceBody({
     layout === "portrait"
       ? "grid-cols-1"
       : layout === "landscape"
-        ? "grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]"
-        : "grid-cols-1 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] landscape:max-lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]";
+        ? "grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]"
+        : "grid-cols-1 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]";
 
   return (
-    <div className="mx-auto flex w-full min-w-0 max-w-6xl flex-col gap-3 sm:gap-4">
-      <div className={"grid min-w-0 items-start gap-3 sm:gap-4 " + columns}>
+    <div className="mx-auto flex w-full min-w-0 max-w-6xl flex-col gap-2.5 sm:gap-3">
+      <div className={"grid min-w-0 items-start gap-2.5 sm:gap-3 " + columns}>
         <div className="min-w-0">{question}</div>
         <div className="min-w-0">{answers}</div>
       </div>

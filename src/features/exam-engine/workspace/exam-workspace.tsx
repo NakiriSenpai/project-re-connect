@@ -8,16 +8,13 @@ import {
   Flag,
   List,
   Loader2,
-  MonitorSmartphone,
   ShieldAlert,
   ShieldCheck,
-  Smartphone,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAuth } from "@/hooks/auth";
 import { useAttemptSession, useSaveAnswer, useSetFlag, useSubmitAttempt } from "@/hooks/attempt";
 import { ExamAttemptExpiredError } from "@/services/attempt";
@@ -34,7 +31,7 @@ import { AnswerShell, QuestionStem } from "./question-stem";
 import { useExamTimer } from "../hooks/use-exam-timer";
 import { useAntiCopy } from "./use-anti-copy";
 import { useExamSecurity } from "./use-exam-security";
-import { useOrientation } from "./use-orientation";
+import { useExamSensorLayout } from "./use-orientation";
 import { WorkspaceBody, WorkspaceShell } from "./workspace-shell";
 
 type LocalAnswer = { label: AnswerLabel | null; flagged: boolean };
@@ -71,8 +68,7 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
   const setFlagMutation = useSetFlag();
   const submit = useSubmitAttempt();
   const { busy: audioBusy } = useAudioManager();
-  const { preference: layoutPreference, setPreference: setLayoutPreference } = useOrientation();
-  const [layoutMenuOpen, setLayoutMenuOpen] = useState(false);
+  const layout = useExamSensorLayout();
   useAntiCopy();
 
   const [activeIndex, setActiveIndex] = useState(0);
@@ -326,70 +322,31 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
               size="icon"
               variant="ghost"
               aria-label="Kembali"
-              className="size-9 shrink-0 rounded-xl"
+              className="size-8 shrink-0 rounded-lg"
               onClick={() => void navigate({ to: "/ujian" })}
             >
-              <ArrowLeft className="size-5" />
+              <ArrowLeft className="size-4.5" />
             </Button>
 
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-bold text-foreground sm:text-base">
+              <p className="truncate text-[13px] font-bold leading-tight text-foreground">
                 {snapshot.exam.title}
               </p>
-              <p className="truncate text-[11px] text-muted-foreground">
+              <p className="truncate text-[10px] leading-tight text-muted-foreground">
                 {CATEGORY_LABELS[snapshot.exam.category] ?? snapshot.exam.category}
                 {section ? ` · ${section.title}` : ""}
               </p>
             </div>
 
-            <Popover open={layoutMenuOpen} onOpenChange={setLayoutMenuOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  type="button"
-                  size="icon"
-                  variant="ghost"
-                  aria-label="Ganti tampilan layar"
-                  className="size-9 shrink-0 rounded-xl text-primary"
-                >
-                  <MonitorSmartphone className="size-5" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent align="end" side="bottom" className="w-52 p-1.5">
-                <p className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                  Ganti Tampilan
-                </p>
-                {(["portrait", "landscape"] as const).map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() => {
-                      setLayoutPreference(option);
-                      setLayoutMenuOpen(false);
-                    }}
-                    className={cn(
-                      "flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm font-medium transition-colors",
-                      layoutPreference === option
-                        ? "bg-primary-muted text-primary"
-                        : "text-foreground hover:bg-muted",
-                    )}
-                  >
-                    <Smartphone className={cn("size-4", option === "landscape" && "rotate-90")} />
-                    {option === "portrait" ? "Portrait" : "Landscape"}
-                  </button>
-                ))}
-              </PopoverContent>
-            </Popover>
-
-
             <span
               className={cn(
-                "flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold leading-tight",
+                "flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-tight",
                 security.violations > 0
                   ? "bg-warning/15 text-warning"
                   : "bg-success/15 text-success",
               )}
             >
-              <ShieldCheck className="size-4 shrink-0" />
+              <ShieldCheck className="size-3.5 shrink-0" />
               <span className="flex flex-col">
                 <span>Mode Secure</span>
                 <span className="tabular-nums opacity-90">
@@ -400,19 +357,19 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
 
             <span
               className={cn(
-                "flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm font-bold tabular-nums",
+                "flex shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-[13px] font-bold tabular-nums",
                 remaining <= 60
                   ? "bg-destructive text-destructive-foreground"
                   : "bg-primary-muted text-primary",
               )}
             >
-              <Clock className="size-4" />
+              <Clock className="size-3.5" />
               {timerLabel}
             </span>
 
             <Button
               size="sm"
-              className="shrink-0 rounded-xl"
+              className="h-8 shrink-0 rounded-lg px-3 text-xs"
               variant="destructive"
               disabled={locked}
               onClick={() => setConfirmSubmit(true)}
@@ -420,8 +377,8 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
               Submit
             </Button>
 
-            <div className="flex w-full min-w-0 items-center gap-3">
-              <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-primary-muted">
+            <div className="flex w-full min-w-0 items-center gap-2">
+              <div className="h-1 min-w-0 flex-1 overflow-hidden rounded-full bg-primary-muted">
                 <div
                   className="h-full rounded-full bg-primary transition-all"
                   style={{
@@ -429,7 +386,7 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
                   }}
                 />
               </div>
-              <span className="shrink-0 text-[11px] font-semibold tabular-nums text-muted-foreground">
+              <span className="shrink-0 text-[10px] font-semibold tabular-nums text-muted-foreground">
                 {answeredCount}/{questions.length} terjawab
               </span>
             </div>
@@ -441,7 +398,7 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
               <Button
                 type="button"
                 variant="outline"
-                className="h-11 rounded-2xl px-4"
+                className="h-10 rounded-xl px-3 text-xs sm:text-sm"
                 disabled={locked || activeIndex === 0}
                 onClick={() => setActiveIndex((i) => Math.max(0, i - 1))}
               >
@@ -453,14 +410,14 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
               variant="outline"
               disabled={locked}
               onClick={openQuestionList}
-              className="h-11 rounded-2xl px-4"
+              className="h-10 rounded-xl px-3 text-xs sm:text-sm"
             >
               <List className="mr-1.5 size-4" /> Daftar Soal
             </Button>
             <div className="flex justify-end">
               <Button
                 type="button"
-                className="h-11 rounded-2xl px-4"
+                className="h-10 rounded-xl px-3 text-xs sm:text-sm"
                 disabled={locked || activeIndex >= questions.length - 1}
                 onClick={() => setActiveIndex((i) => Math.min(questions.length - 1, i + 1))}
               >
@@ -472,7 +429,7 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
 
       >
         <WorkspaceBody
-          layout={layoutPreference}
+          layout={layout}
           question={
             <QuestionStem
               questionId={current.question_id}
@@ -548,7 +505,7 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
                 disabled={locked}
                 onClick={toggleFlag}
                 className={cn(
-                  "mt-3 flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium transition-colors",
+                  "mt-2.5 flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-colors",
                   local[current.question_id]?.flagged
                     ? "bg-destructive/10 text-destructive"
                     : "bg-muted text-muted-foreground hover:bg-muted/80",

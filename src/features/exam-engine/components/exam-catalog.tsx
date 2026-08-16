@@ -33,11 +33,6 @@ import motivationArt from "@/assets/exam-motivation.png";
 import progressArt from "@/assets/exam-progress.png";
 import { ContinueExamDialog } from "./exam-dialogs";
 import { ExamRulesDialog } from "./exam-rules-dialog";
-import {
-  getExamOrientationPreference,
-  setExamOrientationPreference,
-  type ExamOrientationPreference,
-} from "../workspace/use-orientation";
 import { ExamInfoDialog, ExamStatsDialog } from "./exam-catalog-dialogs";
 
 const PAGE_SIZE = 10;
@@ -223,8 +218,6 @@ export function ExamCatalog() {
 
   const handleStart = (examId: string) => {
     // Ujian selalu dimulai langsung di halaman ujian (SPA, satu TWA Activity).
-    // Tampilan Portrait/Landscape diganti dari dalam ujian.
-    setExamOrientationPreference("portrait");
     start.mutate(examId, {
       onSuccess: (attempt) => {
         setStartTarget(null);
