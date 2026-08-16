@@ -43,6 +43,7 @@ import { Route as UjianHasilAttemptIdRouteImport } from './routes/ujian.hasil.$a
 import { Route as UjianReviewAttemptIdRouteImport } from './routes/ujian.review.$attemptId'
 import { Route as UjianRiwayatExamIdRouteImport } from './routes/ujian.riwayat.$examId'
 import { Route as OwnerExamStudioExamIdIndexRouteImport } from './routes/owner_.exam-studio.$examId.index'
+import { Route as OwnerExamStudioExamIdPreviewRouteImport } from './routes/owner_.exam-studio.$examId.preview'
 import { Route as OwnerLessonStudioLessonIdIndexRouteImport } from './routes/owner_.lesson-studio.$lessonId.index'
 import { Route as OwnerLessonStudioLessonIdPreviewRouteImport } from './routes/owner_.lesson-studio.$lessonId.preview'
 
@@ -217,6 +218,12 @@ const OwnerExamStudioExamIdIndexRoute =
     path: '/owner/exam-studio/$examId/',
     getParentRoute: () => rootRouteImport,
   } as any)
+const OwnerExamStudioExamIdPreviewRoute =
+  OwnerExamStudioExamIdPreviewRouteImport.update({
+    id: '/owner_/exam-studio/$examId/preview',
+    path: '/owner/exam-studio/$examId/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const OwnerLessonStudioLessonIdIndexRoute =
   OwnerLessonStudioLessonIdIndexRouteImport.update({
     id: '/owner_/lesson-studio/$lessonId/',
@@ -264,6 +271,7 @@ export interface FileRoutesByFullPath {
   '/ujian/riwayat/$examId': typeof UjianRiwayatExamIdRoute
   '/owner/exam-studio/': typeof OwnerExamStudioIndexRoute
   '/owner/lesson-studio/': typeof OwnerLessonStudioIndexRoute
+  '/owner/exam-studio/$examId/preview': typeof OwnerExamStudioExamIdPreviewRoute
   '/owner/lesson-studio/$lessonId/preview': typeof OwnerLessonStudioLessonIdPreviewRoute
   '/owner/exam-studio/$examId/': typeof OwnerExamStudioExamIdIndexRoute
   '/owner/lesson-studio/$lessonId/': typeof OwnerLessonStudioLessonIdIndexRoute
@@ -300,6 +308,7 @@ export interface FileRoutesByTo {
   '/ujian/riwayat/$examId': typeof UjianRiwayatExamIdRoute
   '/owner/exam-studio': typeof OwnerExamStudioIndexRoute
   '/owner/lesson-studio': typeof OwnerLessonStudioIndexRoute
+  '/owner/exam-studio/$examId/preview': typeof OwnerExamStudioExamIdPreviewRoute
   '/owner/lesson-studio/$lessonId/preview': typeof OwnerLessonStudioLessonIdPreviewRoute
   '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdIndexRoute
   '/owner/lesson-studio/$lessonId': typeof OwnerLessonStudioLessonIdIndexRoute
@@ -339,6 +348,7 @@ export interface FileRoutesById {
   '/ujian/riwayat/$examId': typeof UjianRiwayatExamIdRoute
   '/owner_/exam-studio/': typeof OwnerExamStudioIndexRoute
   '/owner_/lesson-studio/': typeof OwnerLessonStudioIndexRoute
+  '/owner_/exam-studio/$examId/preview': typeof OwnerExamStudioExamIdPreviewRoute
   '/owner_/lesson-studio/$lessonId/preview': typeof OwnerLessonStudioLessonIdPreviewRoute
   '/owner_/exam-studio/$examId/': typeof OwnerExamStudioExamIdIndexRoute
   '/owner_/lesson-studio/$lessonId/': typeof OwnerLessonStudioLessonIdIndexRoute
@@ -379,6 +389,7 @@ export interface FileRouteTypes {
     | '/ujian/riwayat/$examId'
     | '/owner/exam-studio/'
     | '/owner/lesson-studio/'
+    | '/owner/exam-studio/$examId/preview'
     | '/owner/lesson-studio/$lessonId/preview'
     | '/owner/exam-studio/$examId/'
     | '/owner/lesson-studio/$lessonId/'
@@ -415,6 +426,7 @@ export interface FileRouteTypes {
     | '/ujian/riwayat/$examId'
     | '/owner/exam-studio'
     | '/owner/lesson-studio'
+    | '/owner/exam-studio/$examId/preview'
     | '/owner/lesson-studio/$lessonId/preview'
     | '/owner/exam-studio/$examId'
     | '/owner/lesson-studio/$lessonId'
@@ -453,6 +465,7 @@ export interface FileRouteTypes {
     | '/ujian/riwayat/$examId'
     | '/owner_/exam-studio/'
     | '/owner_/lesson-studio/'
+    | '/owner_/exam-studio/$examId/preview'
     | '/owner_/lesson-studio/$lessonId/preview'
     | '/owner_/exam-studio/$examId/'
     | '/owner_/lesson-studio/$lessonId/'
@@ -484,6 +497,7 @@ export interface RootRouteChildren {
   TeacherAnalyticsRoute: typeof TeacherAnalyticsRoute
   OwnerExamStudioIndexRoute: typeof OwnerExamStudioIndexRoute
   OwnerLessonStudioIndexRoute: typeof OwnerLessonStudioIndexRoute
+  OwnerExamStudioExamIdPreviewRoute: typeof OwnerExamStudioExamIdPreviewRoute
   OwnerLessonStudioLessonIdPreviewRoute: typeof OwnerLessonStudioLessonIdPreviewRoute
   OwnerExamStudioExamIdIndexRoute: typeof OwnerExamStudioExamIdIndexRoute
   OwnerLessonStudioLessonIdIndexRoute: typeof OwnerLessonStudioLessonIdIndexRoute
@@ -729,6 +743,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OwnerExamStudioExamIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/owner_/exam-studio/$examId/preview': {
+      id: '/owner_/exam-studio/$examId/preview'
+      path: '/owner/exam-studio/$examId/preview'
+      fullPath: '/owner/exam-studio/$examId/preview'
+      preLoaderRoute: typeof OwnerExamStudioExamIdPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/owner_/lesson-studio/$lessonId/': {
       id: '/owner_/lesson-studio/$lessonId/'
       path: '/owner/lesson-studio/$lessonId'
@@ -805,6 +826,7 @@ const rootRouteChildren: RootRouteChildren = {
   TeacherAnalyticsRoute: TeacherAnalyticsRoute,
   OwnerExamStudioIndexRoute: OwnerExamStudioIndexRoute,
   OwnerLessonStudioIndexRoute: OwnerLessonStudioIndexRoute,
+  OwnerExamStudioExamIdPreviewRoute: OwnerExamStudioExamIdPreviewRoute,
   OwnerLessonStudioLessonIdPreviewRoute: OwnerLessonStudioLessonIdPreviewRoute,
   OwnerExamStudioExamIdIndexRoute: OwnerExamStudioExamIdIndexRoute,
   OwnerLessonStudioLessonIdIndexRoute: OwnerLessonStudioLessonIdIndexRoute,
