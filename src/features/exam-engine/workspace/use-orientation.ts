@@ -1,15 +1,15 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 /**
- * ORIENTATION (Sprint 21.3) — TANPA Fullscreen API dan TANPA orientation lock untuk ujian.
+ * ORIENTATION (Final Exam Experience).
  *
- * Keputusan final setelah audit APK/TWA:
- * - `screen.orientation.lock()` pada TWA perangkat target hanya bekerja bila fullscreen aktif,
- *   dan fullscreen memicu education notification Android serta mengganggu Start Exam.
- * - Karena itu ujian TIDAK PERNAH meminta fullscreen maupun memaksa rotasi fisik.
- *   Preferensi orientasi user hanya menentukan LAYOUT ujian.
- * - Satu-satunya pemakaian lock tersisa adalah kebijakan portrait untuk halaman NON-EXAM,
- *   supaya app shell tidak ikut sensor bebas saat auto-rotate perangkat menyala.
+ * Keputusan arsitektur setelah audit APK/TWA:
+ * - TIDAK ada Fullscreen API, TIDAK ada `screen.orientation.lock()` untuk ujian,
+ *   TIDAK ada custom scheme / Activity kedua / native bridge.
+ * - Preferensi orientasi user HANYA menentukan LAYOUT halaman ujian dan bisa
+ *   diubah kapan saja dari dalam ujian (tombol "Ganti Tampilan").
+ * - Satu-satunya pemakaian lock tersisa adalah kebijakan portrait untuk halaman
+ *   NON-EXAM, supaya app shell tidak ikut sensor bebas saat auto-rotate menyala.
  */
 
 type OrientationApi = ScreenOrientation & {
@@ -26,10 +26,11 @@ function isLandscapeNow() {
   return window.innerWidth > window.innerHeight;
 }
 
-/** Preferensi orientasi yang dipilih user di modal "Pilih Orientasi Ujian". */
+/** Preferensi LAYOUT ujian (bukan rotasi fisik perangkat). */
 export type ExamOrientationPreference = "portrait" | "landscape";
 
 const PREFERENCE_KEY = "ium-exam-orientation";
+const PREFERENCE_EVENT = "ium-exam-orientation-change";
 
 export function setExamOrientationPreference(pref: ExamOrientationPreference) {
   if (typeof window === "undefined") return;
@@ -38,6 +39,7 @@ export function setExamOrientationPreference(pref: ExamOrientationPreference) {
   } catch {
     /* diabaikan */
   }
+  window.dispatchEvent(new CustomEvent(PREFERENCE_EVENT, { detail: pref }));
 }
 
 export function getExamOrientationPreference(): ExamOrientationPreference {
@@ -68,14 +70,20 @@ export function applyPortraitPolicy(_source = "app"): void {
 }
 
 /**
- * Orientation state untuk workspace ujian — READ ONLY.
- * Tidak ada lock, tidak ada fullscreen, tidak ada gate. Hanya melaporkan
- * orientasi nyata + preferensi user agar layout bisa menyesuaikan.
+ * Orientation state untuk workspace ujian — READ ONLY untuk orientasi fisik,
+ * READ/WRITE untuk preferensi layout.
  */
 export function useOrientation(preference?: ExamOrientationPreference) {
   const [isLandscape, setIsLandscape] = useState(true);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
-  const pref = preference ?? getExamOrientationPreference();
+  const [storedPref, setStoredPref] = useState<ExamOrientationPreference>("portrait");
+
+  useEffect(() => {
+    setStoredPref(getExamOrientationPreference());
+    const onChange = () => setStoredPref(getExamOrientationPreference());
+    window.addEventListener(PREFERENCE_EVENT, onChange);
+    return () => window.removeEventListener(PREFERENCE_EVENT, onChange);
+  }, []);
 
   useEffect(() => {
     const landscapeQuery = window.matchMedia("(orientation: landscape)");
@@ -95,11 +103,16 @@ export function useOrientation(preference?: ExamOrientationPreference) {
     };
   }, []);
 
+  const setPreference = useCallback((pref: ExamOrientationPreference) => {
+    setExamOrientationPreference(pref);
+  }, []);
+
   return {
     /** Orientasi nyata perangkat. */
     isLandscape,
     isSmallScreen,
-    /** Preferensi yang dipilih user di modal "Pilih Orientasi Ujian". */
-    preference: pref,
+    /** Preferensi layout aktif. */
+    preference: preference ?? storedPref,
+    setPreference,
   };
 }

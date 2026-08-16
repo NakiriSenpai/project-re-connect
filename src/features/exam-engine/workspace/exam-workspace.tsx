@@ -8,13 +8,16 @@ import {
   Flag,
   List,
   Loader2,
+  MonitorSmartphone,
   ShieldAlert,
   ShieldCheck,
+  Smartphone,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAuth } from "@/hooks/auth";
 import { useAttemptSession, useSaveAnswer, useSetFlag, useSubmitAttempt } from "@/hooks/attempt";
 import { ExamAttemptExpiredError } from "@/services/attempt";
@@ -68,7 +71,8 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
   const setFlagMutation = useSetFlag();
   const submit = useSubmitAttempt();
   const { busy: audioBusy } = useAudioManager();
-  useOrientation();
+  const { preference: layoutPreference, setPreference: setLayoutPreference } = useOrientation();
+  const [layoutMenuOpen, setLayoutMenuOpen] = useState(false);
   useAntiCopy();
 
   const [activeIndex, setActiveIndex] = useState(0);
@@ -395,6 +399,45 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
         footer={
           <>
             <div className="flex min-w-0 items-center gap-2">
+              <Popover open={layoutMenuOpen} onOpenChange={setLayoutMenuOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="outline"
+                    aria-label="Ganti tampilan layar"
+                    className="size-9 shrink-0 rounded-xl"
+                  >
+                    <MonitorSmartphone className="size-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="start" side="top" className="w-52 p-1.5">
+                  <p className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                    Ganti Tampilan
+                  </p>
+                  {(["portrait", "landscape"] as const).map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => {
+                        setLayoutPreference(option);
+                        setLayoutMenuOpen(false);
+                      }}
+                      className={cn(
+                        "flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm font-medium transition-colors",
+                        layoutPreference === option
+                          ? "bg-primary-muted text-primary"
+                          : "text-foreground hover:bg-muted",
+                      )}
+                    >
+                      <Smartphone
+                        className={cn("size-4", option === "landscape" && "rotate-90")}
+                      />
+                      {option === "portrait" ? "Portrait" : "Landscape"}
+                    </button>
+                  ))}
+                </PopoverContent>
+              </Popover>
               <Button
                 type="button"
                 size="sm"
@@ -430,6 +473,7 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
         }
       >
         <WorkspaceBody
+          layout={layoutPreference}
           question={
             <QuestionStem
               questionId={current.question_id}
