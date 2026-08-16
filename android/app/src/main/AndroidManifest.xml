@@ -212,15 +212,15 @@
             <meta-data android:name="android.support.customtabs.trusted.SCREEN_ORIENTATION"
                 android:value="@string/examOrientation"/>
 
-            <intent-filter android:autoVerify="true">
+            <!-- HANYA custom scheme: ium-exam://exam/<attemptId> -->
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="https"
-                    android:host="@string/hostName"
-                    android:pathPrefix="/ujian/" />
+                <data android:scheme="ium-exam" android:host="exam" />
             </intent-filter>
         </activity>
+
 
         <activity android:name="com.google.androidbrowserhelper.trusted.FocusActivity" />
 
