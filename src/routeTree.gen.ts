@@ -38,11 +38,11 @@ import { Route as UjianIndexRouteImport } from './routes/ujian.index'
 import { Route as UjianAttemptIdRouteImport } from './routes/ujian.$attemptId'
 import { Route as MateriLessonLessonIdRouteImport } from './routes/materi.lesson.$lessonId'
 import { Route as OwnerExamStudioIndexRouteImport } from './routes/owner_.exam-studio.index'
-import { Route as OwnerExamStudioExamIdRouteImport } from './routes/owner_.exam-studio.$examId'
 import { Route as OwnerLessonStudioIndexRouteImport } from './routes/owner_.lesson-studio.index'
 import { Route as UjianHasilAttemptIdRouteImport } from './routes/ujian.hasil.$attemptId'
 import { Route as UjianReviewAttemptIdRouteImport } from './routes/ujian.review.$attemptId'
 import { Route as UjianRiwayatExamIdRouteImport } from './routes/ujian.riwayat.$examId'
+import { Route as OwnerExamStudioExamIdIndexRouteImport } from './routes/owner_.exam-studio.$examId.index'
 import { Route as OwnerLessonStudioLessonIdIndexRouteImport } from './routes/owner_.lesson-studio.$lessonId.index'
 import { Route as OwnerLessonStudioLessonIdPreviewRouteImport } from './routes/owner_.lesson-studio.$lessonId.preview'
 
@@ -191,11 +191,6 @@ const OwnerExamStudioIndexRoute = OwnerExamStudioIndexRouteImport.update({
   path: '/owner/exam-studio/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OwnerExamStudioExamIdRoute = OwnerExamStudioExamIdRouteImport.update({
-  id: '/owner_/exam-studio/$examId',
-  path: '/owner/exam-studio/$examId',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const OwnerLessonStudioIndexRoute = OwnerLessonStudioIndexRouteImport.update({
   id: '/owner_/lesson-studio/',
   path: '/owner/lesson-studio/',
@@ -216,6 +211,12 @@ const UjianRiwayatExamIdRoute = UjianRiwayatExamIdRouteImport.update({
   path: '/riwayat/$examId',
   getParentRoute: () => UjianRoute,
 } as any)
+const OwnerExamStudioExamIdIndexRoute =
+  OwnerExamStudioExamIdIndexRouteImport.update({
+    id: '/owner_/exam-studio/$examId/',
+    path: '/owner/exam-studio/$examId/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const OwnerLessonStudioLessonIdIndexRoute =
   OwnerLessonStudioLessonIdIndexRouteImport.update({
     id: '/owner_/lesson-studio/$lessonId/',
@@ -258,13 +259,13 @@ export interface FileRoutesByFullPath {
   '/materi/': typeof MateriIndexRoute
   '/ujian/': typeof UjianIndexRoute
   '/materi/lesson/$lessonId': typeof MateriLessonLessonIdRoute
-  '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
   '/ujian/hasil/$attemptId': typeof UjianHasilAttemptIdRoute
   '/ujian/review/$attemptId': typeof UjianReviewAttemptIdRoute
   '/ujian/riwayat/$examId': typeof UjianRiwayatExamIdRoute
   '/owner/exam-studio/': typeof OwnerExamStudioIndexRoute
   '/owner/lesson-studio/': typeof OwnerLessonStudioIndexRoute
   '/owner/lesson-studio/$lessonId/preview': typeof OwnerLessonStudioLessonIdPreviewRoute
+  '/owner/exam-studio/$examId/': typeof OwnerExamStudioExamIdIndexRoute
   '/owner/lesson-studio/$lessonId/': typeof OwnerLessonStudioLessonIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -294,13 +295,13 @@ export interface FileRoutesByTo {
   '/materi': typeof MateriIndexRoute
   '/ujian': typeof UjianIndexRoute
   '/materi/lesson/$lessonId': typeof MateriLessonLessonIdRoute
-  '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
   '/ujian/hasil/$attemptId': typeof UjianHasilAttemptIdRoute
   '/ujian/review/$attemptId': typeof UjianReviewAttemptIdRoute
   '/ujian/riwayat/$examId': typeof UjianRiwayatExamIdRoute
   '/owner/exam-studio': typeof OwnerExamStudioIndexRoute
   '/owner/lesson-studio': typeof OwnerLessonStudioIndexRoute
   '/owner/lesson-studio/$lessonId/preview': typeof OwnerLessonStudioLessonIdPreviewRoute
+  '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdIndexRoute
   '/owner/lesson-studio/$lessonId': typeof OwnerLessonStudioLessonIdIndexRoute
 }
 export interface FileRoutesById {
@@ -333,13 +334,13 @@ export interface FileRoutesById {
   '/materi/': typeof MateriIndexRoute
   '/ujian/': typeof UjianIndexRoute
   '/materi/lesson/$lessonId': typeof MateriLessonLessonIdRoute
-  '/owner_/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
   '/ujian/hasil/$attemptId': typeof UjianHasilAttemptIdRoute
   '/ujian/review/$attemptId': typeof UjianReviewAttemptIdRoute
   '/ujian/riwayat/$examId': typeof UjianRiwayatExamIdRoute
   '/owner_/exam-studio/': typeof OwnerExamStudioIndexRoute
   '/owner_/lesson-studio/': typeof OwnerLessonStudioIndexRoute
   '/owner_/lesson-studio/$lessonId/preview': typeof OwnerLessonStudioLessonIdPreviewRoute
+  '/owner_/exam-studio/$examId/': typeof OwnerExamStudioExamIdIndexRoute
   '/owner_/lesson-studio/$lessonId/': typeof OwnerLessonStudioLessonIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -373,13 +374,13 @@ export interface FileRouteTypes {
     | '/materi/'
     | '/ujian/'
     | '/materi/lesson/$lessonId'
-    | '/owner/exam-studio/$examId'
     | '/ujian/hasil/$attemptId'
     | '/ujian/review/$attemptId'
     | '/ujian/riwayat/$examId'
     | '/owner/exam-studio/'
     | '/owner/lesson-studio/'
     | '/owner/lesson-studio/$lessonId/preview'
+    | '/owner/exam-studio/$examId/'
     | '/owner/lesson-studio/$lessonId/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -409,13 +410,13 @@ export interface FileRouteTypes {
     | '/materi'
     | '/ujian'
     | '/materi/lesson/$lessonId'
-    | '/owner/exam-studio/$examId'
     | '/ujian/hasil/$attemptId'
     | '/ujian/review/$attemptId'
     | '/ujian/riwayat/$examId'
     | '/owner/exam-studio'
     | '/owner/lesson-studio'
     | '/owner/lesson-studio/$lessonId/preview'
+    | '/owner/exam-studio/$examId'
     | '/owner/lesson-studio/$lessonId'
   id:
     | '__root__'
@@ -447,13 +448,13 @@ export interface FileRouteTypes {
     | '/materi/'
     | '/ujian/'
     | '/materi/lesson/$lessonId'
-    | '/owner_/exam-studio/$examId'
     | '/ujian/hasil/$attemptId'
     | '/ujian/review/$attemptId'
     | '/ujian/riwayat/$examId'
     | '/owner_/exam-studio/'
     | '/owner_/lesson-studio/'
     | '/owner_/lesson-studio/$lessonId/preview'
+    | '/owner_/exam-studio/$examId/'
     | '/owner_/lesson-studio/$lessonId/'
   fileRoutesById: FileRoutesById
 }
@@ -481,10 +482,10 @@ export interface RootRouteChildren {
   OwnerTenantsRoute: typeof OwnerTenantsRoute
   OwnerUsersRoute: typeof OwnerUsersRoute
   TeacherAnalyticsRoute: typeof TeacherAnalyticsRoute
-  OwnerExamStudioExamIdRoute: typeof OwnerExamStudioExamIdRoute
   OwnerExamStudioIndexRoute: typeof OwnerExamStudioIndexRoute
   OwnerLessonStudioIndexRoute: typeof OwnerLessonStudioIndexRoute
   OwnerLessonStudioLessonIdPreviewRoute: typeof OwnerLessonStudioLessonIdPreviewRoute
+  OwnerExamStudioExamIdIndexRoute: typeof OwnerExamStudioExamIdIndexRoute
   OwnerLessonStudioLessonIdIndexRoute: typeof OwnerLessonStudioLessonIdIndexRoute
 }
 
@@ -693,13 +694,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OwnerExamStudioIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/owner_/exam-studio/$examId': {
-      id: '/owner_/exam-studio/$examId'
-      path: '/owner/exam-studio/$examId'
-      fullPath: '/owner/exam-studio/$examId'
-      preLoaderRoute: typeof OwnerExamStudioExamIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/owner_/lesson-studio/': {
       id: '/owner_/lesson-studio/'
       path: '/owner/lesson-studio'
@@ -727,6 +721,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/ujian/riwayat/$examId'
       preLoaderRoute: typeof UjianRiwayatExamIdRouteImport
       parentRoute: typeof UjianRoute
+    }
+    '/owner_/exam-studio/$examId/': {
+      id: '/owner_/exam-studio/$examId/'
+      path: '/owner/exam-studio/$examId'
+      fullPath: '/owner/exam-studio/$examId/'
+      preLoaderRoute: typeof OwnerExamStudioExamIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/owner_/lesson-studio/$lessonId/': {
       id: '/owner_/lesson-studio/$lessonId/'
@@ -802,10 +803,10 @@ const rootRouteChildren: RootRouteChildren = {
   OwnerTenantsRoute: OwnerTenantsRoute,
   OwnerUsersRoute: OwnerUsersRoute,
   TeacherAnalyticsRoute: TeacherAnalyticsRoute,
-  OwnerExamStudioExamIdRoute: OwnerExamStudioExamIdRoute,
   OwnerExamStudioIndexRoute: OwnerExamStudioIndexRoute,
   OwnerLessonStudioIndexRoute: OwnerLessonStudioIndexRoute,
   OwnerLessonStudioLessonIdPreviewRoute: OwnerLessonStudioLessonIdPreviewRoute,
+  OwnerExamStudioExamIdIndexRoute: OwnerExamStudioExamIdIndexRoute,
   OwnerLessonStudioLessonIdIndexRoute: OwnerLessonStudioLessonIdIndexRoute,
 }
 export const routeTree = rootRouteImport
