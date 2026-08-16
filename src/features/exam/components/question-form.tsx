@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,25 +22,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { MediaPicker } from "@/features/media/components/media-picker";
+import { ExamMediaField } from "./media-field";
 import { Switch } from "@/components/ui/switch";
 import { useCreateQuestion, useUpdateQuestion } from "@/hooks/exam";
-import { useArchiveBankQuestion, useGrammarTags, useLessons, useTags } from "@/hooks/question-bank";
-import {
-  ANSWER_LABELS,
-  CATEGORY_LABELS,
-  EXAM_CATEGORIES,
-  EXAM_DIFFICULTY_LABELS,
-} from "@/features/exam/exam.constants";
+import { useArchiveBankQuestion, useLessons } from "@/hooks/question-bank";
+import { ANSWER_LABELS, CATEGORY_LABELS, EXAM_CATEGORIES } from "@/features/exam/exam.constants";
 import { cn } from "@/lib/utils";
 import type { ExamDifficulty } from "@/types/exam";
-import {
-  ORIGIN_LABELS,
-  QUESTION_TYPE_LABELS,
-  VISIBILITY_LABELS,
-  type QuestionType,
-  type QuestionVisibility,
-} from "@/types/question-bank";
+import { ORIGIN_LABELS, type QuestionType, type QuestionVisibility } from "@/types/question-bank";
 import type { QuestionBankInput, QuestionSourceType } from "@/types/question-bank";
 import type { AnswerLabel, MediaSlot, QuestionFormValue } from "./question-types";
 
