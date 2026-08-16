@@ -437,51 +437,11 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
         }
         footer={
           <>
-            <div className="flex min-w-0 items-center gap-2">
-              <Popover open={layoutMenuOpen} onOpenChange={setLayoutMenuOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="outline"
-                    aria-label="Ganti tampilan layar"
-                    className="size-9 shrink-0 rounded-xl"
-                  >
-                    <MonitorSmartphone className="size-4" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent align="start" side="top" className="w-52 p-1.5">
-                  <p className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                    Ganti Tampilan
-                  </p>
-                  {(["portrait", "landscape"] as const).map((option) => (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() => {
-                        setLayoutPreference(option);
-                        setLayoutMenuOpen(false);
-                      }}
-                      className={cn(
-                        "flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm font-medium transition-colors",
-                        layoutPreference === option
-                          ? "bg-primary-muted text-primary"
-                          : "text-foreground hover:bg-muted",
-                      )}
-                    >
-                      <Smartphone
-                        className={cn("size-4", option === "landscape" && "rotate-90")}
-                      />
-                      {option === "portrait" ? "Portrait" : "Landscape"}
-                    </button>
-                  ))}
-                </PopoverContent>
-              </Popover>
+            <div className="flex min-w-0 justify-start">
               <Button
                 type="button"
-                size="sm"
                 variant="outline"
-                className="rounded-xl"
+                className="h-11 rounded-2xl px-4"
                 disabled={locked || activeIndex === 0}
                 onClick={() => setActiveIndex((i) => Math.max(0, i - 1))}
               >
@@ -490,26 +450,26 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
             </div>
             <Button
               type="button"
-              size="sm"
+              variant="outline"
               disabled={locked}
               onClick={openQuestionList}
-              className="rounded-xl px-5"
+              className="h-11 rounded-2xl px-4"
             >
-              <List className="mr-1.5 size-4" /> Daftar Soal ({questions.length})
+              <List className="mr-1.5 size-4" /> Daftar Soal
             </Button>
             <div className="flex justify-end">
               <Button
                 type="button"
-                size="sm"
-                className="rounded-xl"
+                className="h-11 rounded-2xl px-4"
                 disabled={locked || activeIndex >= questions.length - 1}
                 onClick={() => setActiveIndex((i) => Math.min(questions.length - 1, i + 1))}
               >
-                Berikutnya <ChevronRight className="ml-1 size-4" />
+                Selanjutnya <ChevronRight className="ml-1 size-4" />
               </Button>
             </div>
           </>
         }
+
       >
         <WorkspaceBody
           layout={layoutPreference}
