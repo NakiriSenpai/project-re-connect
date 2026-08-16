@@ -32,7 +32,7 @@ import type { ExamRow } from "@/types/exam";
 import motivationArt from "@/assets/exam-motivation.png";
 import progressArt from "@/assets/exam-progress.png";
 import { ContinueExamDialog } from "./exam-dialogs";
-import { setNativeOrientation } from "@/lib/twa/orientation-bridge";
+import { openExamLandscape, setNativeOrientation } from "@/lib/twa/orientation-bridge";
 import { OrientationStartDialog } from "./orientation-start-dialog";
 import {
   getExamOrientationPreference,
