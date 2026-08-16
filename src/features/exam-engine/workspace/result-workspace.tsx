@@ -10,10 +10,14 @@ import { Separator } from "@/components/ui/separator";
 import { useAttemptResult, useStartAttempt } from "@/hooks/attempt";
 import { formatDurasi } from "@/types/attempt";
 import { formatTanggal } from "@/utils/format";
-import { setNativeOrientation } from "@/lib/twa/orientation-bridge";
+import {
+  isNativeExamLaunch,
+  returnToPortraitApp,
+  setNativeOrientation,
+} from "@/lib/twa/orientation-bridge";
 import { WorkspaceShell } from "./workspace-shell";
 
-/** Result — ujian sudah selesai: minta native Android kembali portrait. */
+/** Result — ujian sudah selesai: kembali ke app utama (portrait). */
 export function ResultWorkspace({ attemptId }: { attemptId: string }) {
   const navigate = useNavigate();
   const { data, isLoading, isError, error } = useAttemptResult(attemptId);
@@ -21,7 +25,13 @@ export function ResultWorkspace({ attemptId }: { attemptId: string }) {
 
   useEffect(() => {
     setNativeOrientation("portrait");
-  }, []);
+    // Bila ujian dibuka di Activity landscape native, kembalikan user ke
+    // LauncherActivity (portrait) pada halaman hasil yang sama — sekali saja.
+    if (isNativeExamLaunch(attemptId)) {
+      returnToPortraitApp(`/ujian/hasil/${attemptId}`);
+    }
+  }, [attemptId]);
+
 
   if (isLoading) {
     return (
