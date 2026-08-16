@@ -369,7 +369,7 @@ export function ExamList() {
       ) : null}
 
       <ExamFormDialog open={formOpen} onOpenChange={setFormOpen} exam={selected} />
-      <ImportBundleDialog open={importOpen} onOpenChange={setImportOpen} kind="exam" />
+      <ImportBundleDialog open={importOpen} onOpenChange={setImportOpen} bundleType="exam" />
     </section>
   );
 }
