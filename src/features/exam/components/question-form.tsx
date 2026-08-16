@@ -569,67 +569,20 @@ export function QuestionForm({
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <Label className="text-xs font-medium">Jenis Soal</Label>
-          <Select value={questionType} onValueChange={(v) => setQuestionType(v as QuestionType)}>
-            <SelectTrigger className="h-9 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(QUESTION_TYPE_LABELS).map(([value, label]) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1.5">
-          <Label className="text-xs font-medium">Visibility</Label>
-          <Select value={visibility} onValueChange={(v) => setVisibility(v as QuestionVisibility)}>
-            <SelectTrigger className="h-9 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(VISIBILITY_LABELS).map(([value, label]) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1.5">
-          <Label className="text-xs font-medium">Kategori</Label>
-          <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger className="h-9 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {EXAM_CATEGORIES.map((item) => (
-                <SelectItem key={item} value={item}>
-                  {CATEGORY_LABELS[item] ?? item}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1.5">
-          <Label className="text-xs font-medium">Kesulitan</Label>
-          <Select value={difficulty} onValueChange={(v) => setDifficulty(v as ExamDifficulty)}>
-            <SelectTrigger className="h-9 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(EXAM_DIFFICULTY_LABELS).map(([value, label]) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="space-y-1.5">
+        <Label className="text-xs font-medium">Kategori</Label>
+        <Select value={category} onValueChange={setCategory}>
+          <SelectTrigger className="h-9 text-sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {EXAM_CATEGORIES.map((item) => (
+              <SelectItem key={item} value={item}>
+                {CATEGORY_LABELS[item] ?? item}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {question ? (
