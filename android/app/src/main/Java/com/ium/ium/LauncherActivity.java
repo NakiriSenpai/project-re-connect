@@ -6,15 +6,33 @@
  */
 package com.ium.ium;
 
+import android.net.Uri;
+
 /**
- * I:UM TWA launcher (portrait).
+ * I:UM TWA launcher utama (PORTRAIT).
  *
- * Tidak ada reflection, tidak ada CustomTabs manual binding, dan tidak ada
- * PostMessage bridge. Orientasi ditentukan sepenuhnya lewat mekanisme resmi
- * Android Browser Helper: meta-data SCREEN_ORIENTATION dibaca oleh
- * LauncherActivity dan diteruskan ke
- * TrustedWebActivityIntentBuilder.setScreenOrientation().
+ * Selain intent HTTPS normal, activity ini juga menerima custom scheme
+ * `ium-app://main/&lt;path&gt;` yang dipakai SEKALI saat ujian landscape selesai,
+ * agar user kembali ke aplikasi utama dalam orientasi portrait.
+ *
+ * Tidak ada reflection, tidak ada CustomTabs binding manual, tidak ada
+ * setRequestedOrientation() runtime.
  */
 public class LauncherActivity
         extends com.google.androidbrowserhelper.trusted.LauncherActivity {
+
+    private static final String APP_SCHEME = "ium-app";
+
+    @Override
+    protected Uri getLaunchingUrl() {
+        Uri data = getIntent() != null ? getIntent().getData() : null;
+        if (data != null && APP_SCHEME.equals(data.getScheme())) {
+            String path = data.getPath();
+            if (path == null || path.isEmpty()) {
+                path = "/";
+            }
+            return Uri.parse("https://" + getString(R.string.hostName) + path);
+        }
+        return super.getLaunchingUrl();
+    }
 }
