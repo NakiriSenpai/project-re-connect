@@ -58,20 +58,32 @@ export function WorkspaceShell({
 
 /**
  * Body: portrait = satu kolom (soal lalu jawaban);
- * landscape/desktop = dua kolom (soal kiri lebih lebar, jawaban kanan).
+ * landscape = dua kolom (soal kiri lebih lebar, jawaban kanan).
+ *
+ * `layout` adalah preferensi tampilan user (bukan rotasi fisik). Bila tidak
+ * diberikan, layout mengikuti orientasi/ukuran viewport nyata.
  */
 export function WorkspaceBody({
   question,
   answers,
   explanation,
+  layout,
 }: {
   question: ReactNode;
   answers: ReactNode;
   explanation?: ReactNode;
+  layout?: "portrait" | "landscape";
 }) {
+  const columns =
+    layout === "portrait"
+      ? "grid-cols-1"
+      : layout === "landscape"
+        ? "grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]"
+        : "grid-cols-1 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] landscape:max-lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]";
+
   return (
     <div className="mx-auto flex w-full min-w-0 max-w-6xl flex-col gap-3 sm:gap-4">
-      <div className="grid min-w-0 grid-cols-1 items-start gap-3 sm:gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] landscape:max-lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+      <div className={"grid min-w-0 items-start gap-3 sm:gap-4 " + columns}>
         <div className="min-w-0">{question}</div>
         <div className="min-w-0">{answers}</div>
       </div>
