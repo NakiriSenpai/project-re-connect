@@ -342,6 +342,45 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
               </p>
             </div>
 
+            <Popover open={layoutMenuOpen} onOpenChange={setLayoutMenuOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  aria-label="Ganti tampilan layar"
+                  className="size-9 shrink-0 rounded-xl text-primary"
+                >
+                  <MonitorSmartphone className="size-5" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" side="bottom" className="w-52 p-1.5">
+                <p className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                  Ganti Tampilan
+                </p>
+                {(["portrait", "landscape"] as const).map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => {
+                      setLayoutPreference(option);
+                      setLayoutMenuOpen(false);
+                    }}
+                    className={cn(
+                      "flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm font-medium transition-colors",
+                      layoutPreference === option
+                        ? "bg-primary-muted text-primary"
+                        : "text-foreground hover:bg-muted",
+                    )}
+                  >
+                    <Smartphone className={cn("size-4", option === "landscape" && "rotate-90")} />
+                    {option === "portrait" ? "Portrait" : "Landscape"}
+                  </button>
+                ))}
+              </PopoverContent>
+            </Popover>
+
+
             <span
               className={cn(
                 "flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold leading-tight",
