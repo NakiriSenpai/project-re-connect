@@ -178,10 +178,12 @@
         <!-- Exam launcher: TWA diluncurkan LANDSCAPE lewat meta-data resmi
              SCREEN_ORIENTATION (TrustedWebActivityIntentBuilder.setScreenOrientation). -->
         <activity android:name="ExamLauncherActivity"
-            android:alwaysRetainTaskState="true"
             android:label="@string/launcherName"
             android:screenOrientation="landscape"
+            android:launchMode="singleTop"
+            android:excludeFromRecents="true"
             android:exported="true">
+
 
             <meta-data android:name="android.support.customtabs.trusted.DEFAULT_URL"
                 android:value="@string/launchUrl" />
