@@ -442,28 +442,12 @@ export function QuestionForm({
                       onChange={(e) => setAnswer(answer.label, { text: e.target.value })}
                       placeholder="Teks pendamping audio"
                     />
-                    {answer.audio_url ? (
-                      <div className="flex items-center gap-2 rounded-md border border-border p-1.5 text-xs">
-                        <span className="min-w-0 flex-1 truncate">{answer.audio_url}</span>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setAnswer(answer.label, { audio_url: null })}
-                        >
-                          Hapus
-                        </Button>
-                      </div>
-                    ) : (
-                      <MediaPicker
-                        allowed={["audio"]}
-                        folder="exam"
-                        label="Unggah audio jawaban"
-                        onChange={(asset) =>
-                          setAnswer(answer.label, { audio_url: asset?.url ?? null })
-                        }
-                      />
-                    )}
+                    <ExamMediaField
+                      kind="audio"
+                      url={answer.audio_url}
+                      uploadLabel="Unggah audio jawaban"
+                      onChange={(url) => setAnswer(answer.label, { audio_url: url })}
+                    />
                   </div>
                 ) : null}
 
