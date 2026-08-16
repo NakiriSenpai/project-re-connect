@@ -5,6 +5,7 @@ import { ShieldCheck, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { useSetExamStatus } from "@/hooks/exam";
 import { useSetLessonStatus } from "@/hooks/lesson";
 import { publishContent } from "@/lib/publish/publish.functions";
@@ -23,11 +24,14 @@ export function PublishGateButton({
   entityId,
   isPublished,
   label,
+  variant = "button",
 }: {
   kind: "exam" | "lesson";
   entityId: string;
   isPublished: boolean;
   label: string;
+  /** "switch" menampilkan toggle ringkas dengan alur validasi yang sama. */
+  variant?: "button" | "switch";
 }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -91,27 +95,43 @@ export function PublishGateButton({
 
   return (
     <>
-      <Button
-        size="sm"
-        variant={isPublished ? "outline" : "default"}
-        className="min-h-11"
-        onClick={() => void runValidation()}
-      >
-        <ShieldCheck className="mr-1 size-4" />
-        {isPublished ? "Validasi ulang" : "Validasi & Publish"}
-      </Button>
-      {isPublished ? (
-        <Button
-          size="sm"
-          variant="ghost"
-          className="min-h-11"
-          disabled={setExamStatus.isPending || setLessonStatus.isPending}
-          onClick={() => void unpublish()}
-        >
-          <Undo2 className="mr-1 size-4" />
-          Kembalikan ke draft
-        </Button>
-      ) : null}
+      {variant === "switch" ? (
+        <div className="flex items-center gap-2">
+          <Switch
+            aria-label={isPublished ? `Kembalikan ${label} ke draft` : `Publish ${label}`}
+            checked={isPublished}
+            disabled={setExamStatus.isPending || setLessonStatus.isPending}
+            onCheckedChange={(next) => (next ? void runValidation() : void unpublish())}
+          />
+          <span className="text-xs text-muted-foreground">
+            {isPublished ? "Published" : "Draft"}
+          </span>
+        </div>
+      ) : (
+        <>
+          <Button
+            size="sm"
+            variant={isPublished ? "outline" : "default"}
+            className="min-h-11"
+            onClick={() => void runValidation()}
+          >
+            <ShieldCheck className="mr-1 size-4" />
+            {isPublished ? "Validasi ulang" : "Validasi & Publish"}
+          </Button>
+          {isPublished ? (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="min-h-11"
+              disabled={setExamStatus.isPending || setLessonStatus.isPending}
+              onClick={() => void unpublish()}
+            >
+              <Undo2 className="mr-1 size-4" />
+              Kembalikan ke draft
+            </Button>
+          ) : null}
+        </>
+      )}
       <ValidationReportDialog
         open={open}
         onOpenChange={setOpen}

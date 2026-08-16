@@ -4,7 +4,7 @@ import {
   ArrowLeft,
   ChevronDown,
   ChevronUp,
-  GripVertical,
+  Eye,
   Library,
   Pencil,
   Plus,
@@ -13,10 +13,9 @@ import {
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
-import { PublishGateButton } from "@/features/content-io/components/publish-gate-button";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PublishGateButton } from "@/features/content-io/components/publish-gate-button";
 import {
   useDeleteQuestion,
   useDeleteSection,
@@ -27,20 +26,23 @@ import {
   useReorderSections,
 } from "@/hooks/exam";
 import {
-  CATEGORY_LABELS,
-  EXAM_DIFFICULTY_LABELS,
   EXAM_SECTION_LABELS,
   EXAM_STATUS_LABELS,
   formatPoints,
   pointsPerQuestion,
 } from "@/features/exam/exam.constants";
 import type { ExamQuestionWithAnswers, ExamSectionRow } from "@/types/exam";
-import { QuestionFormDialog } from "./question-form-dialog";
+import { ExamDetailCard } from "./exam-detail-card";
+import { QuestionForm } from "./question-form";
+import { QuestionPreviewDialog } from "./question-preview-dialog";
 import { SectionFormDialog } from "./section-form-dialog";
 import { QuestionPickerDialog } from "@/features/question-bank/components/question-picker-dialog";
 
 type Props = { examId: string };
 
+type Composer = { sectionId: string; question: ExamQuestionWithAnswers | null } | null;
+
+/** Halaman Edit Exam — alur vertikal: header → detail → section → soal. */
 export function ExamEditor({ examId }: Props) {
   const examQuery = useExam(examId);
   const sectionsQuery = useExamSections(examId);
@@ -48,11 +50,11 @@ export function ExamEditor({ examId }: Props) {
 
   const [sectionOpen, setSectionOpen] = useState(false);
   const [sectionEdit, setSectionEdit] = useState<ExamSectionRow | null>(null);
-  const [questionOpen, setQuestionOpen] = useState(false);
-  const [questionSectionId, setQuestionSectionId] = useState<string>("");
-  const [questionEdit, setQuestionEdit] = useState<ExamQuestionWithAnswers | null>(null);
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [composer, setComposer] = useState<Composer>(null);
+  const [preview, setPreview] = useState<ExamQuestionWithAnswers | null>(null);
+  const [pickerSectionId, setPickerSectionId] = useState<string>("");
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [dragId, setDragId] = useState<string | null>(null);
 
   const deleteSection = useDeleteSection();
   const deleteQuestion = useDeleteQuestion();
@@ -79,41 +81,22 @@ export function ExamEditor({ examId }: Props) {
     }
   };
 
-  const applyQuestionOrder = async (ordered: ExamQuestionWithAnswers[]) => {
+  const moveQuestion = async (question: ExamQuestionWithAnswers, direction: -1 | 1) => {
+    const current = [...questions];
+    const from = current.findIndex((q) => q.id === question.id);
+    const to = from + direction;
+    if (from < 0 || to < 0 || to >= current.length) return;
+    const [moved] = current.splice(from, 1);
+    if (!moved) return;
+    current.splice(to, 0, moved);
     try {
-      await reorderQuestions.mutateAsync(ordered.map((q) => q.id));
+      await reorderQuestions.mutateAsync(current.map((q) => q.id));
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Gagal mengurutkan soal.");
     }
   };
 
-  const moveQuestionToNumber = async (questionId: string, targetNumber: number) => {
-    const current = [...questions];
-    const from = current.findIndex((q) => q.id === questionId);
-    const to = Math.min(Math.max(targetNumber - 1, 0), current.length - 1);
-    if (from < 0 || from === to) return;
-    const [moved] = current.splice(from, 1);
-    if (!moved) return;
-    current.splice(to, 0, moved);
-    await applyQuestionOrder(current);
-  };
-
-  const handleDrop = async (targetId: string) => {
-    if (!dragId || dragId === targetId) return;
-    const current = [...questions];
-    const from = current.findIndex((q) => q.id === dragId);
-    const to = current.findIndex((q) => q.id === targetId);
-    if (from < 0 || to < 0) return;
-    const [moved] = current.splice(from, 1);
-    if (!moved) return;
-    current.splice(to, 0, moved);
-    setDragId(null);
-    await applyQuestionOrder(current);
-  };
-
-  if (examQuery.isLoading) {
-    return <Skeleton className="h-64 w-full rounded-xl" />;
-  }
+  if (examQuery.isLoading) return <Skeleton className="h-64 w-full rounded-2xl" />;
   if (examQuery.isError || !examQuery.data) {
     return <p className="text-sm text-destructive">Exam tidak ditemukan.</p>;
   }
@@ -121,49 +104,38 @@ export function ExamEditor({ examId }: Props) {
   const exam = examQuery.data;
 
   return (
-    <section className="space-y-5">
-      <Button asChild variant="ghost" size="sm" className="-ml-2">
-        <Link to="/owner/exam-studio">
-          <ArrowLeft className="mr-1 size-4" /> Kembali ke daftar
-        </Link>
-      </Button>
-
-      <header className="space-y-2 rounded-xl border p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="truncate text-lg font-semibold">{exam.title}</h1>
-            <p className="truncate text-xs text-muted-foreground">/{exam.slug}</p>
-          </div>
-          <div className="flex shrink-0 flex-col items-end gap-2">
-            <Badge variant={exam.status === "published" ? "default" : "secondary"}>
-              {EXAM_STATUS_LABELS[exam.status]}
-            </Badge>
-            <PublishGateButton
-              kind="exam"
-              entityId={exam.id}
-              isPublished={exam.status === "published"}
-              label="Exam"
-            />
-          </div>
+    <section className="space-y-4 pb-8">
+      <header className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
+        <Button asChild variant="ghost" size="icon" aria-label="Kembali ke daftar">
+          <Link to="/owner/exam-studio">
+            <ArrowLeft className="size-5" />
+          </Link>
+        </Button>
+        <div className="min-w-0">
+          <h1 className="truncate text-base font-semibold">Edit Exam</h1>
+          <p className="truncate text-xs text-muted-foreground">{exam.title}</p>
         </div>
-        <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-          <p>Kategori: {CATEGORY_LABELS[exam.category] ?? exam.category}</p>
-          <p>Kesulitan: {EXAM_DIFFICULTY_LABELS[exam.difficulty]}</p>
-          <p>Durasi: {exam.duration_minutes} menit</p>
-          <p>Passing score: {exam.passing_score}</p>
-          <p>Jumlah soal: {questions.length}</p>
-          <p>
-            Poin per soal:{" "}
-            <span className="font-medium text-foreground">{formatPoints(perQuestion)}</span>
-          </p>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Nilai total selalu 100 dan dibagi rata otomatis ke seluruh soal.
-        </p>
+        <Badge variant={exam.status === "published" ? "default" : "secondary"}>
+          {EXAM_STATUS_LABELS[exam.status]}
+        </Badge>
       </header>
 
-      <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold">Section</h2>
+      <ExamDetailCard exam={exam} />
+
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-3">
+        <PublishGateButton
+          kind="exam"
+          entityId={exam.id}
+          isPublished={exam.status === "published"}
+          label="Exam"
+        />
+        <span className="ml-auto text-xs text-muted-foreground">
+          {questions.length} soal · {formatPoints(perQuestion)} poin/soal
+        </span>
+      </div>
+
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold">Section</h2>
         <Button
           size="sm"
           onClick={() => {
@@ -171,33 +143,38 @@ export function ExamEditor({ examId }: Props) {
             setSectionOpen(true);
           }}
         >
-          <Plus className="mr-1 size-4" /> Section
+          <Plus className="mr-1 size-4" /> Tambah Section
         </Button>
       </div>
 
       {sectionsQuery.isLoading ? (
-        <Skeleton className="h-24 w-full rounded-xl" />
+        <Skeleton className="h-24 w-full rounded-2xl" />
       ) : sections.length === 0 ? (
-        <p className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">
+        <p className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
           Belum ada section. Tambahkan section Reading atau Listening terlebih dahulu.
         </p>
       ) : (
-        <ul className="space-y-4">
+        <ul className="space-y-3">
           {sections.map((section, index) => {
             const sectionQuestions = questions.filter((q) => q.section_id === section.id);
+            const isCollapsed = collapsed[section.id] ?? false;
             return (
-              <li key={section.id} className="space-y-3 rounded-xl border p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
+              <li
+                key={section.id}
+                className="space-y-3 rounded-2xl border border-border bg-card p-4 shadow-sm"
+              >
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+                  <div className="min-w-0 space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Badge variant="outline">{EXAM_SECTION_LABELS[section.type]}</Badge>
-                      <p className="truncate font-medium">{section.title}</p>
+                      <p className="truncate text-sm font-semibold">{section.title}</p>
                     </div>
-                    {section.instruction ? (
-                      <p className="mt-1 text-xs text-muted-foreground">{section.instruction}</p>
-                    ) : null}
+                    <p className="text-xs text-muted-foreground">
+                      {sectionQuestions.length} soal
+                      {section.instruction ? ` · ${section.instruction}` : ""}
+                    </p>
                   </div>
-                  <div className="flex shrink-0 gap-1">
+                  <div className="flex shrink-0 items-center gap-1">
                     <Button
                       size="icon"
                       variant="ghost"
@@ -214,6 +191,33 @@ export function ExamEditor({ examId }: Props) {
                     >
                       <ChevronDown className="size-4" />
                     </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      aria-label="Ubah section"
+                      onClick={() => {
+                        setSectionEdit(section);
+                        setSectionOpen(true);
+                      }}
+                    >
+                      <Pencil className="size-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      aria-label="Hapus section"
+                      onClick={async () => {
+                        if (!window.confirm("Hapus section beserta seluruh soalnya?")) return;
+                        try {
+                          await deleteSection.mutateAsync(section.id);
+                          toast.success("Section dihapus.");
+                        } catch (err) {
+                          toast.error(err instanceof Error ? err.message : "Gagal menghapus.");
+                        }
+                      }}
+                    >
+                      <Trash2 className="size-4 text-destructive" />
+                    </Button>
                   </div>
                 </div>
 
@@ -221,43 +225,17 @@ export function ExamEditor({ examId }: Props) {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => {
-                      setSectionEdit(section);
-                      setSectionOpen(true);
-                    }}
+                    onClick={() =>
+                      setCollapsed((prev) => ({ ...prev, [section.id]: !isCollapsed }))
+                    }
                   >
-                    <Pencil className="mr-1 size-4" /> Ubah
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={async () => {
-                      if (!window.confirm("Hapus section beserta seluruh soalnya?")) return;
-                      try {
-                        await deleteSection.mutateAsync(section.id);
-                        toast.success("Section dihapus.");
-                      } catch (err) {
-                        toast.error(err instanceof Error ? err.message : "Gagal menghapus.");
-                      }
-                    }}
-                  >
-                    <Trash2 className="mr-1 size-4" /> Hapus
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      setQuestionSectionId(section.id);
-                      setQuestionEdit(null);
-                      setQuestionOpen(true);
-                    }}
-                  >
-                    <Plus className="mr-1 size-4" /> Soal Baru
+                    {isCollapsed ? "Tampilkan Soal" : "Sembunyikan Soal"}
                   </Button>
                   <Button
                     size="sm"
                     variant="secondary"
                     onClick={() => {
-                      setQuestionSectionId(section.id);
+                      setPickerSectionId(section.id);
                       setPickerOpen(true);
                     }}
                   >
@@ -265,93 +243,144 @@ export function ExamEditor({ examId }: Props) {
                   </Button>
                 </div>
 
-                {sectionQuestions.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">Belum ada soal pada section ini.</p>
-                ) : (
-                  <ul className="space-y-2">
-                    {sectionQuestions.map((question) => {
-                      const number = questions.findIndex((q) => q.id === question.id) + 1;
-                      return (
-                        <li
-                          key={question.id}
-                          draggable
-                          onDragStart={() => setDragId(question.id)}
-                          onDragOver={(e) => e.preventDefault()}
-                          onDrop={() => void handleDrop(question.id)}
-                          className="rounded-lg border bg-card p-3"
-                        >
-                          <div className="flex items-start gap-2">
-                            <GripVertical className="mt-1 size-4 shrink-0 cursor-grab text-muted-foreground" />
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium">
-                                {number}. {question.text}
-                              </p>
-                              <p className="mt-1 text-xs text-muted-foreground">
-                                {question.grammar_tags.length > 0
-                                  ? `Tag: ${question.grammar_tags.map((t) => t.name).join(", ")} · `
-                                  : ""}
-                                {formatPoints(perQuestion)} poin
-                              </p>
-                              {question.explanation ? (
-                                <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-                                  Pembahasan: {question.explanation}
-                                </p>
-                              ) : null}
-                            </div>
-                          </div>
+                {isCollapsed ? null : (
+                  <div className="space-y-2">
+                    {sectionQuestions.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">
+                        Belum ada soal pada section ini.
+                      </p>
+                    ) : (
+                      <ul className="space-y-2">
+                        {sectionQuestions.map((question) => {
+                          const number = questions.findIndex((q) => q.id === question.id) + 1;
+                          const editing =
+                            composer?.question?.id === question.id &&
+                            composer.sectionId === section.id;
+                          return (
+                            <li
+                              key={question.id}
+                              className="rounded-xl border border-border bg-background p-2.5"
+                            >
+                              <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2">
+                                <span className="grid size-7 shrink-0 place-items-center rounded-md bg-muted text-xs font-semibold">
+                                  {number}
+                                </span>
+                                <button
+                                  type="button"
+                                  className="min-w-0 truncate text-left text-sm"
+                                  onClick={() =>
+                                    setComposer(
+                                      editing ? null : { sectionId: section.id, question },
+                                    )
+                                  }
+                                >
+                                  {question.text}
+                                </button>
+                                <div className="flex shrink-0 items-center gap-0.5">
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    aria-label="Pratinjau soal"
+                                    onClick={() => setPreview(question)}
+                                  >
+                                    <Eye className="size-4" />
+                                  </Button>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    aria-label="Ubah soal"
+                                    onClick={() =>
+                                      setComposer(
+                                        editing ? null : { sectionId: section.id, question },
+                                      )
+                                    }
+                                  >
+                                    <Pencil className="size-4" />
+                                  </Button>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    aria-label="Naikkan soal"
+                                    onClick={() => void moveQuestion(question, -1)}
+                                  >
+                                    <ChevronUp className="size-4" />
+                                  </Button>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    aria-label="Turunkan soal"
+                                    onClick={() => void moveQuestion(question, 1)}
+                                  >
+                                    <ChevronDown className="size-4" />
+                                  </Button>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    aria-label="Hapus soal"
+                                    onClick={async () => {
+                                      if (
+                                        !window.confirm(
+                                          "Lepas soal ini dari exam? Soal tetap tersimpan di Question Bank.",
+                                        )
+                                      )
+                                        return;
+                                      try {
+                                        await deleteQuestion.mutateAsync(question.id);
+                                        if (editing) setComposer(null);
+                                        toast.success("Soal dilepas dari exam.");
+                                      } catch (err) {
+                                        toast.error(
+                                          err instanceof Error
+                                            ? err.message
+                                            : "Gagal menghapus soal.",
+                                        );
+                                      }
+                                    }}
+                                  >
+                                    <Trash2 className="size-4 text-destructive" />
+                                  </Button>
+                                </div>
+                              </div>
 
-                          <div className="mt-2 flex flex-wrap items-center gap-2">
-                            <Input
-                              className="h-8 w-20"
-                              inputMode="numeric"
-                              defaultValue={number}
-                              aria-label="Pindah ke nomor"
-                              onBlur={(e) => {
-                                const value = Number(e.target.value);
-                                if (Number.isFinite(value)) {
-                                  void moveQuestionToNumber(question.id, value);
-                                }
-                              }}
-                            />
-                            <span className="text-xs text-muted-foreground">Nomor</span>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setQuestionSectionId(section.id);
-                                setQuestionEdit(question);
-                                setQuestionOpen(true);
-                              }}
-                            >
-                              <Pencil className="mr-1 size-4" /> Ubah
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={async () => {
-                                if (
-                                  !window.confirm(
-                                    "Lepas soal ini dari exam? Soal tetap tersimpan di Question Bank.",
-                                  )
-                                )
-                                  return;
-                                try {
-                                  await deleteQuestion.mutateAsync(question.id);
-                                  toast.success("Soal dilepas dari exam.");
-                                } catch (err) {
-                                  toast.error(
-                                    err instanceof Error ? err.message : "Gagal menghapus soal.",
-                                  );
-                                }
-                              }}
-                            >
-                              <Trash2 className="mr-1 size-4" /> Hapus
-                            </Button>
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
+                              {editing ? (
+                                <div className="mt-3 border-t border-border pt-3">
+                                  <QuestionForm
+                                    examId={examId}
+                                    sectionId={section.id}
+                                    question={question}
+                                    resetKey={question.id}
+                                    onDone={() => setComposer(null)}
+                                    onCancel={() => setComposer(null)}
+                                  />
+                                </div>
+                              ) : null}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+
+                    {composer?.sectionId === section.id && !composer.question ? (
+                      <div className="rounded-xl border border-border bg-background p-3">
+                        <p className="mb-3 text-sm font-semibold">Soal Baru</p>
+                        <QuestionForm
+                          examId={examId}
+                          sectionId={section.id}
+                          resetKey={`new-${section.id}`}
+                          onDone={() => setComposer(null)}
+                          onCancel={() => setComposer(null)}
+                        />
+                      </div>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        className="w-full border-dashed text-primary"
+                        onClick={() => setComposer({ sectionId: section.id, question: null })}
+                      >
+                        <Plus className="mr-1 size-4" /> Tambah Soal
+                      </Button>
+                    )}
+                  </div>
                 )}
               </li>
             );
@@ -365,23 +394,21 @@ export function ExamEditor({ examId }: Props) {
         examId={examId}
         section={sectionEdit}
       />
-      {questionSectionId ? (
+      {pickerSectionId ? (
         <QuestionPickerDialog
           open={pickerOpen}
           onOpenChange={setPickerOpen}
           examId={examId}
-          sectionId={questionSectionId}
+          sectionId={pickerSectionId}
         />
       ) : null}
-      {questionSectionId ? (
-        <QuestionFormDialog
-          open={questionOpen}
-          onOpenChange={setQuestionOpen}
-          examId={examId}
-          sectionId={questionSectionId}
-          question={questionEdit}
-        />
-      ) : null}
+      <QuestionPreviewDialog
+        open={Boolean(preview)}
+        onOpenChange={(open) => {
+          if (!open) setPreview(null);
+        }}
+        question={preview}
+      />
     </section>
   );
 }
