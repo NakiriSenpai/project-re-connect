@@ -174,18 +174,6 @@ export function QuestionForm({
   const setAnswer = (label: AnswerLabel, patch: Partial<AnswerState>) =>
     setAnswers((prev) => prev.map((a) => (a.label === label ? { ...a, ...patch } : a)));
 
-  const toggleTag = (id: string) =>
-    setTagIds((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]));
-
-  const toggleGeneralTag = (id: string) =>
-    setGeneralTagIds((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]));
-
-  const addNewTag = () => {
-    const value = newTag.trim();
-    if (!value) return;
-    setNewTags((prev) => (prev.includes(value) ? prev : [...prev, value]));
-    setNewTag("");
-  };
 
   /** Tukar isi dua pilihan jawaban (urutan label A–D tetap sesuai skema). */
   const swapAnswers = (index: number, direction: -1 | 1) => {
