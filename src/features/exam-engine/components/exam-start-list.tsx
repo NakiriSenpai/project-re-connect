@@ -11,7 +11,6 @@ import { useAvailableExams, useMyAttempts, useStartAttempt } from "@/hooks/attem
 import type { ExamRow } from "@/types/exam";
 import { ContinueExamDialog } from "./exam-dialogs";
 import { ExamRulesDialog } from "./exam-rules-dialog";
-import { setExamOrientationPreference } from "../workspace/use-orientation";
 
 /**
  * Daftar ujian published.
@@ -47,7 +46,6 @@ export function ExamStartList() {
   );
 
   const handleStart = (examId: string) => {
-    setExamOrientationPreference("portrait");
     start.mutate(examId, {
       onSuccess: (attempt) => {
         setStartTarget(null);
