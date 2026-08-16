@@ -32,8 +32,7 @@ import type { ExamRow } from "@/types/exam";
 import motivationArt from "@/assets/exam-motivation.png";
 import progressArt from "@/assets/exam-progress.png";
 import { ContinueExamDialog } from "./exam-dialogs";
-import { openExamLandscape, setNativeOrientation } from "@/lib/twa/orientation-bridge";
-import { OrientationStartDialog } from "./orientation-start-dialog";
+import { ExamRulesDialog } from "./exam-rules-dialog";
 import {
   getExamOrientationPreference,
   setExamOrientationPreference,
@@ -222,20 +221,16 @@ export function ExamCatalog() {
   const currentPage = Math.min(page, totalPages);
   const visible = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-  const handleStart = (examId: string, preference: ExamOrientationPreference) => {
-    // Preferensi menentukan LAYOUT ujian. Pada APK (standalone), landscape dibuka
-    // di Activity native landscape lewat custom scheme; browser tetap SPA.
-    setExamOrientationPreference(preference);
-    setNativeOrientation(preference);
+  const handleStart = (examId: string) => {
+    // Ujian selalu dimulai langsung di halaman ujian (SPA, satu TWA Activity).
+    // Tampilan Portrait/Landscape diganti dari dalam ujian.
+    setExamOrientationPreference("portrait");
     start.mutate(examId, {
       onSuccess: (attempt) => {
         setStartTarget(null);
         // Attempt BARU: langsung masuk workspace, tanpa perantara "Lanjutkan Ujian".
         setContinueTarget(null);
-        if (preference === "landscape" && openExamLandscape(attempt.id)) return;
-        void navigate({ to: "/ujian/$attemptId", params: { attemptId: attempt.id } }).catch(() => {
-          window.location.assign(`/ujian/${attempt.id}`);
-        });
+        void navigate({ to: "/ujian/$attemptId", params: { attemptId: attempt.id } });
       },
       onError: (err) => toast.error(err instanceof Error ? err.message : "Gagal memulai ujian."),
     });
@@ -493,12 +488,11 @@ export function ExamCatalog() {
       <ExamInfoDialog open={infoOpen} onOpenChange={setInfoOpen} />
       <ExamStatsDialog open={statsOpen} onOpenChange={setStatsOpen} stats={stats} />
 
-      <OrientationStartDialog
+      <ExamRulesDialog
         open={Boolean(startTarget)}
-        examTitle={startTarget?.title ?? "ujian ini"}
         pending={start.isPending}
         onOpenChange={(open) => !open && setStartTarget(null)}
-        onConfirm={(preference) => startTarget && handleStart(startTarget.id, preference)}
+        onConfirm={() => startTarget && handleStart(startTarget.id)}
       />
 
       <ContinueExamDialog
@@ -506,9 +500,6 @@ export function ExamCatalog() {
         onOpenChange={(open) => !open && setContinueTarget(null)}
         onConfirm={() => {
           if (!continueTarget) return;
-          const pref = getExamOrientationPreference();
-          setNativeOrientation(pref);
-          if (pref === "landscape" && openExamLandscape(continueTarget)) return;
           void navigate({ to: "/ujian/$attemptId", params: { attemptId: continueTarget } });
         }}
       />
