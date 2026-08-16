@@ -148,9 +148,6 @@ android {
         resValue "bool", "enableSiteSettingsShortcut", twaManifest.enableSiteSettingsShortcut
         resValue "string", "orientation", twaManifest.orientation
 
-        // Orientasi khusus ExamLauncherActivity (dipakai lewat meta-data SCREEN_ORIENTATION).
-        resValue "string", "examOrientation", "landscape"
-
         
     }
     buildTypes {
