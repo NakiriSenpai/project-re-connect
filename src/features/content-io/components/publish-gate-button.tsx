@@ -94,27 +94,43 @@ export function PublishGateButton({
 
   return (
     <>
-      <Button
-        size="sm"
-        variant={isPublished ? "outline" : "default"}
-        className="min-h-11"
-        onClick={() => void runValidation()}
-      >
-        <ShieldCheck className="mr-1 size-4" />
-        {isPublished ? "Validasi ulang" : "Validasi & Publish"}
-      </Button>
-      {isPublished ? (
-        <Button
-          size="sm"
-          variant="ghost"
-          className="min-h-11"
-          disabled={setExamStatus.isPending || setLessonStatus.isPending}
-          onClick={() => void unpublish()}
-        >
-          <Undo2 className="mr-1 size-4" />
-          Kembalikan ke draft
-        </Button>
-      ) : null}
+      {variant === "switch" ? (
+        <div className="flex items-center gap-2">
+          <Switch
+            aria-label={isPublished ? `Kembalikan ${label} ke draft` : `Publish ${label}`}
+            checked={isPublished}
+            disabled={setExamStatus.isPending || setLessonStatus.isPending}
+            onCheckedChange={(next) => (next ? void runValidation() : void unpublish())}
+          />
+          <span className="text-xs text-muted-foreground">
+            {isPublished ? "Published" : "Draft"}
+          </span>
+        </div>
+      ) : (
+        <>
+          <Button
+            size="sm"
+            variant={isPublished ? "outline" : "default"}
+            className="min-h-11"
+            onClick={() => void runValidation()}
+          >
+            <ShieldCheck className="mr-1 size-4" />
+            {isPublished ? "Validasi ulang" : "Validasi & Publish"}
+          </Button>
+          {isPublished ? (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="min-h-11"
+              disabled={setExamStatus.isPending || setLessonStatus.isPending}
+              onClick={() => void unpublish()}
+            >
+              <Undo2 className="mr-1 size-4" />
+              Kembalikan ke draft
+            </Button>
+          ) : null}
+        </>
+      )}
       <ValidationReportDialog
         open={open}
         onOpenChange={setOpen}
