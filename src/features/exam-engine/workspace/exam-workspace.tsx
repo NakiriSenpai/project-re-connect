@@ -542,7 +542,23 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
                   </AnswerShell>
                 ))}
               </div>
+
+              <button
+                type="button"
+                disabled={locked}
+                onClick={toggleFlag}
+                className={cn(
+                  "mt-3 flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium transition-colors",
+                  local[current.question_id]?.flagged
+                    ? "bg-destructive/10 text-destructive"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80",
+                )}
+              >
+                <Flag className="size-4" />
+                Saya tidak yakin dengan jawaban ini
+              </button>
             </div>
+
           }
         />
       </WorkspaceShell>
