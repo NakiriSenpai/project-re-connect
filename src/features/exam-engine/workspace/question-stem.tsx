@@ -26,9 +26,9 @@ export const QuestionStem = memo(function QuestionStem({
   right?: ReactNode;
 }) {
   return (
-    <div className="space-y-4 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
+    <div className="space-y-3 rounded-2xl border border-border bg-card p-3.5 shadow-sm sm:p-4">
       <div className="flex items-center justify-between gap-2">
-        <span className="shrink-0 rounded-lg bg-primary-muted px-3 py-1.5 text-sm font-semibold text-primary">
+        <span className="shrink-0 rounded-lg bg-primary-muted px-2.5 py-1 text-[13px] font-semibold text-primary">
           Soal {number}
         </span>
         {right}
@@ -43,7 +43,7 @@ export const QuestionStem = memo(function QuestionStem({
           </span>
         </p>
       ) : null}
-      <p className="whitespace-pre-wrap text-base leading-relaxed text-foreground sm:text-lg">
+      <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-foreground">
         {text}
       </p>
       {imageUrl ? (
@@ -92,7 +92,7 @@ export function AnswerShell({
   children: ReactNode;
 }) {
   const className = cn(
-    "flex w-full items-center gap-3.5 rounded-2xl border bg-card p-3.5 text-left transition-all duration-150 sm:p-4",
+    "flex w-full items-center gap-3 rounded-xl border bg-card p-3 text-left transition-all duration-150",
     tone === "correct"
       ? "border-success bg-success/10"
       : tone === "wrong"
@@ -106,7 +106,7 @@ export function AnswerShell({
     <>
       <span
         className={cn(
-          "flex size-9 shrink-0 items-center justify-center rounded-xl text-sm font-bold tabular-nums",
+          "flex size-8 shrink-0 items-center justify-center rounded-lg text-[13px] font-bold tabular-nums",
           tone === "correct"
             ? "bg-success text-success-foreground"
             : tone === "wrong"
