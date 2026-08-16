@@ -10,7 +10,7 @@ import { EXAM_DIFFICULTY_LABELS } from "@/features/exam/exam.constants";
 import { useAvailableExams, useMyAttempts, useStartAttempt } from "@/hooks/attempt";
 import type { ExamRow } from "@/types/exam";
 import { ContinueExamDialog } from "./exam-dialogs";
-import { setNativeOrientation } from "@/lib/twa/orientation-bridge";
+import { openExamLandscape, setNativeOrientation } from "@/lib/twa/orientation-bridge";
 import { OrientationStartDialog } from "./orientation-start-dialog";
 import {
   getExamOrientationPreference,
