@@ -300,36 +300,20 @@ export function QuestionForm({
         />
       </div>
 
-      {/* Media soal — caption/teks selalu berada di atas kontrol media. */}
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="space-y-1.5">
+      {/* Media soal — dirender sebagai media, bukan URL mentah. */}
+      <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+        <div className="min-w-0 space-y-1.5">
           <Label className="text-xs font-medium">Gambar (Opsional)</Label>
           {showImage || imageUrl ? (
-            <div className="space-y-2 rounded-lg border border-border p-2">
-              {imageUrl ? (
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="min-w-0 flex-1 truncate">{imageUrl}</span>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      setImageUrl(null);
-                      setShowImage(false);
-                    }}
-                  >
-                    <Trash2 className="size-4 text-destructive" />
-                  </Button>
-                </div>
-              ) : (
-                <MediaPicker
-                  allowed={["image"]}
-                  folder="exam"
-                  label="Unggah gambar soal"
-                  onChange={(asset) => setImageUrl(asset?.url ?? null)}
-                />
-              )}
-            </div>
+            <ExamMediaField
+              kind="image"
+              url={imageUrl}
+              uploadLabel="Unggah gambar soal"
+              onChange={(url) => {
+                setImageUrl(url);
+                if (!url) setShowImage(false);
+              }}
+            />
           ) : (
             <Button
               type="button"
@@ -343,34 +327,18 @@ export function QuestionForm({
           )}
         </div>
 
-        <div className="space-y-1.5">
+        <div className="min-w-0 space-y-1.5">
           <Label className="text-xs font-medium">Audio (Opsional)</Label>
           {showAudio || audioUrl ? (
-            <div className="space-y-2 rounded-lg border border-border p-2">
-              {audioUrl ? (
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="min-w-0 flex-1 truncate">{audioUrl}</span>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      setAudioUrl(null);
-                      setShowAudio(false);
-                    }}
-                  >
-                    <Trash2 className="size-4 text-destructive" />
-                  </Button>
-                </div>
-              ) : (
-                <MediaPicker
-                  allowed={["audio"]}
-                  folder="exam"
-                  label="Unggah audio soal"
-                  onChange={(asset) => setAudioUrl(asset?.url ?? null)}
-                />
-              )}
-            </div>
+            <ExamMediaField
+              kind="audio"
+              url={audioUrl}
+              uploadLabel="Unggah audio soal"
+              onChange={(url) => {
+                setAudioUrl(url);
+                if (!url) setShowAudio(false);
+              }}
+            />
           ) : (
             <Button
               type="button"
