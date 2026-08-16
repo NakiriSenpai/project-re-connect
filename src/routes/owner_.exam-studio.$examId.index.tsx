@@ -4,7 +4,7 @@ import { AppLayout } from "@/layouts/app-layout";
 import { RequireOwner } from "@/middleware";
 import { ExamEditor } from "@/features/exam/components/exam-editor";
 
-export const Route = createFileRoute("/owner_/exam-studio/$examId")({
+export const Route = createFileRoute("/owner_/exam-studio/$examId/")({
   head: () => ({
     meta: [
       { title: "Editor Exam — I:UM 이음" },

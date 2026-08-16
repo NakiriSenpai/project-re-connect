@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,25 +22,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { MediaPicker } from "@/features/media/components/media-picker";
+import { ExamMediaField } from "./media-field";
 import { Switch } from "@/components/ui/switch";
 import { useCreateQuestion, useUpdateQuestion } from "@/hooks/exam";
-import { useArchiveBankQuestion, useGrammarTags, useLessons, useTags } from "@/hooks/question-bank";
-import {
-  ANSWER_LABELS,
-  CATEGORY_LABELS,
-  EXAM_CATEGORIES,
-  EXAM_DIFFICULTY_LABELS,
-} from "@/features/exam/exam.constants";
+import { useArchiveBankQuestion, useLessons } from "@/hooks/question-bank";
+import { ANSWER_LABELS, CATEGORY_LABELS, EXAM_CATEGORIES } from "@/features/exam/exam.constants";
 import { cn } from "@/lib/utils";
 import type { ExamDifficulty } from "@/types/exam";
-import {
-  ORIGIN_LABELS,
-  QUESTION_TYPE_LABELS,
-  VISIBILITY_LABELS,
-  type QuestionType,
-  type QuestionVisibility,
-} from "@/types/question-bank";
+import { ORIGIN_LABELS, type QuestionType, type QuestionVisibility } from "@/types/question-bank";
 import type { QuestionBankInput, QuestionSourceType } from "@/types/question-bank";
 import type { AnswerLabel, MediaSlot, QuestionFormValue } from "./question-types";
 
@@ -103,7 +91,6 @@ export function QuestionForm({
   const [showAudio, setShowAudio] = useState(false);
   const [tagIds, setTagIds] = useState<string[]>([]);
   const [generalTagIds, setGeneralTagIds] = useState<string[]>([]);
-  const [newTag, setNewTag] = useState("");
   const [newTags, setNewTags] = useState<string[]>([]);
   const [questionType, setQuestionType] = useState<QuestionType>("reading");
   const [visibility, setVisibility] = useState<QuestionVisibility>("private");
@@ -117,8 +104,6 @@ export function QuestionForm({
   const [correct, setCorrect] = useState<AnswerLabel>("A");
   const [error, setError] = useState<string | null>(null);
 
-  const grammarQuery = useGrammarTags();
-  const tagQuery = useTags();
   const archiveQuestion = useArchiveBankQuestion();
   const lessonQuery = useLessons();
   const createQuestion = useCreateQuestion();
@@ -139,7 +124,6 @@ export function QuestionForm({
       setVisibility(question.visibility ?? "private");
       setIsArchived(question.is_archived ?? false);
       setNewTags([]);
-      setNewTag("");
       setCategory(question.category ?? "umum");
       setDifficulty(question.difficulty ?? "sedang");
       setLessonId(question.lesson_id ?? NO_LESSON);
@@ -169,7 +153,6 @@ export function QuestionForm({
       setTagIds([]);
       setGeneralTagIds([]);
       setNewTags([]);
-      setNewTag("");
       setQuestionType("reading");
       setVisibility("private");
       setIsArchived(false);
@@ -186,18 +169,6 @@ export function QuestionForm({
   const setAnswer = (label: AnswerLabel, patch: Partial<AnswerState>) =>
     setAnswers((prev) => prev.map((a) => (a.label === label ? { ...a, ...patch } : a)));
 
-  const toggleTag = (id: string) =>
-    setTagIds((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]));
-
-  const toggleGeneralTag = (id: string) =>
-    setGeneralTagIds((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]));
-
-  const addNewTag = () => {
-    const value = newTag.trim();
-    if (!value) return;
-    setNewTags((prev) => (prev.includes(value) ? prev : [...prev, value]));
-    setNewTag("");
-  };
 
   /** Tukar isi dua pilihan jawaban (urutan label A–D tetap sesuai skema). */
   const swapAnswers = (index: number, direction: -1 | 1) => {
@@ -225,7 +196,6 @@ export function QuestionForm({
 
     if (text.trim().length < 3) return setError("Teks soal minimal 3 karakter.");
     if (!explanation.trim()) return setError("Pembahasan wajib diisi.");
-    if (tagIds.length === 0) return setError("Pilih minimal satu grammar tag.");
 
     const filled = answers.filter((a) => a.text.trim() || a.image_url || a.audio_url);
     if (filled.length < 2) return setError("Minimal dua pilihan jawaban harus diisi.");
@@ -300,36 +270,20 @@ export function QuestionForm({
         />
       </div>
 
-      {/* Media soal — caption/teks selalu berada di atas kontrol media. */}
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="space-y-1.5">
+      {/* Media soal — dirender sebagai media, bukan URL mentah. */}
+      <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+        <div className="min-w-0 space-y-1.5">
           <Label className="text-xs font-medium">Gambar (Opsional)</Label>
           {showImage || imageUrl ? (
-            <div className="space-y-2 rounded-lg border border-border p-2">
-              {imageUrl ? (
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="min-w-0 flex-1 truncate">{imageUrl}</span>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      setImageUrl(null);
-                      setShowImage(false);
-                    }}
-                  >
-                    <Trash2 className="size-4 text-destructive" />
-                  </Button>
-                </div>
-              ) : (
-                <MediaPicker
-                  allowed={["image"]}
-                  folder="exam"
-                  label="Unggah gambar soal"
-                  onChange={(asset) => setImageUrl(asset?.url ?? null)}
-                />
-              )}
-            </div>
+            <ExamMediaField
+              kind="image"
+              url={imageUrl}
+              uploadLabel="Unggah gambar soal"
+              onChange={(url) => {
+                setImageUrl(url);
+                if (!url) setShowImage(false);
+              }}
+            />
           ) : (
             <Button
               type="button"
@@ -343,34 +297,18 @@ export function QuestionForm({
           )}
         </div>
 
-        <div className="space-y-1.5">
+        <div className="min-w-0 space-y-1.5">
           <Label className="text-xs font-medium">Audio (Opsional)</Label>
           {showAudio || audioUrl ? (
-            <div className="space-y-2 rounded-lg border border-border p-2">
-              {audioUrl ? (
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="min-w-0 flex-1 truncate">{audioUrl}</span>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      setAudioUrl(null);
-                      setShowAudio(false);
-                    }}
-                  >
-                    <Trash2 className="size-4 text-destructive" />
-                  </Button>
-                </div>
-              ) : (
-                <MediaPicker
-                  allowed={["audio"]}
-                  folder="exam"
-                  label="Unggah audio soal"
-                  onChange={(asset) => setAudioUrl(asset?.url ?? null)}
-                />
-              )}
-            </div>
+            <ExamMediaField
+              kind="audio"
+              url={audioUrl}
+              uploadLabel="Unggah audio soal"
+              onChange={(url) => {
+                setAudioUrl(url);
+                if (!url) setShowAudio(false);
+              }}
+            />
           ) : (
             <Button
               type="button"
@@ -455,28 +393,12 @@ export function QuestionForm({
                       onChange={(e) => setAnswer(answer.label, { text: e.target.value })}
                       placeholder="Teks pendamping gambar"
                     />
-                    {answer.image_url ? (
-                      <div className="flex items-center gap-2 rounded-md border border-border p-1.5 text-xs">
-                        <span className="min-w-0 flex-1 truncate">{answer.image_url}</span>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setAnswer(answer.label, { image_url: null })}
-                        >
-                          Hapus
-                        </Button>
-                      </div>
-                    ) : (
-                      <MediaPicker
-                        allowed={["image"]}
-                        folder="exam"
-                        label="Unggah gambar jawaban"
-                        onChange={(asset) =>
-                          setAnswer(answer.label, { image_url: asset?.url ?? null })
-                        }
-                      />
-                    )}
+                    <ExamMediaField
+                      kind="image"
+                      url={answer.image_url}
+                      uploadLabel="Unggah gambar jawaban"
+                      onChange={(url) => setAnswer(answer.label, { image_url: url })}
+                    />
                   </div>
                 ) : null}
 
@@ -490,28 +412,12 @@ export function QuestionForm({
                       onChange={(e) => setAnswer(answer.label, { text: e.target.value })}
                       placeholder="Teks pendamping audio"
                     />
-                    {answer.audio_url ? (
-                      <div className="flex items-center gap-2 rounded-md border border-border p-1.5 text-xs">
-                        <span className="min-w-0 flex-1 truncate">{answer.audio_url}</span>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setAnswer(answer.label, { audio_url: null })}
-                        >
-                          Hapus
-                        </Button>
-                      </div>
-                    ) : (
-                      <MediaPicker
-                        allowed={["audio"]}
-                        folder="exam"
-                        label="Unggah audio jawaban"
-                        onChange={(asset) =>
-                          setAnswer(answer.label, { audio_url: asset?.url ?? null })
-                        }
-                      />
-                    )}
+                    <ExamMediaField
+                      kind="audio"
+                      url={answer.audio_url}
+                      uploadLabel="Unggah audio jawaban"
+                      onChange={(url) => setAnswer(answer.label, { audio_url: url })}
+                    />
                   </div>
                 ) : null}
 
@@ -530,138 +436,21 @@ export function QuestionForm({
         </RadioGroup>
       </div>
 
-      {/* Grammar tag wajib untuk validasi soal. */}
-      <div className="space-y-1.5">
-        <Label className="text-xs font-medium">Grammar Tag</Label>
-        <div className="flex flex-wrap gap-1.5">
-          {(grammarQuery.data ?? []).map((tag) => {
-            const active = tagIds.includes(tag.id);
-            return (
-              <Badge
-                key={tag.id}
-                role="button"
-                tabIndex={0}
-                variant={active ? "default" : "outline"}
-                className="cursor-pointer px-2 py-1 text-[11px]"
-                onClick={() => toggleTag(tag.id)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") toggleTag(tag.id);
-                }}
-              >
-                {tag.name}
-              </Badge>
-            );
-          })}
-        </div>
-      </div>
 
       <div className="space-y-1.5">
-        <Label className="text-xs font-medium">Tag (bebas)</Label>
-        <div className="flex flex-wrap gap-1.5">
-          {(tagQuery.data ?? []).map((tag) => {
-            const active = generalTagIds.includes(tag.id);
-            return (
-              <Badge
-                key={tag.id}
-                role="button"
-                tabIndex={0}
-                variant={active ? "default" : "outline"}
-                className="cursor-pointer px-2 py-1 text-[11px]"
-                onClick={() => toggleGeneralTag(tag.id)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") toggleGeneralTag(tag.id);
-                }}
-              >
-                {tag.name}
-              </Badge>
-            );
-          })}
-          {newTags.map((name) => (
-            <Badge key={name} variant="default" className="px-2 py-1 text-[11px]">
-              {name}
-            </Badge>
-          ))}
-        </div>
-        <div className="flex gap-2">
-          <Input
-            className="h-8 text-sm"
-            value={newTag}
-            onChange={(e) => setNewTag(e.target.value)}
-            placeholder="Tag baru, mis. eps-topik"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                addNewTag();
-              }
-            }}
-          />
-          <Button type="button" size="sm" variant="outline" onClick={addNewTag}>
-            Tambah
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <Label className="text-xs font-medium">Jenis Soal</Label>
-          <Select value={questionType} onValueChange={(v) => setQuestionType(v as QuestionType)}>
-            <SelectTrigger className="h-9 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(QUESTION_TYPE_LABELS).map(([value, label]) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1.5">
-          <Label className="text-xs font-medium">Visibility</Label>
-          <Select value={visibility} onValueChange={(v) => setVisibility(v as QuestionVisibility)}>
-            <SelectTrigger className="h-9 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(VISIBILITY_LABELS).map(([value, label]) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1.5">
-          <Label className="text-xs font-medium">Kategori</Label>
-          <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger className="h-9 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {EXAM_CATEGORIES.map((item) => (
-                <SelectItem key={item} value={item}>
-                  {CATEGORY_LABELS[item] ?? item}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1.5">
-          <Label className="text-xs font-medium">Kesulitan</Label>
-          <Select value={difficulty} onValueChange={(v) => setDifficulty(v as ExamDifficulty)}>
-            <SelectTrigger className="h-9 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(EXAM_DIFFICULTY_LABELS).map(([value, label]) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <Label className="text-xs font-medium">Kategori</Label>
+        <Select value={category} onValueChange={setCategory}>
+          <SelectTrigger className="h-9 text-sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {EXAM_CATEGORIES.map((item) => (
+              <SelectItem key={item} value={item}>
+                {CATEGORY_LABELS[item] ?? item}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {question ? (

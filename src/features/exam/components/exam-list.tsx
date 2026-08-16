@@ -287,17 +287,6 @@ export function ExamList() {
                   <Button
                     size="icon"
                     variant="ghost"
-                    aria-label="Ubah detail exam"
-                    onClick={() => {
-                      setSelected(exam);
-                      setFormOpen(true);
-                    }}
-                  >
-                    <Search className="size-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
                     aria-label="Duplikat exam"
                     disabled={duplicatingId === exam.id}
                     onClick={() => void handleDuplicate(exam)}

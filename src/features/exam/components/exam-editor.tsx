@@ -7,6 +7,7 @@ import {
   Eye,
   Library,
   Pencil,
+  PlayCircle,
   Plus,
   Trash2,
 } from "lucide-react";
@@ -105,33 +106,43 @@ export function ExamEditor({ examId }: Props) {
 
   return (
     <section className="space-y-4 pb-8">
-      <header className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
-        <Button asChild variant="ghost" size="icon" aria-label="Kembali ke daftar">
-          <Link to="/owner/exam-studio">
-            <ArrowLeft className="size-5" />
+      <header className="space-y-3">
+        <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
+          <Button asChild variant="ghost" size="icon" aria-label="Kembali ke daftar">
+            <Link to="/owner/exam-studio">
+              <ArrowLeft className="size-5" />
+            </Link>
+          </Button>
+          <div className="min-w-0">
+            <h1 className="truncate text-base font-semibold">Edit Exam</h1>
+            <p className="truncate text-xs text-muted-foreground">{exam.title}</p>
+          </div>
+          <Badge variant={exam.status === "published" ? "default" : "secondary"}>
+            {EXAM_STATUS_LABELS[exam.status]}
+          </Badge>
+        </div>
+        <Button asChild variant="outline" size="sm" className="w-full min-h-11">
+          <Link to="/owner/exam-studio/$examId/preview" params={{ examId }}>
+            <PlayCircle className="mr-1 size-4" /> Preview Ujian
           </Link>
         </Button>
-        <div className="min-w-0">
-          <h1 className="truncate text-base font-semibold">Edit Exam</h1>
-          <p className="truncate text-xs text-muted-foreground">{exam.title}</p>
-        </div>
-        <Badge variant={exam.status === "published" ? "default" : "secondary"}>
-          {EXAM_STATUS_LABELS[exam.status]}
-        </Badge>
       </header>
 
       <ExamDetailCard exam={exam} />
 
-      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-3">
-        <PublishGateButton
-          kind="exam"
-          entityId={exam.id}
-          isPublished={exam.status === "published"}
-          label="Exam"
-        />
-        <span className="ml-auto text-xs text-muted-foreground">
+      <div className="space-y-3 rounded-2xl border border-border bg-card p-3 shadow-sm">
+        <p className="text-sm font-semibold">Status &amp; Publikasi</p>
+        <div className="grid gap-2 [&>button]:min-h-11 [&>button]:w-full sm:grid-cols-2">
+          <PublishGateButton
+            kind="exam"
+            entityId={exam.id}
+            isPublished={exam.status === "published"}
+            label="Exam"
+          />
+        </div>
+        <p className="text-right text-xs text-muted-foreground">
           {questions.length} soal · {formatPoints(perQuestion)} poin/soal
-        </span>
+        </p>
       </div>
 
       <div className="flex items-center justify-between gap-3">
