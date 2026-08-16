@@ -423,28 +423,12 @@ export function QuestionForm({
                       onChange={(e) => setAnswer(answer.label, { text: e.target.value })}
                       placeholder="Teks pendamping gambar"
                     />
-                    {answer.image_url ? (
-                      <div className="flex items-center gap-2 rounded-md border border-border p-1.5 text-xs">
-                        <span className="min-w-0 flex-1 truncate">{answer.image_url}</span>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setAnswer(answer.label, { image_url: null })}
-                        >
-                          Hapus
-                        </Button>
-                      </div>
-                    ) : (
-                      <MediaPicker
-                        allowed={["image"]}
-                        folder="exam"
-                        label="Unggah gambar jawaban"
-                        onChange={(asset) =>
-                          setAnswer(answer.label, { image_url: asset?.url ?? null })
-                        }
-                      />
-                    )}
+                    <ExamMediaField
+                      kind="image"
+                      url={answer.image_url}
+                      uploadLabel="Unggah gambar jawaban"
+                      onChange={(url) => setAnswer(answer.label, { image_url: url })}
+                    />
                   </div>
                 ) : null}
 
