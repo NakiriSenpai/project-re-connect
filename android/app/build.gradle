@@ -47,7 +47,7 @@ def twaManifest = [
     // 'customtabs' and 'webview'.
     fallbackType: 'customtabs',
     enableSiteSettingsShortcut: 'true',
-    orientation: 'any',
+    orientation: 'portrait',
 ]
 
 android {
@@ -148,6 +148,9 @@ android {
         resValue "bool", "enableSiteSettingsShortcut", twaManifest.enableSiteSettingsShortcut
         resValue "string", "orientation", twaManifest.orientation
 
+        // Orientasi khusus ExamLauncherActivity (dipakai lewat meta-data SCREEN_ORIENTATION).
+        resValue "string", "examOrientation", "landscape"
+
         
     }
     buildTypes {
@@ -209,6 +212,6 @@ repositories {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     
-        implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.6.2'
+        implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.7.2'
     
 }
