@@ -91,7 +91,6 @@ export function QuestionForm({
   const [showAudio, setShowAudio] = useState(false);
   const [tagIds, setTagIds] = useState<string[]>([]);
   const [generalTagIds, setGeneralTagIds] = useState<string[]>([]);
-  const [newTag, setNewTag] = useState("");
   const [newTags, setNewTags] = useState<string[]>([]);
   const [questionType, setQuestionType] = useState<QuestionType>("reading");
   const [visibility, setVisibility] = useState<QuestionVisibility>("private");
@@ -125,7 +124,6 @@ export function QuestionForm({
       setVisibility(question.visibility ?? "private");
       setIsArchived(question.is_archived ?? false);
       setNewTags([]);
-      setNewTag("");
       setCategory(question.category ?? "umum");
       setDifficulty(question.difficulty ?? "sedang");
       setLessonId(question.lesson_id ?? NO_LESSON);
@@ -155,7 +153,6 @@ export function QuestionForm({
       setTagIds([]);
       setGeneralTagIds([]);
       setNewTags([]);
-      setNewTag("");
       setQuestionType("reading");
       setVisibility("private");
       setIsArchived(false);
@@ -199,7 +196,6 @@ export function QuestionForm({
 
     if (text.trim().length < 3) return setError("Teks soal minimal 3 karakter.");
     if (!explanation.trim()) return setError("Pembahasan wajib diisi.");
-    if (tagIds.length === 0) return setError("Pilih minimal satu grammar tag.");
 
     const filled = answers.filter((a) => a.text.trim() || a.image_url || a.audio_url);
     if (filled.length < 2) return setError("Minimal dua pilihan jawaban harus diisi.");
