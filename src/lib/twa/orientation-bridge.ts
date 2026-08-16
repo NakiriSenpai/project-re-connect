@@ -1,116 +1,29 @@
 /**
- * I:UM TWA Orientation Bridge
+ * I:UM orientation bridge — NO-OP (aman untuk browser, PWA, dan TWA).
  *
- * Jembatan antara web (PWA/TWA/Native WebView) dan native Android I:UM.
- * Native Activity yang melakukan physical orientation change — web hanya mengirim
- * command. TIDAK ada Fullscreen API dan TIDAK ada screen.orientation.lock di sini.
+ * Implementasi native bridge sebelumnya (window.AndroidOrientation dan
+ * TWA PostMessage channel) DIHAPUS karena menyebabkan crash pada APK.
  *
- * Di browser biasa bridge ini adalah no-op total: tidak error, tidak popup.
+ * Arsitektur final:
+ * - Orientasi fisik dikendalikan sepenuhnya oleh native Android melalui
+ *   mekanisme resmi Android Browser Helper
+ *   (meta-data SCREEN_ORIENTATION -> TrustedWebActivityIntentBuilder
+ *   .setScreenOrientation) saat TWA diluncurkan.
+ * - Web TIDAK memanggil requestFullscreen(), TIDAK memanggil
+ *   screen.orientation.lock() untuk ujian, dan TIDAK memakai JS bridge apa pun.
+ * - Preferensi orientasi user hanya menentukan LAYOUT ujian di frontend.
+ *
+ * Fungsi di bawah dipertahankan agar call site frontend tidak perlu berubah.
  */
 
 export type NativeOrientation = "portrait" | "landscape";
 
-const TWA_ORIGIN = "android-app://com.ium.ium";
-const COMMAND_TYPE = "IUM_SET_ORIENTATION";
-const LOG_PREFIX = "[I:UM TWA Bridge]";
-
-declare global {
-  interface Window {
-    AndroidOrientation?: {
-      setOrientation: (orientation: NativeOrientation) => void;
-    };
-  }
-}
-
-type OrientationCommand = {
-  type: typeof COMMAND_TYPE;
-  orientation: NativeOrientation;
-};
-
-let port: MessagePort | null = null;
-let initialized = false;
-let queue: OrientationCommand[] = [];
-
-function log(...args: unknown[]) {
-  if (typeof console === "undefined") return;
-  console.info(LOG_PREFIX, ...args);
-}
-
-function flushQueue() {
-  if (!port || queue.length === 0) return;
-  const pending = queue;
-  queue = [];
-  for (const command of pending) {
-    try {
-      port.postMessage(command);
-      log("orientation command sent (flushed)", command.orientation);
-    } catch {
-      /* diabaikan */
-    }
-  }
-}
-
-function handleMessage(event: MessageEvent) {
-  // MESSAGE SECURITY: hanya handshake dari native Android I:UM yang diterima.
-  if (event.origin !== TWA_ORIGIN) return;
-  const incomingPort = event.ports?.[0];
-  if (!incomingPort) return;
-
-  port = incomingPort;
-  try {
-    port.start?.();
-  } catch {
-    /* diabaikan */
-  }
-  log("TWA channel ready");
-  flushQueue();
-}
-
-/** Pasang listener handshake sekali saja. Aman dipanggil berulang. */
+/** No-op. Dipertahankan untuk kompatibilitas call site. */
 export function initOrientationBridge(): void {
-  if (initialized || typeof window === "undefined") return;
-  initialized = true;
-  window.addEventListener("message", handleMessage);
+  /* sengaja kosong */
 }
 
-/**
- * Kirim perintah orientasi ke native Android.
- * Prioritas: WebView JS bridge -> TWA MessagePort -> no-op.
- * Bila channel TWA belum siap, command di-queue dan dikirim saat handshake tiba.
- * Di browser biasa command hanya mengendap di queue (no-op, tanpa efek samping).
- */
-export function setNativeOrientation(orientation: NativeOrientation): void {
-  if (typeof window === "undefined") return;
-  if (orientation !== "portrait" && orientation !== "landscape") return;
-
-  // Native WebView JS bridge (I:UM WebView 2.0+)
-  const webViewBridge = window.AndroidOrientation;
-  if (webViewBridge && typeof webViewBridge.setOrientation === "function") {
-    try {
-      webViewBridge.setOrientation(orientation);
-      log("WebView orientation command sent", orientation);
-      return;
-    } catch {
-      // Fall back ke TWA MessagePort bila JS bridge error.
-    }
-  }
-
-  initOrientationBridge();
-
-  const command: OrientationCommand = { type: COMMAND_TYPE, orientation };
-
-  if (!port) {
-    // Simpan hanya command terakhir agar tidak menumpuk / looping.
-    queue = [command];
-    log("TWA orientation command queued", orientation);
-    return;
-  }
-
-  try {
-    port.postMessage(command);
-    log("TWA orientation command sent", orientation);
-  } catch {
-    queue = [command];
-    log("TWA orientation command queued", orientation);
-  }
+/** No-op. Orientasi fisik ditentukan native saat TWA diluncurkan. */
+export function setNativeOrientation(_orientation: NativeOrientation): void {
+  /* sengaja kosong */
 }
