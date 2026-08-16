@@ -161,6 +161,15 @@
                 />
             </intent-filter>
 
+            <!-- Kembali ke app utama (portrait) setelah ujian landscape selesai. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="ium-app" android:host="main" />
+            </intent-filter>
+
+
             
 
             
