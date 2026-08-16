@@ -105,8 +105,6 @@ export function QuestionForm({
   const [correct, setCorrect] = useState<AnswerLabel>("A");
   const [error, setError] = useState<string | null>(null);
 
-  const grammarQuery = useGrammarTags();
-  const tagQuery = useTags();
   const archiveQuestion = useArchiveBankQuestion();
   const lessonQuery = useLessons();
   const createQuestion = useCreateQuestion();
