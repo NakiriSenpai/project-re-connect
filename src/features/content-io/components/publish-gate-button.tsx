@@ -23,11 +23,14 @@ export function PublishGateButton({
   entityId,
   isPublished,
   label,
+  variant = "button",
 }: {
   kind: "exam" | "lesson";
   entityId: string;
   isPublished: boolean;
   label: string;
+  /** "switch" menampilkan toggle ringkas dengan alur validasi yang sama. */
+  variant?: "button" | "switch";
 }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
