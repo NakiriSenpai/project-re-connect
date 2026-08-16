@@ -1,10 +1,10 @@
 import { type ReactNode } from "react";
 
 /**
- * Shell Exam/Review Workspace (Sprint 22 — redesign UI).
+ * Shell Exam/Review Workspace.
  *
- * Struktur: HEADER → CONTENT (scroll) → BOTTOM ACTIONS.
- * Tidak ada panel samping; Daftar Soal selalu berupa modal terpusat.
+ * Struktur final: SATU scroll container berisi HEADER (sticky) → CONTENT → PAGINATION.
+ * Pagination BUKAN sticky/fixed: ia bagian dari dokumen yang sama dan ikut scroll.
  */
 export function WorkspaceShell({
   header,
@@ -14,6 +14,7 @@ export function WorkspaceShell({
   children,
 }: {
   header: ReactNode;
+  /** Pagination — dirender inline setelah konten, ikut scroll. */
   footer?: ReactNode;
   /** Overlay secure mode. */
   overlay?: ReactNode;
@@ -33,28 +34,33 @@ export function WorkspaceShell({
         aria-hidden={contentBlurred || undefined}
         inert={contentBlurred || undefined}
       >
-        <header className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-border bg-card px-3 py-2.5 sm:px-4">
-          {header}
-        </header>
-
-        <main className="min-w-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4">
-          {children}
-        </main>
-
-        {footer ? (
-          <footer
-            className="grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-2 border-t border-border bg-card px-3 py-2.5 sm:px-4"
-            style={{ paddingBottom: "calc(0.625rem + env(safe-area-inset-bottom))" }}
+        {/* SATU scroll container: header sticky di dalamnya, konten + pagination ikut scroll. */}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain scroll-smooth">
+          <header
+            className="sticky top-0 z-30 flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-border bg-card px-3 pb-2.5 sm:px-4"
+            style={{ paddingTop: "calc(0.625rem + env(safe-area-inset-top))" }}
           >
-            {footer}
-          </footer>
-        ) : null}
+            {header}
+          </header>
+
+          <main className="min-w-0 p-3 sm:p-4">{children}</main>
+
+          {footer ? (
+            <div
+              className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 pt-1 sm:px-4"
+              style={{ paddingBottom: "calc(2rem + env(safe-area-inset-bottom))" }}
+            >
+              {footer}
+            </div>
+          ) : null}
+        </div>
       </div>
 
       {overlay}
     </div>
   );
 }
+
 
 /**
  * Body: portrait = satu kolom (soal lalu jawaban);
