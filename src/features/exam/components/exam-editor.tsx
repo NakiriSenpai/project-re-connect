@@ -7,6 +7,7 @@ import {
   Eye,
   Library,
   Pencil,
+  PlayCircle,
   Plus,
   Trash2,
 } from "lucide-react";
