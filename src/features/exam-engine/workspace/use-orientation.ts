@@ -1,19 +1,22 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 /**
- * ORIENTATION (Final Exam Experience).
+ * ORIENTATION POLICY (final).
  *
- * Keputusan arsitektur setelah audit APK/TWA:
- * - TIDAK ada Fullscreen API, TIDAK ada `screen.orientation.lock()` untuk ujian,
- *   TIDAK ada custom scheme / Activity kedua / native bridge.
- * - Preferensi orientasi user HANYA menentukan LAYOUT halaman ujian dan bisa
- *   diubah kapan saja dari dalam ujian (tombol "Ganti Tampilan").
- * - Satu-satunya pemakaian lock tersisa adalah kebijakan portrait untuk halaman
- *   NON-EXAM, supaya app shell tidak ikut sensor bebas saat auto-rotate menyala.
+ * - NON-EXAM (semua halaman, termasuk Review & Result): portrait, tidak
+ *   mengikuti sensor perangkat. Dipaksa best-effort lewat `applyPortraitPolicy`.
+ * - EXAM WORKSPACE (/ujian/:attemptId): mengikuti sensor perangkat. Layout
+ *   Portrait/Landscape dipilih dari orientasi viewport nyata, TANPA tombol
+ *   manual, TANPA fullscreen, TANPA CSS rotate, TANPA fake viewport.
+ *
+ * Catatan native: pada APK TWA saat ini, Activity dikunci portrait di
+ * AndroidManifest, sehingga perubahan orientasi fisik per-route tidak dapat
+ * dijamin dari sisi web. Lihat laporan limitasi.
  */
 
 type OrientationApi = ScreenOrientation & {
   lock?: (o: string) => Promise<void>;
+  unlock?: () => void;
 };
 
 function getOrientation(): OrientationApi | undefined {
@@ -21,45 +24,15 @@ function getOrientation(): OrientationApi | undefined {
   return (window.screen as (Screen & { orientation?: OrientationApi }) | undefined)?.orientation;
 }
 
-function isLandscapeNow() {
+function isMobileViewport() {
   if (typeof window === "undefined") return false;
-  return window.innerWidth > window.innerHeight;
+  return window.matchMedia("(max-width: 1024px)").matches;
 }
 
-/** Preferensi LAYOUT ujian (bukan rotasi fisik perangkat). */
-export type ExamOrientationPreference = "portrait" | "landscape";
-
-const PREFERENCE_KEY = "ium-exam-orientation";
-const PREFERENCE_EVENT = "ium-exam-orientation-change";
-
-export function setExamOrientationPreference(pref: ExamOrientationPreference) {
-  if (typeof window === "undefined") return;
-  try {
-    window.sessionStorage.setItem(PREFERENCE_KEY, pref);
-  } catch {
-    /* diabaikan */
-  }
-  window.dispatchEvent(new CustomEvent(PREFERENCE_EVENT, { detail: pref }));
-}
-
-export function getExamOrientationPreference(): ExamOrientationPreference {
-  if (typeof window === "undefined") return "portrait";
-  try {
-    const value = window.sessionStorage.getItem(PREFERENCE_KEY);
-    if (value === "portrait" || value === "landscape") return value;
-  } catch {
-    /* diabaikan */
-  }
-  return isLandscapeNow() ? "landscape" : "portrait";
-}
-
-/**
- * Kebijakan orientasi halaman NON-EXAM: portrait (best-effort), tanpa fullscreen,
- * tanpa UI gate, tanpa error bila ditolak. Tidak dipakai di flow ujian.
- */
+/** Kunci portrait (best-effort) untuk halaman NON-EXAM. */
 export function applyPortraitPolicy(_source = "app"): void {
   if (typeof window === "undefined") return;
-  if (!window.matchMedia("(max-width: 1024px)").matches) return;
+  if (!isMobileViewport()) return;
   const orientation = getOrientation();
   if (!orientation || typeof orientation.lock !== "function") return;
   try {
@@ -69,50 +42,44 @@ export function applyPortraitPolicy(_source = "app"): void {
   }
 }
 
+/** Lepaskan kunci portrait supaya Exam Workspace bisa mengikuti sensor. */
+function releasePortraitPolicy(): void {
+  const orientation = getOrientation();
+  if (!orientation || typeof orientation.unlock !== "function") return;
+  try {
+    orientation.unlock();
+  } catch {
+    /* diabaikan */
+  }
+}
+
+export type ExamLayout = "portrait" | "landscape";
+
 /**
- * Orientation state untuk workspace ujian — READ ONLY untuk orientasi fisik,
- * READ/WRITE untuk preferensi layout.
+ * Layout Exam berbasis sensor/viewport.
+ *
+ * Hanya dipakai oleh Exam Workspace. Satu listener `matchMedia` — tidak ada
+ * `deviceorientation`, tidak ada setState per event sensor: state hanya
+ * berubah saat media query benar-benar berpindah (portrait ⇄ landscape).
  */
-export function useOrientation(preference?: ExamOrientationPreference) {
-  const [isLandscape, setIsLandscape] = useState(true);
-  const [isSmallScreen, setIsSmallScreen] = useState(false);
-  const [storedPref, setStoredPref] = useState<ExamOrientationPreference>("portrait");
+export function useExamSensorLayout(): ExamLayout {
+  const [layout, setLayout] = useState<ExamLayout>("portrait");
 
   useEffect(() => {
-    setStoredPref(getExamOrientationPreference());
-    const onChange = () => setStoredPref(getExamOrientationPreference());
-    window.addEventListener(PREFERENCE_EVENT, onChange);
-    return () => window.removeEventListener(PREFERENCE_EVENT, onChange);
-  }, []);
+    releasePortraitPolicy();
 
-  useEffect(() => {
-    const landscapeQuery = window.matchMedia("(orientation: landscape)");
-    const smallQuery = window.matchMedia("(max-width: 1024px)");
-    const sync = () => {
-      setIsLandscape(landscapeQuery.matches);
-      setIsSmallScreen(smallQuery.matches);
-    };
-    sync();
-    landscapeQuery.addEventListener("change", sync);
-    smallQuery.addEventListener("change", sync);
-    window.addEventListener("resize", sync);
+    const query = window.matchMedia("(orientation: landscape)");
+    const sync = (matches: boolean) => setLayout(matches ? "landscape" : "portrait");
+    sync(query.matches);
+
+    const onChange = (event: MediaQueryListEvent) => sync(event.matches);
+    query.addEventListener("change", onChange);
+
     return () => {
-      landscapeQuery.removeEventListener("change", sync);
-      smallQuery.removeEventListener("change", sync);
-      window.removeEventListener("resize", sync);
+      query.removeEventListener("change", onChange);
+      applyPortraitPolicy("exam-unmount");
     };
   }, []);
 
-  const setPreference = useCallback((pref: ExamOrientationPreference) => {
-    setExamOrientationPreference(pref);
-  }, []);
-
-  return {
-    /** Orientasi nyata perangkat. */
-    isLandscape,
-    isSmallScreen,
-    /** Preferensi layout aktif. */
-    preference: preference ?? storedPref,
-    setPreference,
-  };
+  return layout;
 }
