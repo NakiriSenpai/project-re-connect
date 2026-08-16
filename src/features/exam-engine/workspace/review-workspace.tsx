@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -40,7 +40,9 @@ export function ReviewWorkspace({ attemptId }: { attemptId: string }) {
 function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
   const navigate = useNavigate();
   const { data, isLoading, isError, error } = useAttemptReview(attemptId);
-  useEffect(() => applyPortraitPolicy("review"), []);
+  useEffect(() => {
+    applyPortraitPolicy("review");
+  }, []);
   useAntiCopy();
   const [activeIndex, setActiveIndex] = useState(0);
   const [listOpen, setListOpen] = useState(false);
