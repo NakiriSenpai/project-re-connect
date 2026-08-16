@@ -86,6 +86,7 @@
             android:alwaysRetainTaskState="true"
             android:label="@string/launcherName"
             android:screenOrientation="portrait"
+            android:launchMode="singleTask"
             android:exported="true">
             <meta-data android:name="android.support.customtabs.trusted.DEFAULT_URL"
                 android:value="@string/launchUrl" />
@@ -161,6 +162,15 @@
                 />
             </intent-filter>
 
+            <!-- Kembali ke app utama (portrait) setelah ujian landscape selesai. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="ium-app" android:host="main" />
+            </intent-filter>
+
+
             
 
             
@@ -169,10 +179,12 @@
         <!-- Exam launcher: TWA diluncurkan LANDSCAPE lewat meta-data resmi
              SCREEN_ORIENTATION (TrustedWebActivityIntentBuilder.setScreenOrientation). -->
         <activity android:name="ExamLauncherActivity"
-            android:alwaysRetainTaskState="true"
             android:label="@string/launcherName"
             android:screenOrientation="landscape"
+            android:launchMode="singleTop"
+            android:excludeFromRecents="true"
             android:exported="true">
+
 
             <meta-data android:name="android.support.customtabs.trusted.DEFAULT_URL"
                 android:value="@string/launchUrl" />
@@ -201,15 +213,15 @@
             <meta-data android:name="android.support.customtabs.trusted.SCREEN_ORIENTATION"
                 android:value="@string/examOrientation"/>
 
-            <intent-filter android:autoVerify="true">
+            <!-- HANYA custom scheme: ium-exam://exam/<attemptId> -->
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="https"
-                    android:host="@string/hostName"
-                    android:pathPrefix="/ujian/" />
+                <data android:scheme="ium-exam" android:host="exam" />
             </intent-filter>
         </activity>
+
 
         <activity android:name="com.google.androidbrowserhelper.trusted.FocusActivity" />
 
