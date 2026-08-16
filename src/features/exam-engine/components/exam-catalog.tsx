@@ -223,8 +223,8 @@ export function ExamCatalog() {
   const visible = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const handleStart = (examId: string, preference: ExamOrientationPreference) => {
-    // Preferensi menentukan LAYOUT ujian + dikirim ke native Android via TWA bridge.
-    // Tidak ada fullscreen dan tidak ada screen.orientation.lock.
+    // Preferensi menentukan LAYOUT ujian. Pada APK (standalone), landscape dibuka
+    // di Activity native landscape lewat custom scheme; browser tetap SPA.
     setExamOrientationPreference(preference);
     setNativeOrientation(preference);
     start.mutate(examId, {
@@ -232,6 +232,7 @@ export function ExamCatalog() {
         setStartTarget(null);
         // Attempt BARU: langsung masuk workspace, tanpa perantara "Lanjutkan Ujian".
         setContinueTarget(null);
+        if (preference === "landscape" && openExamLandscape(attempt.id)) return;
         void navigate({ to: "/ujian/$attemptId", params: { attemptId: attempt.id } }).catch(() => {
           window.location.assign(`/ujian/${attempt.id}`);
         });
@@ -239,6 +240,7 @@ export function ExamCatalog() {
       onError: (err) => toast.error(err instanceof Error ? err.message : "Gagal memulai ujian."),
     });
   };
+
 
   if (isLoading) {
     return (
