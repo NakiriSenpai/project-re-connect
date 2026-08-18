@@ -265,6 +265,7 @@ export async function createBankQuestion(input: QuestionBankInput): Promise<stri
     .from(QUESTION_TABLES.questions)
     .insert({
       text: input.text,
+      instruction: input.instruction || null,
       image_url: input.image_url,
       audio_url: input.audio_url,
       explanation: input.explanation || null,
@@ -302,6 +303,7 @@ export async function updateBankQuestion(
     .from(QUESTION_TABLES.questions)
     .update({
       text: input.text,
+      instruction: input.instruction || null,
       image_url: input.image_url,
       audio_url: input.audio_url,
       explanation: input.explanation || null,

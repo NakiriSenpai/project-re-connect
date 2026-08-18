@@ -46,6 +46,8 @@ export type QuestionBankRow = {
   id: string;
   tenant_id: string | null;
   text: string;
+  /** Perintah Soal (rich text HTML sederhana). */
+  instruction: string | null;
   image_url: string | null;
   audio_url: string | null;
   explanation: string | null;
@@ -84,6 +86,7 @@ export type QuestionAnswerInput = {
 
 export type QuestionBankInput = {
   text: string;
+  instruction?: string | null;
   image_url: string | null;
   audio_url: string | null;
   explanation: string;

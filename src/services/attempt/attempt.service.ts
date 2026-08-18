@@ -53,6 +53,7 @@ async function buildSnapshot(exam: ExamRow) {
       index,
       section_id: q.section_id,
       text: q.text,
+      instruction: q.instruction ?? null,
       image_url: q.image_url,
       audio_url: q.audio_url,
       category: q.category,

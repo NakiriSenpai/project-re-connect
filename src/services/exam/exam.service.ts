@@ -208,6 +208,7 @@ export async function listQuestions(examId: string): Promise<ExamQuestionWithAns
         created_at: row.created_at,
         updated_at: row.updated_at,
         text: q.text,
+        instruction: q.instruction ?? null,
         image_url: q.image_url,
         audio_url: q.audio_url,
         explanation: q.explanation,

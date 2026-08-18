@@ -20,6 +20,7 @@ export type { AnswerLabel, ExamQuestionWithAnswers } from "@/types/exam";
 export type QuestionFormValue = {
   question_id: string;
   text: string;
+  instruction?: string | null;
   image_url: string | null;
   audio_url: string | null;
   explanation: string | null;
