@@ -11,7 +11,6 @@ import {
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -21,8 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { ExamMediaField } from "./media-field";
+import { RichTextEditor } from "@/components/common/rich-text-editor";
+import { isRichTextEmpty, richTextToPlain } from "@/lib/rich-text";
 import { Switch } from "@/components/ui/switch";
 import { useCreateQuestion, useUpdateQuestion } from "@/hooks/exam";
 import { useArchiveBankQuestion, useLessons } from "@/hooks/question-bank";
@@ -85,6 +85,7 @@ export function QuestionForm({
   resetKey,
 }: QuestionFormProps) {
   const [text, setText] = useState("");
+  const [instruction, setInstruction] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [showImage, setShowImage] = useState(false);
@@ -114,6 +115,7 @@ export function QuestionForm({
     setError(null);
     if (question) {
       setText(question.text);
+      setInstruction(question.instruction ?? "");
       setImageUrl(question.image_url);
       setAudioUrl(question.audio_url);
       setShowImage(Boolean(question.image_url));
@@ -146,6 +148,7 @@ export function QuestionForm({
       setCorrect(question.answers.find((a) => a.is_correct)?.label ?? "A");
     } else {
       setText("");
+      setInstruction("");
       setImageUrl(null);
       setAudioUrl(null);
       setShowImage(false);
@@ -194,16 +197,18 @@ export function QuestionForm({
     event.preventDefault();
     setError(null);
 
-    if (text.trim().length < 3) return setError("Teks soal minimal 3 karakter.");
-    if (!explanation.trim()) return setError("Pembahasan wajib diisi.");
+    if (isRichTextEmpty(instruction)) return setError("Perintah soal wajib diisi.");
+    if (richTextToPlain(text).length < 3) return setError("Teks soal minimal 3 karakter.");
+    if (isRichTextEmpty(explanation)) return setError("Pembahasan wajib diisi.");
 
-    const filled = answers.filter((a) => a.text.trim() || a.image_url || a.audio_url);
+    const filled = answers.filter((a) => !isRichTextEmpty(a.text) || a.image_url || a.audio_url);
     if (filled.length < 2) return setError("Minimal dua pilihan jawaban harus diisi.");
     const correctFilled = filled.some((a) => a.label === correct);
     if (!correctFilled) return setError("Jawaban benar harus termasuk pilihan yang diisi.");
 
     const payload: QuestionBankInput = {
       text: text.trim(),
+      instruction: instruction.trim() || null,
       image_url: imageUrl,
       audio_url: audioUrl,
       explanation: explanation.trim(),
@@ -257,15 +262,23 @@ export function QuestionForm({
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
       <div className="space-y-1.5">
-        <Label htmlFor="q-text" className="text-xs font-medium">
-          Teks Soal
-        </Label>
-        <Textarea
-          id="q-text"
-          rows={3}
-          className="text-sm"
+        <Label className="text-xs font-medium">Perintah Soal</Label>
+        <RichTextEditor
+          value={instruction}
+          onChange={setInstruction}
+          minRows={2}
+          ariaLabel="Perintah soal"
+          placeholder="Contoh: Pilihlah jawaban yang paling tepat."
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label className="text-xs font-medium">Teks Soal</Label>
+        <RichTextEditor
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={setText}
+          minRows={3}
+          ariaLabel="Teks soal"
           placeholder="Tulis pertanyaan di sini."
         />
       </div>
@@ -339,12 +352,6 @@ export function QuestionForm({
                   <span className="grid size-7 shrink-0 place-items-center rounded-md border border-border text-xs font-semibold">
                     {answerIndex + 1}
                   </span>
-                  <Input
-                    className="h-8 min-w-0 flex-1 text-sm"
-                    value={answer.text}
-                    onChange={(e) => setAnswer(answer.label, { text: e.target.value })}
-                    placeholder={`Jawaban ${answerIndex + 1}`}
-                  />
                   <IconAction
                     label="Mode teks"
                     active={media === null}
@@ -383,16 +390,25 @@ export function QuestionForm({
                   </IconAction>
                 </div>
 
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] text-muted-foreground">
+                    {media === "image"
+                      ? "Caption Gambar"
+                      : media === "audio"
+                        ? "Caption Audio"
+                        : "Teks Jawaban"}
+                  </Label>
+                  <RichTextEditor
+                    value={answer.text}
+                    onChange={(html) => setAnswer(answer.label, { text: html })}
+                    minRows={1}
+                    ariaLabel={`Teks jawaban ${answerIndex + 1}`}
+                    placeholder={`Jawaban ${answerIndex + 1}`}
+                  />
+                </div>
+
                 {media === "image" ? (
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] text-muted-foreground">Caption Gambar</Label>
-                    <Textarea
-                      rows={2}
-                      className="text-sm"
-                      value={answer.text}
-                      onChange={(e) => setAnswer(answer.label, { text: e.target.value })}
-                      placeholder="Teks pendamping gambar"
-                    />
                     <ExamMediaField
                       kind="image"
                       url={answer.image_url}
@@ -404,14 +420,6 @@ export function QuestionForm({
 
                 {media === "audio" ? (
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] text-muted-foreground">Caption Audio</Label>
-                    <Textarea
-                      rows={2}
-                      className="text-sm"
-                      value={answer.text}
-                      onChange={(e) => setAnswer(answer.label, { text: e.target.value })}
-                      placeholder="Teks pendamping audio"
-                    />
                     <ExamMediaField
                       kind="audio"
                       url={answer.audio_url}
@@ -469,15 +477,14 @@ export function QuestionForm({
       ) : null}
 
       <div className="space-y-1.5">
-        <Label htmlFor="q-explanation" className="text-xs font-medium">
+        <Label className="text-xs font-medium">
           Pembahasan
         </Label>
-        <Textarea
-          id="q-explanation"
-          rows={3}
-          className="text-sm"
+        <RichTextEditor
           value={explanation}
-          onChange={(e) => setExplanation(e.target.value)}
+          onChange={setExplanation}
+          minRows={3}
+          ariaLabel="Pembahasan"
           placeholder="Jelaskan alasan jawaban benar."
         />
       </div>

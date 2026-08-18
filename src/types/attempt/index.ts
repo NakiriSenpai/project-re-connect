@@ -69,6 +69,7 @@ export type SnapshotQuestion = {
   index: number;
   section_id: string;
   text: string;
+  instruction?: string | null;
   image_url: string | null;
   audio_url: string | null;
   category: string;

@@ -65,6 +65,7 @@ export type ExamQuestionRef = {
 /** Referensi soal + data soal dari Question Bank (flatten agar mudah dipakai UI). */
 export type ExamQuestionWithAnswers = ExamQuestionRef & {
   text: string;
+  instruction: string | null;
   image_url: string | null;
   audio_url: string | null;
   explanation: string | null;
