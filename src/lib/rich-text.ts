@@ -31,11 +31,10 @@ export function sanitizeRichText(html: string | null | undefined): string {
     .replace(/<(script|style|iframe|object|embed)[^>]*>/gi, "");
 
   return withoutBlocks
-    .replace(/<\/?([a-zA-Z0-9]+)[^>]*>/g, (_match, rawTag: string, ...rest) => {
+    .replace(/<(\/?)([a-zA-Z0-9]+)[^>]*>/g, (_match, slash: string, rawTag: string) => {
       const tag = rawTag.toLowerCase();
       if (!ALLOWED_TAGS.has(tag)) return "";
-      const isClosing = String(rest[rest.length - 1] ?? "").includes(`</${rawTag}`);
-      return isClosing ? `</${tag}>` : `<${tag}>`;
+      return `<${slash}${tag}>`;
     })
     .trim();
 }
