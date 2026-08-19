@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Loader2, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -20,8 +20,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 import { MediaPicker } from "@/features/media";
+import { RichTextEditor } from "@/components/common/rich-text-editor";
+import { richTextToPlain } from "@/lib/rich-text";
+import { useAutosave } from "@/hooks/use-autosave";
+import { AutosaveIndicator, useReportAutosave } from "./exam-autosave";
 import { useUpdateExam } from "@/hooks/exam";
 import { useCreateExamCategory, useExamCategories } from "@/hooks/exam/use-exam-category";
 import { EXAM_DIFFICULTY_LABELS, toSlug } from "@/features/exam/exam.constants";
@@ -30,7 +33,7 @@ import type { ExamDifficulty, ExamRow } from "@/types/exam";
 
 type Props = { exam: ExamRow };
 
-/** Kartu "Detail Exam" — form inline pada halaman Edit Exam. */
+/** Kartu "Detail Exam" — form inline dengan autosave (tanpa tombol simpan manual). */
 export function ExamDetailCard({ exam }: Props) {
   const updateExam = useUpdateExam();
   const { data: categoryRows } = useExamCategories();
@@ -48,7 +51,6 @@ export function ExamDetailCard({ exam }: Props) {
   const [changeIcon, setChangeIcon] = useState(false);
   const [shuffleQuestions, setShuffleQuestions] = useState(exam.shuffle_questions);
   const [shuffleAnswers, setShuffleAnswers] = useState(exam.shuffle_answers);
-  const [error, setError] = useState<string | null>(null);
 
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [newCategory, setNewCategory] = useState("");
@@ -65,47 +67,80 @@ export function ExamDetailCard({ exam }: Props) {
     setChangeIcon(false);
     setShuffleQuestions(exam.shuffle_questions);
     setShuffleAnswers(exam.shuffle_answers);
-  }, [exam]);
+  }, [exam.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault();
-    setError(null);
+  const draft = useMemo(
+    () => ({
+      title,
+      slug,
+      category,
+      description,
+      duration,
+      passingScore,
+      difficulty,
+      iconUrl,
+      shuffleQuestions,
+      shuffleAnswers,
+    }),
+    [
+      title,
+      slug,
+      category,
+      description,
+      duration,
+      passingScore,
+      difficulty,
+      iconUrl,
+      shuffleQuestions,
+      shuffleAnswers,
+    ],
+  );
 
+  /** Validasi ringan — hanya menahan autosave, tidak memblokir pengetikan. */
+  const invalid = useMemo(() => {
     const nextTitle = title.trim();
     const nextSlug = toSlug(slug || title);
-    if (nextTitle.length < 3) return setError("Judul minimal 3 karakter.");
-    if (nextSlug.length < 3) return setError("Slug minimal 3 karakter.");
-
     const scoreValue = Number(passingScore);
     const durationValue = Number(duration);
+    if (nextTitle.length < 3) return "Judul minimal 3 karakter.";
+    if (nextSlug.length < 3) return "Slug minimal 3 karakter.";
     if (!Number.isFinite(scoreValue) || scoreValue < 0 || scoreValue > 100) {
-      return setError("Passing score harus antara 0 dan 100.");
+      return "Passing score harus antara 0 dan 100.";
     }
     if (!Number.isFinite(durationValue) || durationValue < 1 || durationValue > 600) {
-      return setError("Durasi harus antara 1 dan 600 menit.");
+      return "Durasi harus antara 1 dan 600 menit.";
     }
+    return null;
+  }, [title, slug, passingScore, duration]);
 
-    try {
+  const save = useCallback(
+    async (value: typeof draft) => {
       await updateExam.mutateAsync({
         id: exam.id,
         input: {
-          title: nextTitle,
-          slug: nextSlug,
-          category,
-          description: description.trim(),
-          difficulty,
-          passing_score: Math.round(scoreValue),
-          duration_minutes: Math.round(durationValue),
-          shuffle_questions: shuffleQuestions,
-          shuffle_answers: shuffleAnswers,
-          icon_url: iconUrl || null,
+          title: value.title.trim(),
+          slug: toSlug(value.slug || value.title),
+          category: value.category,
+          description: richTextToPlain(value.description) ? value.description : "",
+          difficulty: value.difficulty,
+          passing_score: Math.round(Number(value.passingScore)),
+          duration_minutes: Math.round(Number(value.duration)),
+          shuffle_questions: value.shuffleQuestions,
+          shuffle_answers: value.shuffleAnswers,
+          icon_url: value.iconUrl || null,
         },
       });
-      toast.success("Detail exam disimpan.");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal menyimpan detail exam.");
-    }
-  };
+    },
+    [exam.id, updateExam],
+  );
+
+  const autosave = useAutosave({
+    value: draft,
+    onSave: save,
+    delay: 800,
+    enabled: !invalid,
+  });
+  useReportAutosave(`exam-detail:${exam.id}`, autosave.status, autosave.flush);
 
   const addCategory = async () => {
     try {
@@ -122,11 +157,11 @@ export function ExamDetailCard({ exam }: Props) {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-4 rounded-2xl border border-border bg-card p-4 shadow-sm"
-    >
-      <h2 className="text-sm font-semibold">Detail Exam</h2>
+    <section className="min-w-0 space-y-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold">Detail Exam</h2>
+        <AutosaveIndicator status={autosave.status} />
+      </div>
 
       <div className="space-y-1.5">
         <Label htmlFor="exam-title" className="text-xs font-medium">
@@ -170,19 +205,18 @@ export function ExamDetailCard({ exam }: Props) {
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="exam-desc" className="text-xs font-medium">
-          Deskripsi
-        </Label>
-        <Textarea
-          id="exam-desc"
-          rows={3}
+        <Label className="text-xs font-medium">Deskripsi</Label>
+        <RichTextEditor
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={setDescription}
+          minRows={3}
+          ariaLabel="Deskripsi exam"
+          placeholder="Deskripsi singkat ujian."
         />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1.5">
+        <div className="min-w-0 space-y-1.5">
           <Label htmlFor="exam-duration" className="text-xs font-medium">
             Durasi (menit)
           </Label>
@@ -193,7 +227,7 @@ export function ExamDetailCard({ exam }: Props) {
             onChange={(e) => setDuration(e.target.value)}
           />
         </div>
-        <div className="space-y-1.5">
+        <div className="min-w-0 space-y-1.5">
           <Label htmlFor="exam-score" className="text-xs font-medium">
             Passing Score
           </Label>
@@ -277,15 +311,11 @@ export function ExamDetailCard({ exam }: Props) {
 
       <p className="rounded-xl border border-dashed border-border p-3 text-xs text-muted-foreground">
         Nilai total ujian selalu <span className="font-medium text-foreground">100</span> dan dibagi
-        rata otomatis ke seluruh soal.
+        rata otomatis ke seluruh soal. Perubahan tersimpan otomatis.
       </p>
 
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
-
-      <Button type="submit" className="w-full" disabled={updateExam.isPending}>
-        {updateExam.isPending ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
-        Simpan Detail
-      </Button>
+      {invalid ? <p className="text-sm text-destructive">{invalid}</p> : null}
+      {autosave.error ? <p className="text-sm text-destructive">{autosave.error}</p> : null}
 
       <Dialog open={categoryOpen} onOpenChange={setCategoryOpen}>
         <DialogContent className="sm:max-w-sm">
@@ -307,13 +337,17 @@ export function ExamDetailCard({ exam }: Props) {
             <Button type="button" variant="outline" onClick={() => setCategoryOpen(false)}>
               Batal
             </Button>
-            <Button type="button" disabled={createCategory.isPending} onClick={() => void addCategory()}>
+            <Button
+              type="button"
+              disabled={createCategory.isPending}
+              onClick={() => void addCategory()}
+            >
               {createCategory.isPending ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
               Simpan
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </form>
+    </section>
   );
 }
